@@ -56,6 +56,7 @@ public class ProxyService {
     private final ApiKeyService apiKeyService;
     private final BillingCalculator billingCalculator;
     private final ChannelService channelService;
+    private final ConcurrencyService concurrencyService;
 
     // 最大重试次数
     private static final int MAX_RETRY_COUNT = 2;
@@ -67,26 +68,51 @@ public class ProxyService {
      */
     public Map<String, Object> proxyRequest(ProxyRequest request) {
         long startTime = System.currentTimeMillis();
+        ConcurrencyService.SlotResult accountSlot = null;
+        ConcurrencyService.SlotResult userSlot = null;
 
-        // 1. 限流检查
-        checkRateLimit(request);
+        try {
+            // 1. 限流检查
+            checkRateLimit(request);
 
-        // 2. 解析渠道映射
-        ChannelMappingResult channelMapping = resolveChannelMapping(request);
+            // 2. 解析渠道映射
+            ChannelMappingResult channelMapping = resolveChannelMapping(request);
 
-        // 3. 选择账号 (带重试和故障转移)
-        Account account = selectAccountWithFailover(request, channelMapping);
+            // 3. 选择账号 (带重试和故障转移)
+            Account account = selectAccountWithFailover(request, channelMapping);
 
-        // 4. 构建转发请求
-        String upstreamUrl = buildUpstreamUrl(account, request);
+            // 4. 并发控制 - 获取账号槽位
+            int maxConcurrent = account.getConcurrency() != null ? account.getConcurrency() : 10;
+            accountSlot = concurrencyService.tryAcquireWithRelease(account.getId(), maxConcurrent);
+            if (!accountSlot.acquired()) {
+                throw new BusinessException(ErrorCode.ACCOUNT_ALL_UNAVAILABLE, "账号并发数已达上限");
+            }
 
-        // 5. 发送请求 (带重试)
-        Map<String, Object> response = sendRequestWithRetry(upstreamUrl, request, account, channelMapping);
+            // 用户级并发控制（如果提供了 userId）
+            if (request.getUserId() != null) {
+                userSlot = concurrencyService.tryAcquireWithRelease(request.getUserId(), 100); // 用户默认最大100并发
+                // 用户级超限不阻止请求，仅记录
+            }
 
-        // 6. 记录用量
-        recordUsage(request, account, response, startTime);
+            // 5. 构建转发请求
+            String upstreamUrl = buildUpstreamUrl(account, request);
 
-        return response;
+            // 6. 发送请求 (带重试)
+            Map<String, Object> response = sendRequestWithRetry(upstreamUrl, request, account, channelMapping);
+
+            // 7. 记录用量
+            recordUsage(request, account, response, startTime);
+
+            return response;
+        } finally {
+            // 释放并发槽位
+            if (accountSlot != null && accountSlot.releaseFunc() != null) {
+                accountSlot.releaseFunc().run();
+            }
+            if (userSlot != null && userSlot.releaseFunc() != null) {
+                userSlot.releaseFunc().run();
+            }
+        }
     }
 
     /**
@@ -99,11 +125,33 @@ public class ProxyService {
         // 2. 选择账号
         Account account = selectAccount(request);
 
-        // 3. 构建转发请求
+        // 3. 获取并发槽位
+        ConcurrencyService.SlotResult accountSlot = concurrencyService.tryAcquireWithRelease(
+                account.getId(), account.getConcurrency() != null ? account.getConcurrency() : 10);
+        if (!accountSlot.acquired()) {
+            return Flux.error(new BusinessException(ErrorCode.ACCOUNT_ALL_UNAVAILABLE, "账号并发数已达上限"));
+        }
+
+        // 用户级并发控制
+        ConcurrencyService.SlotResult userSlot = null;
+        if (request.getUserId() != null) {
+            userSlot = concurrencyService.tryAcquireWithRelease(request.getUserId(), 100);
+        }
+
+        // 4. 构建转发请求
         String upstreamUrl = buildUpstreamUrl(account, request);
 
-        // 4. 发送流式请求
+        // 5. 发送流式请求，并在完成时释放槽位
         return sendStreamRequest(upstreamUrl, request, account)
+                .doOnTerminate(() -> {
+                    // 释放并发槽位
+                    if (accountSlot.releaseFunc() != null) {
+                        accountSlot.releaseFunc().run();
+                    }
+                    if (userSlot != null && userSlot.releaseFunc() != null) {
+                        userSlot.releaseFunc().run();
+                    }
+                })
                 .doOnError(e -> {
                     log.error("流式请求异常: accountId={}, error={}", account.getId(), e.getMessage());
                     handleProxyError(account, e);

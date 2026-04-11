@@ -302,4 +302,45 @@ public class AccountService extends ServiceImpl<AccountMapper, Account> {
         }
         return java.util.Collections.emptyMap();
     }
+
+    /**
+     * Update session window for sticky session management
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void updateSessionWindow(Long accountId, LocalDateTime start, LocalDateTime end, String status) {
+        Account updateAccount = new Account();
+        updateAccount.setId(accountId);
+        updateAccount.setSessionWindowStart(start);
+        updateAccount.setSessionWindowEnd(end);
+        updateAccount.setSessionWindowStatus(status);
+        updateAccount.setUpdatedAt(LocalDateTime.now());
+        updateById(updateAccount);
+    }
+
+    /**
+     * Clear session window
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void clearSessionWindow(Long accountId) {
+        Account updateAccount = new Account();
+        updateAccount.setId(accountId);
+        updateAccount.setSessionWindowStart(null);
+        updateAccount.setSessionWindowEnd(null);
+        updateAccount.setSessionWindowStatus(null);
+        updateAccount.setUpdatedAt(LocalDateTime.now());
+        updateById(updateAccount);
+    }
+
+    /**
+     * Clear temporary unschedulable status
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void clearTempUnschedulable(Long accountId) {
+        Account updateAccount = new Account();
+        updateAccount.setId(accountId);
+        updateAccount.setTempUnschedulableUntil(null);
+        updateAccount.setTempUnschedulableReason(null);
+        updateAccount.setUpdatedAt(LocalDateTime.now());
+        updateById(updateAccount);
+    }
 }
