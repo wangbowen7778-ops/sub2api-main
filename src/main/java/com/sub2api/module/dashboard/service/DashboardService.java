@@ -190,16 +190,47 @@ public class DashboardService {
     public List<GroupStat> getGroupStats(LocalDateTime startTime, LocalDateTime endTime,
                                          Long userId, Long apiKeyId, Long accountId,
                                          Long groupId) {
-        // TODO: 实现完整的分组统计查询
-        return List.of();
+        List<DashboardMapper.GroupUsageRow> rows = dashboardMapper.selectGroupUsageStats(startTime, endTime);
+
+        return rows.stream()
+                .map(row -> {
+                    GroupStat stat = new GroupStat();
+                    stat.setGroupId(row.getGroupId());
+                    stat.setGroupName(row.getGroupName());
+                    stat.setRequests(row.getRequests());
+                    stat.setTotalTokens(row.getTotalTokens());
+                    stat.setCost(row.getTotalTokens() * 0.000002); // 估算价格
+                    return stat;
+                })
+                .collect(Collectors.toList());
     }
 
     /**
      * 获取分组用量摘要
      */
     public List<GroupUsageSummary> getGroupUsageSummary(LocalDateTime todayStart) {
-        // TODO: 实现分组用量摘要
-        return List.of();
+        LocalDateTime now = LocalDateTime.now();
+        List<DashboardMapper.GroupUsageRow> todayStats = dashboardMapper.selectGroupUsageStats(todayStart, now);
+        List<DashboardMapper.GroupUsageRow> allStats = dashboardMapper.selectGroupUsageStats(
+                LocalDateTime.of(2020, 1, 1, 0, 0), now);
+
+        return todayStats.stream()
+                .map(row -> {
+                    GroupUsageSummary summary = new GroupUsageSummary();
+                    summary.setGroupId(row.getGroupId());
+                    summary.setTodayCost(row.getTotalTokens() * 0.000002);
+
+                    // 计算累计成本
+                    var allTimeRow = allStats.stream()
+                            .filter(r -> row.getGroupId().equals(r.getGroupId()))
+                            .findFirst()
+                            .orElse(null);
+                    long allTimeTokens = allTimeRow != null ? allTimeRow.getTotalTokens() : 0;
+                    summary.setTotalCost(allTimeTokens * 0.000002);
+
+                    return summary;
+                })
+                .collect(Collectors.toList());
     }
 
     /**
@@ -207,8 +238,22 @@ public class DashboardService {
      */
     public List<UserUsageTrendPoint> getUserUsageTrend(LocalDateTime startTime, LocalDateTime endTime,
                                                        String granularity, int limit) {
-        // TODO: 实现用户用量趋势
-        return List.of();
+        List<DashboardMapper.UserUsageTrendRow> rows = dashboardMapper.selectUserUsageTrend(
+                startTime, endTime, limit > 0 ? limit : 100);
+
+        return rows.stream()
+                .map(row -> {
+                    UserUsageTrendPoint point = new UserUsageTrendPoint();
+                    point.setDate(row.getDate());
+                    point.setUserId(row.getUserId());
+                    point.setEmail(row.getEmail());
+                    point.setRequests(row.getRequests());
+                    point.setInputTokens(row.getInputTokens());
+                    point.setOutputTokens(row.getOutputTokens());
+                    point.setTotalTokens(row.getTotalTokens());
+                    return point;
+                })
+                .collect(Collectors.toList());
     }
 
     /**
@@ -216,9 +261,29 @@ public class DashboardService {
      */
     public UserSpendingRankingResponse getUserSpendingRanking(LocalDateTime startTime,
                                                               LocalDateTime endTime, int limit) {
-        // TODO: 实现用户消费排名
+        List<DashboardMapper.UserSpendingRow> rows = dashboardMapper.selectUserSpendingRanking(
+                startTime, endTime, limit > 0 ? limit : 50);
+
         UserSpendingRankingResponse response = new UserSpendingRankingResponse();
-        response.setRanking(List.of());
+
+        List<UserSpendingRankingResponse.UserSpendingRankingItem> ranking = rows.stream()
+                .map(row -> {
+                    UserSpendingRankingResponse.UserSpendingRankingItem item =
+                            new UserSpendingRankingResponse.UserSpendingRankingItem();
+                    item.setUserId(row.getUserId());
+                    item.setEmail(row.getEmail());
+                    item.setRequests(row.getRequests());
+                    item.setTokens(row.getTotalTokens());
+                    item.setActualCost(row.getCost());
+                    return item;
+                })
+                .collect(Collectors.toList());
+
+        response.setRanking(ranking);
+        response.setTotalRequests(ranking.stream().mapToLong(UserSpendingRankingResponse.UserSpendingRankingItem::getRequests).sum());
+        response.setTotalTokens(ranking.stream().mapToLong(UserSpendingRankingResponse.UserSpendingRankingItem::getTokens).sum());
+        response.setTotalActualCost(ranking.stream().mapToDouble(UserSpendingRankingResponse.UserSpendingRankingItem::getActualCost).sum());
+
         return response;
     }
 

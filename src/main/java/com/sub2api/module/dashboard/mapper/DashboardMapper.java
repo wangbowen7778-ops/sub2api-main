@@ -147,4 +147,127 @@ public interface DashboardMapper extends BaseMapper<UsageLog> {
         long getOutputTokens();
         long getTotalTokens();
     }
+
+    /**
+     * 分组统计行
+     */
+    interface GroupUsageRow {
+        Long getGroupId();
+        String getGroupName();
+        long getRequests();
+        long getInputTokens();
+        long getOutputTokens();
+        long getTotalTokens();
+    }
+
+    /**
+     * 用户用量趋势行
+     */
+    interface UserUsageTrendRow {
+        String getDate();
+        Long getUserId();
+        String getEmail();
+        long getRequests();
+        long getInputTokens();
+        long getOutputTokens();
+        long getTotalTokens();
+    }
+
+    /**
+     * 用户消费排名行
+     */
+    interface UserSpendingRow {
+        Long getUserId();
+        String getEmail();
+        long getRequests();
+        long getTotalTokens();
+        double getCost();
+    }
+
+    /**
+     * 获取分组统计
+     */
+    @Select("""
+        SELECT
+            g.id as group_id,
+            g.name as group_name,
+            COUNT(u.id) as requests,
+            COALESCE(SUM(u.input_tokens), 0) as input_tokens,
+            COALESCE(SUM(u.output_tokens), 0) as output_tokens,
+            COALESCE(SUM(u.input_tokens + u.output_tokens), 0) as total_tokens
+        FROM groups g
+        LEFT JOIN usage_logs u ON u.group_id = g.id
+            AND u.created_at >= #{startTime} AND u.created_at < #{endTime}
+        WHERE g.deleted_at IS NULL
+        GROUP BY g.id, g.name
+        ORDER BY total_tokens DESC
+        """)
+    List<GroupUsageRow> selectGroupUsageStats(@Param("startTime") LocalDateTime startTime,
+                                               @Param("endTime") LocalDateTime endTime);
+
+    /**
+     * 获取分组今日用量摘要
+     */
+    @Select("""
+        SELECT
+            g.id as group_id,
+            COALESCE(SUM(u.input_tokens + u.output_tokens), 0) as total_tokens
+        FROM groups g
+        LEFT JOIN usage_logs u ON u.group_id = g.id AND u.created_at >= #{todayStart}
+        WHERE g.deleted_at IS NULL AND g.status = 'active'
+        GROUP BY g.id
+        """)
+    List<GroupTokenSumRow> selectGroupTodayUsageSummary(@Param("todayStart") LocalDateTime todayStart);
+
+    /**
+     * 分组 Token 汇总行
+     */
+    interface GroupTokenSumRow {
+        Long getGroupId();
+        long getTotalTokens();
+    }
+
+    /**
+     * 获取用户用量趋势
+     */
+    @Select("""
+        SELECT
+            DATE(u.created_at) as date,
+            u.user_id,
+            COALESCE(usr.email, '') as email,
+            COUNT(*) as requests,
+            COALESCE(SUM(u.input_tokens), 0) as input_tokens,
+            COALESCE(SUM(u.output_tokens), 0) as output_tokens,
+            COALESCE(SUM(u.input_tokens + u.output_tokens), 0) as total_tokens
+        FROM usage_logs u
+        LEFT JOIN users usr ON u.user_id = usr.id
+        WHERE u.created_at >= #{startTime} AND u.created_at < #{endTime}
+        GROUP BY DATE(u.created_at), u.user_id, usr.email
+        ORDER BY date DESC, total_tokens DESC
+        LIMIT #{limit}
+        """)
+    List<UserUsageTrendRow> selectUserUsageTrend(@Param("startTime") LocalDateTime startTime,
+                                                 @Param("endTime") LocalDateTime endTime,
+                                                 @Param("limit") int limit);
+
+    /**
+     * 获取用户消费排名
+     */
+    @Select("""
+        SELECT
+            u.user_id,
+            COALESCE(usr.email, '') as email,
+            COUNT(*) as requests,
+            COALESCE(SUM(u.input_tokens + u.output_tokens), 0) as total_tokens,
+            COALESCE(SUM(u.input_tokens + u.output_tokens), 0) * 0.000002 as cost
+        FROM usage_logs u
+        LEFT JOIN users usr ON u.user_id = usr.id
+        WHERE u.created_at >= #{startTime} AND u.created_at < #{endTime}
+        GROUP BY u.user_id, usr.email
+        ORDER BY total_tokens DESC
+        LIMIT #{limit}
+        """)
+    List<UserSpendingRow> selectUserSpendingRanking(@Param("startTime") LocalDateTime startTime,
+                                                    @Param("endTime") LocalDateTime endTime,
+                                                    @Param("limit") int limit);
 }
