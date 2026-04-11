@@ -182,11 +182,11 @@ public class ProxyService {
         AccountSelector.Strategy strategy = AccountSelector.Strategy.PRIORITY;
 
         if (request.getGroupId() != null) {
-            return accountSelector.selectAccount(request.getGroupId(), strategy, request.getSessionId());
+            return accountSelector.selectAccount(request.getGroupId(), strategy, request.getSessionId(), request.getModel());
         }
 
         // 按平台选择
-        return accountSelector.selectAccountByPlatform(request.getPlatform(), strategy, request.getSessionId());
+        return accountSelector.selectAccountByPlatform(request.getPlatform(), strategy, request.getSessionId(), request.getModel());
     }
 
     /**
@@ -216,10 +216,10 @@ public class ProxyService {
                 Account account;
                 if (request.getGroupId() != null) {
                     account = accountSelector.selectAccount(request.getGroupId(),
-                            AccountSelector.Strategy.PRIORITY, request.getSessionId());
+                            AccountSelector.Strategy.PRIORITY, request.getSessionId(), request.getModel());
                 } else {
                     account = accountSelector.selectAccountByPlatform(request.getPlatform(),
-                            AccountSelector.Strategy.PRIORITY, request.getSessionId());
+                            AccountSelector.Strategy.PRIORITY, request.getSessionId(), request.getModel());
                 }
 
                 // 如果上次失败的账号不是当前账号，重置其状态

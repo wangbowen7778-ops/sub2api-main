@@ -14,10 +14,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -54,14 +58,25 @@ public class AccountSelector {
 
     /**
      * 选择最优账号 (按分组)
+     *
+     * @param groupId 分组ID
+     * @param strategy 选择策略
+     * @param stickySessionKey 粘性会话Key
+     * @param requestedModel 请求的模型（用于检查模型限流）
+     * @return 选中的账号
      */
-    public Account selectAccount(Long groupId, Strategy strategy, String stickySessionKey) {
+    public Account selectAccount(Long groupId, Strategy strategy, String stickySessionKey, String requestedModel) {
         // 如果有粘性会话Key，优先使用之前分配的账号
         if (stickySessionKey != null && !stickySessionKey.isEmpty()) {
             Account stickyAccount = getStickyAccount(stickySessionKey, groupId);
             if (stickyAccount != null && isAccountUsable(stickyAccount)) {
-                log.debug("使用粘性会话账号: accountId={}", stickyAccount.getId());
-                return stickyAccount;
+                // 检查是否需要清理粘性会话（账号状态、临时不可调度、模型限流）
+                if (!shouldClearStickySession(stickyAccount, requestedModel)) {
+                    log.debug("使用粘性会话账号: accountId={}", stickyAccount.getId());
+                    return stickyAccount;
+                }
+                // 需要清理粘性会话，删除并继续选择新账号
+                deleteStickySession(stickySessionKey, groupId);
             }
         }
 
@@ -83,15 +98,33 @@ public class AccountSelector {
     }
 
     /**
-     * 选择最优账号 (按平台)
+     * 选择最优账号 (按分组) - 兼容旧调用
      */
-    public Account selectAccountByPlatform(String platform, Strategy strategy, String stickySessionKey) {
+    public Account selectAccount(Long groupId, Strategy strategy, String stickySessionKey) {
+        return selectAccount(groupId, strategy, stickySessionKey, null);
+    }
+
+    /**
+     * 选择最优账号 (按平台)
+     *
+     * @param platform 平台
+     * @param strategy 选择策略
+     * @param stickySessionKey 粘性会话Key
+     * @param requestedModel 请求的模型（用于检查模型限流）
+     * @return 选中的账号
+     */
+    public Account selectAccountByPlatform(String platform, Strategy strategy, String stickySessionKey, String requestedModel) {
         // 如果有粘性会话Key，优先使用之前分配的账号
         if (stickySessionKey != null && !stickySessionKey.isEmpty()) {
             Account stickyAccount = getStickyAccountByPlatform(stickySessionKey, platform);
             if (stickyAccount != null && isAccountUsable(stickyAccount)) {
-                log.debug("使用粘性会话账号: accountId={}", stickyAccount.getId());
-                return stickyAccount;
+                // 检查是否需要清理粘性会话（账号状态、临时不可调度、模型限流）
+                if (!shouldClearStickySession(stickyAccount, requestedModel)) {
+                    log.debug("使用粘性会话账号: accountId={}", stickyAccount.getId());
+                    return stickyAccount;
+                }
+                // 需要清理粘性会话，删除并继续选择新账号
+                deleteStickySessionByPlatform(stickySessionKey, platform);
             }
         }
 
@@ -110,6 +143,13 @@ public class AccountSelector {
         }
 
         return selected;
+    }
+
+    /**
+     * 选择最优账号 (按平台) - 兼容旧调用
+     */
+    public Account selectAccountByPlatform(String platform, Strategy strategy, String stickySessionKey) {
+        return selectAccountByPlatform(platform, strategy, stickySessionKey, null);
     }
 
     /**
@@ -211,6 +251,132 @@ public class AccountSelector {
             return false;
         }
         return true;
+    }
+
+    /**
+     * 判断粘性会话是否需要清理
+     * 参考 Go 版本 shouldClearStickySession 函数
+     * 检查：账号状态、临时不可调度状态、模型限流
+     *
+     * @param account 账号
+     * @param requestedModel 请求的模型
+     * @return true 如果需要清理粘性会话
+     */
+    public boolean shouldClearStickySession(Account account, String requestedModel) {
+        if (account == null) {
+            return false;
+        }
+        // 状态为 error/disabled 或不可调度时，需要清理
+        if (AccountStatus.ERROR.getValue().equals(account.getStatus()) ||
+                AccountStatus.DISABLED.getValue().equals(account.getStatus()) ||
+                Boolean.FALSE.equals(account.getSchedulable())) {
+            return true;
+        }
+        // 临时不可调度状态未过期时，需要清理
+        if (account.getTempUnschedulableUntil() != null &&
+                account.getTempUnschedulableUntil().isAfter(LocalDateTime.now())) {
+            return true;
+        }
+        // 检查模型限流，有限流即清理
+        if (getModelRateLimitRemainingTime(account, requestedModel) > 0) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 获取模型限流的剩余时间
+     * 从账号的 Extra 字段中的 model_rate_limits 获取
+     *
+     * @param account 账号
+     * @param requestedModel 请求的模型
+     * @return 剩余时间（秒），0 表示未限流或已过期
+     */
+    public long getModelRateLimitRemainingTime(Account account, String requestedModel) {
+        if (account == null || requestedModel == null || requestedModel.isBlank()) {
+            return 0;
+        }
+
+        Map<String, Object> extra = account.getExtra();
+        if (extra == null) {
+            return 0;
+        }
+
+        // 获取模型映射
+        String modelKey = getMappedModel(account, requestedModel);
+        if (modelKey.isBlank()) {
+            return 0;
+        }
+
+        // 从 Extra 中获取 model_rate_limits
+        Object rateLimitsObj = extra.get("model_rate_limits");
+        if (!(rateLimitsObj instanceof Map)) {
+            return 0;
+        }
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> rateLimits = (Map<String, Object>) rateLimitsObj;
+        Object modelLimitObj = rateLimits.get(modelKey);
+        if (!(modelLimitObj instanceof Map)) {
+            return 0;
+        }
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> modelLimit = (Map<String, Object>) modelLimitObj;
+        Object resetAtObj = modelLimit.get("rate_limit_reset_at");
+        if (resetAtObj == null || !(resetAtObj instanceof String)) {
+            return 0;
+        }
+
+        String resetAtStr = ((String) resetAtObj).trim();
+        if (resetAtStr.isEmpty()) {
+            return 0;
+        }
+
+        try {
+            LocalDateTime resetAt = LocalDateTime.parse(resetAtStr, DateTimeFormatter.ISO_DATE_TIME);
+            Duration remaining = Duration.between(LocalDateTime.now(), resetAt);
+            return remaining.isNegative() ? 0 : remaining.getSeconds();
+        } catch (DateTimeParseException e) {
+            log.warn("解析模型限流时间失败: accountId={}, model={}, error={}",
+                    account.getId(), modelKey, e.getMessage());
+            return 0;
+        }
+    }
+
+    /**
+     * 获取账号映射后的模型名
+     * 从账号凭证中的 model_mapping 获取
+     *
+     * @param account 账号
+     * @param requestedModel 请求的模型
+     * @return 映射后的模型名，如果未映射则返回原模型名
+     */
+    private String getMappedModel(Account account, String requestedModel) {
+        if (account.getCredentials() == null) {
+            return requestedModel;
+        }
+
+        Object mappingObj = account.getCredentials().get("model_mapping");
+        if (!(mappingObj instanceof Map)) {
+            return requestedModel;
+        }
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> mapping = (Map<String, Object>) mappingObj;
+        Object platformMappingObj = mapping.get(account.getPlatform());
+        if (!(platformMappingObj instanceof Map)) {
+            return requestedModel;
+        }
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> platformMapping = (Map<String, Object>) platformMappingObj;
+        Object mappedModel = platformMapping.get(requestedModel.toLowerCase());
+        if (mappedModel != null && !mappedModel.toString().isBlank()) {
+            return mappedModel.toString();
+        }
+
+        return requestedModel;
     }
 
     /**
@@ -369,5 +535,23 @@ public class AccountSelector {
     private void saveStickyAccountByPlatform(String sessionKey, String platform, Long accountId) {
         String key = STICKY_SESSION_KEY_PREFIX + "platform:" + platform + ":" + sessionKey;
         redisTemplate.opsForValue().set(key, accountId.toString(), STICKY_SESSION_TTL_SECONDS, TimeUnit.SECONDS);
+    }
+
+    /**
+     * 删除粘性会话 (按分组)
+     */
+    private void deleteStickySession(String sessionKey, Long groupId) {
+        String key = STICKY_SESSION_KEY_PREFIX + "group:" + groupId + ":" + sessionKey;
+        redisTemplate.delete(key);
+        log.debug("清理粘性会话: key={}", key);
+    }
+
+    /**
+     * 删除粘性会话 (按平台)
+     */
+    private void deleteStickySessionByPlatform(String sessionKey, String platform) {
+        String key = STICKY_SESSION_KEY_PREFIX + "platform:" + platform + ":" + sessionKey;
+        redisTemplate.delete(key);
+        log.debug("清理粘性会话: key={}", key);
     }
 }
