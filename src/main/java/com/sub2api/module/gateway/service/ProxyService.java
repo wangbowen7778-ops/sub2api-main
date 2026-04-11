@@ -63,6 +63,7 @@ public class ProxyService {
     private final ConcurrencyService concurrencyService;
     private final ErrorPassthroughRuleService errorPassthroughRuleService;
     private final OpsService opsService;
+    private final ProxyLatencyService proxyLatencyService;
 
     // 最大重试次数
     private static final int MAX_RETRY_COUNT = 2;
@@ -344,6 +345,7 @@ public class ProxyService {
             throw new BusinessException(ErrorCode.ACCOUNT_CREDENTIAL_INVALID);
         }
 
+        long startTime = System.currentTimeMillis();
         try {
             String response = webClient.post()
                     .uri(upstreamUrl)
@@ -356,6 +358,8 @@ public class ProxyService {
                     .timeout(Duration.ofSeconds(request.getTimeout() != null ? request.getTimeout() : 120))
                     .block();
 
+            long latency = System.currentTimeMillis() - startTime;
+
             @SuppressWarnings("unchecked")
             Map<String, Object> responseMap = response != null ?
                     objectMapper.readValue(response, Map.class) : new HashMap<>();
@@ -363,14 +367,34 @@ public class ProxyService {
             // 更新账号最后使用时间
             accountService.updateLastUsed(account.getId());
 
+            // 记录代理延迟
+            if (account.getProxyId() != null) {
+                proxyLatencyService.recordLatency(account.getProxyId(), true, latency, request.getClientIp());
+            }
+
             return responseMap;
         } catch (WebClientResponseException e) {
-            log.error("上游服务返回错误: status={}, body={}", e.getStatusCode(), e.getResponseBodyAsString());
-            handleHttpError(account, e);
+            long latency = System.currentTimeMillis() - startTime;
+            log.error("上游服务返回错误: status={}, body={}, latency={}ms",
+                    e.getStatusCode(), e.getResponseBodyAsString(), latency);
+
+            // 记录代理延迟（失败）
+            if (account.getProxyId() != null) {
+                proxyLatencyService.recordLatency(account.getProxyId(), false, latency, request.getClientIp());
+            }
+
+            handleHttpError(account, e, request);
             throw new BusinessException(ErrorCode.GATEWAY_UPSTREAM_ERROR,
                     "上游服务错误: " + e.getStatusCode());
         } catch (Exception e) {
-            log.error("代理请求异常: {}", e.getMessage());
+            long latency = System.currentTimeMillis() - startTime;
+            log.error("代理请求异常: latency={}ms, error={}", latency, e.getMessage());
+
+            // 记录代理延迟（失败）
+            if (account.getProxyId() != null) {
+                proxyLatencyService.recordLatency(account.getProxyId(), false, latency, request.getClientIp());
+            }
+
             throw new BusinessException(ErrorCode.GATEWAY_TIMEOUT, "请求超时");
         }
     }
