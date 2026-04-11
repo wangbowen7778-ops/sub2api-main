@@ -7,6 +7,8 @@ import com.sub2api.module.account.model.entity.Account;
 import com.sub2api.module.account.model.enums.AccountStatus;
 import com.sub2api.module.common.exception.BusinessException;
 import com.sub2api.module.common.model.enums.ErrorCode;
+import com.sub2api.module.gateway.service.ProxyLatencyService;
+import com.sub2api.module.gateway.service.UsagePrefetchService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -30,6 +33,8 @@ public class AccountSelector {
     private final AccountMapper accountMapper;
     private final AccountGroupMapper accountGroupMapper;
     private final StringRedisTemplate redisTemplate;
+    private final ProxyLatencyService proxyLatencyService;
+    private final UsagePrefetchService usagePrefetchService;
 
     private static final String STICKY_SESSION_KEY_PREFIX = "sticky:account:";
     private static final long STICKY_SESSION_TTL_SECONDS = 300;
@@ -42,7 +47,9 @@ public class AccountSelector {
         ROUND_ROBIN,
         PRIORITY,
         LEAST_USED,
-        LEAST_CONCURRENCY
+        LEAST_CONCURRENCY,
+        LOWEST_LATENCY,
+        LOWEST_USAGE
     }
 
     /**
@@ -243,9 +250,54 @@ public class AccountSelector {
                             return Integer.compare(ca, cb);
                         })
                         .orElse(accounts.get(0));
+            case LOWEST_LATENCY:
+                return selectByLowestLatency(accounts);
+            case LOWEST_USAGE:
+                return selectByLowestUsage(accounts);
             default:
                 return accounts.get(0);
         }
+    }
+
+    /**
+     * 根据最低延迟选择账号
+     */
+    private Account selectByLowestLatency(List<Account> accounts) {
+        return accounts.stream()
+                .min(Comparator.comparingLong(a -> {
+                    ProxyLatencyService.ProxyLatencyInfo info = proxyLatencyService.getLatency(a.getProxyId());
+                    if (info == null || !info.isSuccess()) {
+                        return Long.MAX_VALUE;
+                    }
+                    return info.getLatencyMs() != null ? info.getLatencyMs() : Long.MAX_VALUE;
+                }))
+                .orElse(accounts.get(0));
+    }
+
+    /**
+     * 根据最低用量选择账号
+     */
+    private Account selectByLowestUsage(List<Account> accounts) {
+        List<Long> proxyIds = accounts.stream()
+                .map(Account::getProxyId)
+                .filter(id -> id != null)
+                .distinct()
+                .toList();
+
+        if (proxyIds.isEmpty()) {
+            // 如果没有代理ID，使用 priority 策略
+            return selectByStrategy(accounts, Strategy.PRIORITY, null);
+        }
+
+        // 预取所有代理的用量
+        Map<Long, Double> usageCosts = usagePrefetchService.prefetchWindowCosts(proxyIds);
+
+        return accounts.stream()
+                .min(Comparator.comparingDouble(a -> {
+                    Double cost = usageCosts.get(a.getProxyId());
+                    return cost != null ? cost : 0.0;
+                }))
+                .orElse(accounts.get(0));
     }
 
     /**
