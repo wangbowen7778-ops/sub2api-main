@@ -8,6 +8,8 @@ import com.sub2api.module.account.model.enums.Platform;
 import com.sub2api.module.account.service.AccountRefreshService;
 import com.sub2api.module.account.service.AccountSelector;
 import com.sub2api.module.account.service.AccountService;
+import com.sub2api.module.admin.model.entity.ErrorPassthroughRule;
+import com.sub2api.module.admin.service.ErrorPassthroughRuleService;
 import com.sub2api.module.apikey.model.vo.ApiKeyInfo;
 import com.sub2api.module.apikey.service.ApiKeyService;
 import com.sub2api.module.billing.model.entity.UsageLog;
@@ -18,6 +20,8 @@ import com.sub2api.module.channel.service.ChannelService;
 import com.sub2api.module.channel.service.ChannelService.ChannelMappingResult;
 import com.sub2api.module.common.exception.BusinessException;
 import com.sub2api.module.common.model.enums.ErrorCode;
+import com.sub2api.module.ops.model.entity.OpsErrorLog;
+import com.sub2api.module.ops.service.OpsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -57,6 +61,8 @@ public class ProxyService {
     private final BillingCalculator billingCalculator;
     private final ChannelService channelService;
     private final ConcurrencyService concurrencyService;
+    private final ErrorPassthroughRuleService errorPassthroughRuleService;
+    private final OpsService opsService;
 
     // 最大重试次数
     private static final int MAX_RETRY_COUNT = 2;
@@ -154,7 +160,7 @@ public class ProxyService {
                 })
                 .doOnError(e -> {
                     log.error("流式请求异常: accountId={}, error={}", account.getId(), e.getMessage());
-                    handleProxyError(account, e);
+                    handleProxyError(account, e, request);
                 });
     }
 
@@ -398,27 +404,102 @@ public class ProxyService {
     /**
      * 处理代理错误
      */
-    private void handleProxyError(Account account, Throwable e) {
+    private void handleProxyError(Account account, Throwable e, ProxyRequest request) {
         if (e instanceof WebClientResponseException wcre) {
-            handleHttpError(account, wcre);
+            handleHttpError(account, wcre, request);
         }
     }
 
     /**
      * 处理 HTTP 错误
+     * 集成错误透传规则和 Ops 监控
      */
-    private void handleHttpError(Account account, WebClientResponseException e) {
+    private void handleHttpError(Account account, WebClientResponseException e, ProxyRequest request) {
         int statusCode = e.getStatusCode().value();
+        String responseBody = e.getResponseBodyAsString();
+
+        // 更新账号状态
         if (statusCode == 429) {
-            // 速率限制，设置 60 秒后重试
             accountService.setRateLimited(account.getId(), LocalDateTime.now().plusSeconds(60));
         } else if (statusCode == 529) {
-            // API 过载
             accountService.setOverload(account.getId(), LocalDateTime.now().plusMinutes(5));
         } else if (statusCode == 401 || statusCode == 403) {
-            // 认证失败
             accountService.setError(account.getId(), "认证失败: " + e.getMessage());
         }
+
+        // 检查错误透传规则
+        ErrorPassthroughRuleService.MatchResult matchResult = errorPassthroughRuleService.matchRule(
+                request.getPlatform(), statusCode, responseBody);
+
+        boolean shouldSkipMonitoring = matchResult != null && matchResult.skipMonitoring();
+
+        // 记录到 Ops 监控（除非规则指定跳过）
+        if (!shouldSkipMonitoring) {
+            recordErrorToOps(account, request, statusCode, e.getMessage(), responseBody);
+        }
+
+        // 如果匹配到透传规则，记录匹配的规则ID
+        if (matchResult != null && matchResult.rule() != null) {
+            log.info("错误匹配透传规则: ruleId={}, ruleName={}, statusCode={}",
+                    matchResult.rule().getId(), matchResult.rule().getName(), statusCode);
+        }
+    }
+
+    /**
+     * 记录错误到 Ops 监控
+     */
+    private void recordErrorToOps(Account account, ProxyRequest request, int statusCode, String errorMessage, String responseBody) {
+        try {
+            OpsErrorLog errorLog = new OpsErrorLog();
+            errorLog.setErrorPhase("upstream");
+            errorLog.setErrorCode(getErrorCodeFromStatus(statusCode));
+            errorLog.setStatusCode(statusCode);
+            errorLog.setPlatform(request.getPlatform());
+            errorLog.setModel(request.getModel());
+            errorLog.setAccountId(account.getId());
+            errorLog.setUserId(request.getUserId());
+            errorLog.setApiKeyId(request.getApiKeyId());
+            errorLog.setGroupId(request.getGroupId());
+            errorLog.setErrorMessage(errorMessage);
+            errorLog.setResponseBody(truncateForLog(responseBody));
+            errorLog.setRequestPath(request.getPath());
+            errorLog.setRequestMethod("POST");
+            errorLog.setClientIp(request.getClientIp());
+            errorLog.setCreatedAt(LocalDateTime.now());
+
+            opsService.recordError(errorLog);
+        } catch (Exception e) {
+            log.error("记录 Ops 错误日志失败: {}", e.getMessage());
+        }
+    }
+
+    /**
+     * 根据 HTTP 状态码获取错误代码
+     */
+    private String getErrorCodeFromStatus(int statusCode) {
+        return switch (statusCode) {
+            case 401 -> "AUTH_ERROR";
+            case 403 -> "FORBIDDEN";
+            case 429 -> "RATE_LIMIT";
+            case 500 -> "UPSTREAM_ERROR";
+            case 502, 503, 504 -> "GATEWAY_ERROR";
+            case 529 -> "API_OVERLOAD";
+            default -> statusCode >= 500 ? "UPSTREAM_ERROR" : "CLIENT_ERROR";
+        };
+    }
+
+    /**
+     * 截断日志内容
+     */
+    private String truncateForLog(String content) {
+        if (content == null) {
+            return null;
+        }
+        int maxLen = 4000;
+        if (content.length() <= maxLen) {
+            return content;
+        }
+        return content.substring(0, maxLen) + "...[truncated]";
     }
 
     /**
