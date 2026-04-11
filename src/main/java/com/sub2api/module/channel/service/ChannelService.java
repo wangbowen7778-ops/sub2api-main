@@ -3,6 +3,7 @@ package com.sub2api.module.channel.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sub2api.module.channel.mapper.ChannelGroupMapper;
 import com.sub2api.module.channel.mapper.ChannelMapper;
 import com.sub2api.module.channel.mapper.ChannelModelPricingMapper;
 import com.sub2api.module.channel.mapper.PricingIntervalMapper;
@@ -18,6 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.util.Collections;
+
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
@@ -32,6 +35,7 @@ import java.util.stream.Collectors;
 public class ChannelService {
 
     private final ChannelMapper channelMapper;
+    private final ChannelGroupMapper channelGroupMapper;
     private final ChannelModelPricingMapper pricingMapper;
     private final PricingIntervalMapper intervalMapper;
     private final ObjectMapper objectMapper;
@@ -327,12 +331,7 @@ public class ChannelService {
      * 设置渠道的分组关联
      */
     private void setGroupIds(Long channelId, List<Long> groupIds) {
-        // 删除旧的关联
-        // 注意：需要根据实际表结构实现
-        // 假设有 channel_groups 表存储关联
-
-        // 插入新的关联
-        // 需要根据实际表结构实现
+        channelGroupMapper.replaceGroupIds(channelId, groupIds);
     }
 
     /**

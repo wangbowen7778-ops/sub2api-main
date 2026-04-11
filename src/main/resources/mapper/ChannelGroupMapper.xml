@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sub2api.module.channel.mapper.ChannelGroupMapper">
+
+    <delete id="deleteByChannelId">
+        DELETE FROM channel_groups WHERE channel_id = #{channelId}
+    </delete>
+
+    <insert id="insertBatch">
+        INSERT INTO channel_groups (channel_id, group_id)
+        SELECT #{channelId}, unnest(#{groupIds})
+    </insert>
+
+</mapper>

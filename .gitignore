@@ -22,6 +22,7 @@ buildNumber.properties
 *.swp
 *.swo
 *~
+.claude
 
 # Logs
 *.log
