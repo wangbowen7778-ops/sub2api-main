@@ -8,12 +8,14 @@ import com.sub2api.module.account.model.enums.AccountStatus;
 import com.sub2api.module.common.model.enums.ErrorCode;
 import com.sub2api.module.common.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +25,7 @@ import java.util.Map;
  *
  * @author Alibaba Java Code Guidelines
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AccountHealthService extends ServiceImpl<AccountMapper, Account> {
@@ -30,6 +33,7 @@ public class AccountHealthService extends ServiceImpl<AccountMapper, Account> {
     private static final Logger log = LoggerFactory.getLogger(AccountHealthService.class);
 
     private final AccountMapper accountMapper;
+    private final WebClient webClient;
 
     /**
      * Scheduled health check
@@ -98,21 +102,94 @@ public class AccountHealthService extends ServiceImpl<AccountMapper, Account> {
                 return false;
             }
 
+            // Get API key from credentials
+            Object apiKeyObj = credentials.get("api_key");
+            if (apiKeyObj == null) {
+                return false;
+            }
+            String apiKey = apiKeyObj.toString();
+
             // Health check based on different platforms
-            // Simple verification: check if necessary credential fields exist
             switch (platform != null ? platform.toLowerCase() : "") {
+                case "anthropic":
                 case "claude":
+                    return testAnthropicConnection(apiKey);
                 case "openai":
+                    return testOpenAIConnection(apiKey);
                 case "gemini":
-                case "antigravity":
-                    // Check for api_key
-                    return credentials.containsKey("api_key");
+                    return testGeminiConnection(apiKey);
                 default:
                     // Default verification
                     return credentials.containsKey("api_key") || credentials.containsKey("access_token");
             }
         } catch (Exception e) {
             log.error("Connection test exception: accountId={}, error={}", account.getId(), e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Test Anthropic API connection
+     */
+    private boolean testAnthropicConnection(String apiKey) {
+        try {
+            String response = webClient.post()
+                    .uri("https://api.anthropic.com/v1/messages")
+                    .header("x-api-key", apiKey)
+                    .header("anthropic-version", "2023-06-01")
+                    .header("content-type", "application/json")
+                    .bodyValue("{\"model\":\"claude-3-haiku-20240307\",\"max_tokens\":1,\"messages\":[{\"role\":\"user\",\"content\":\"hi\"}]}")
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .timeout(Duration.ofSeconds(10))
+                    .block();
+            return response != null;
+        } catch (WebClientResponseException e) {
+            // 401 means invalid key, but connection works
+            return e.getStatusCode().value() == 401;
+        } catch (Exception e) {
+            log.warn("Anthropic health check failed: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Test OpenAI API connection
+     */
+    private boolean testOpenAIConnection(String apiKey) {
+        try {
+            String response = webClient.get()
+                    .uri("https://api.openai.com/v1/models")
+                    .header("authorization", "Bearer " + apiKey)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .timeout(Duration.ofSeconds(10))
+                    .block();
+            return response != null;
+        } catch (WebClientResponseException e) {
+            return e.getStatusCode().value() == 401;
+        } catch (Exception e) {
+            log.warn("OpenAI health check failed: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Test Gemini API connection
+     */
+    private boolean testGeminiConnection(String apiKey) {
+        try {
+            String response = webClient.get()
+                    .uri("https://generativelanguage.googleapis.com/v1/models?key=" + apiKey)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .timeout(Duration.ofSeconds(10))
+                    .block();
+            return response != null;
+        } catch (WebClientResponseException e) {
+            return e.getStatusCode().value() == 401 || e.getStatusCode().value() == 400;
+        } catch (Exception e) {
+            log.warn("Gemini health check failed: {}", e.getMessage());
             return false;
         }
     }
