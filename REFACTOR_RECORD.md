@@ -6,9 +6,24 @@
 - **重构项目**: `sub2api-main/backend-java` (Java)
 
 ## 当前状态
-- **覆盖率**: ~35-45%
-- **状态**: 早期阶段，部分核心功能已实现但仍不完整
-- **最近更新**: 2026-04-10 - Gateway Controller 增强 (models/usage 端点)
+- **覆盖率**: ~40-50%
+- **状态**: 持续重构中，核心功能逐步完善
+- **最近更新**: 2026-04-12 - 并发控制、Ops监控、延迟追踪、用量预取
+
+**已完成:**
+- [x] Channel Management - setGroupIds 实现
+- [x] ProxyService - 并发控制 (ConcurrencyService)
+- [x] Ops Monitoring - 错误透传规则集成
+- [x] Dashboard - 分组统计、用户消费排名
+- [x] Gateway - 延迟追踪 (ProxyLatencyService)
+- [x] Gateway - 用量预取 (UsagePrefetchService)
+
+**待完成:**
+- [ ] 完整的粘性会话管理
+- [ ] 延迟追踪集成到账号选择
+- [ ] 账号健康检查增强
+- [ ] OAuth token刷新增强
+- [ ] 配额预取集成
 
 ---
 
@@ -388,9 +403,78 @@
 - [x] 缓存管理 - 本地缓存 + Redis 缓存
 
 **待完成**:
-- [ ] 与 ProxyService 集成，在请求失败时调用 matchRule
-- [ ] 与 OpsService 集成，判断是否跳过监控记录
+- [x] 与 ProxyService 集成，在请求失败时调用 matchRule - 2026-04-12 已完成
+- [x] 与 OpsService 集成，判断是否跳过监控记录 - 2026-04-12 已完成
 
 ---
 
 ## 后续更新...
+
+### 2026-04-12 - 核心服务完善
+
+**目标**: 完善并发控制、监控集成、延迟追踪、用量预取
+
+**创建的文件 (5个)**:
+
+1. `backend-java/src/main/java/com/sub2api/module/gateway/service/ConcurrencyService.java` (新建)
+   - 并发控制服务
+   - 使用 Redis 有序集合管理账号/用户并发槽位
+   - 支持账号级和用户级并发限制
+
+2. `backend-java/src/main/java/com/sub2api/module/gateway/service/ProxyLatencyService.java` (新建)
+   - 代理延迟追踪服务
+   - 追踪代理响应延迟，缓存结果用于负载均衡决策
+   - 支持最优代理选择和健康检查
+
+3. `backend-java/src/main/java/com/sub2api/module/gateway/service/UsagePrefetchService.java` (新建)
+   - 用量预取服务
+   - 批量预取账号窗口用量，避免 N+1 查询问题
+   - Redis 缓存 + 数据库批量查询
+
+4. `backend-java/src/main/java/com/sub2api/module/channel/mapper/ChannelGroupMapper.java` (新建)
+   - 渠道分组关联 Mapper
+   - 实现 channel_groups 表的删除/插入操作
+
+5. `backend-java/src/main/resources/mapper/ChannelGroupMapper.xml` (新建)
+   - ChannelGroupMapper XML 配置
+
+**修改的文件 (5个)**:
+
+1. `backend-java/src/main/java/com/sub2api/module/channel/service/ChannelService.java`
+   - 注入 ChannelGroupMapper
+   - 实现 setGroupIds 方法
+
+2. `backend-java/src/main/java/com/sub2api/module/gateway/service/ProxyService.java`
+   - 集成 ConcurrencyService 并发控制
+   - 集成 ErrorPassthroughRuleService 和 OpsService 错误处理
+   - 新增 recordErrorToOps 方法
+
+3. `backend-java/src/main/java/com/sub2api/module/account/service/AccountService.java`
+   - 新增 updateSessionWindow, clearSessionWindow, clearTempUnschedulable 方法
+
+4. `backend-java/src/main/java/com/sub2api/module/dashboard/mapper/DashboardMapper.java`
+   - 新增分组统计、用户趋势、消费排名查询
+
+5. `backend-java/src/main/java/com/sub2api/module/dashboard/service/DashboardService.java`
+   - 实现 getGroupStats, getGroupUsageSummary, getUserUsageTrend, getUserSpendingRanking
+
+**实现的功能**:
+- [x] 并发控制 - ConcurrencyService 管理槽位
+- [x] 错误透传集成 - ProxyService 集成错误处理
+- [x] Ops 监控集成 - 记录错误日志到 OpsService
+- [x] 延迟追踪 - ProxyLatencyService 追踪代理延迟
+- [x] 用量预取 - UsagePrefetchService 批量预取窗口用量
+- [x] Dashboard 统计 - 分组统计、用户排名
+
+---
+
+## Git 提交记录
+
+| 日期 | 提交 | 说明 |
+|------|------|------|
+| 2026-04-12 | d4ebf62 | Initial commit |
+| 2026-04-12 | 2197b3c | fix(channel): 实现 ChannelService.setGroupIds 方法 |
+| 2026-04-12 | 7252616 | feat(gateway): 实现并发控制服务 ConcurrencyService |
+| 2026-04-12 | d6f1452 | feat(gateway): 集成 Ops 监控和错误透传规则 |
+| 2026-04-12 | c2bd3f3 | feat(dashboard): 实现分组统计和用户消费排名 |
+| 2026-04-12 | 6c78515 | feat(gateway): 新增延迟追踪和用量预取服务 |
