@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sub2api.module.account.mapper.AccountMapper">
+
+    <resultMap id="BaseResultMap" type="com.sub2api.module.account.model.entity.Account">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="notes" property="notes"/>
+        <result column="platform" property="platform"/>
+        <result column="type" property="type"/>
+        <result column="credentials" property="credentials"/>
+        <result column="extra" property="extra"/>
+        <result column="proxy_id" property="proxyId"/>
+        <result column="concurrency" property="concurrency"/>
+        <result column="load_factor" property="loadFactor"/>
+        <result column="priority" property="priority"/>
+        <result column="rate_multiplier" property="rateMultiplier"/>
+        <result column="status" property="status"/>
+        <result column="error_message" property="errorMessage"/>
+        <result column="last_used_at" property="lastUsedAt"/>
+        <result column="expires_at" property="expiresAt"/>
+        <result column="auto_pause_on_expired" property="autoPauseOnExpired"/>
+        <result column="schedulable" property="schedulable"/>
+        <result column="rate_limited_at" property="rateLimitedAt"/>
+        <result column="rate_limit_reset_at" property="rateLimitResetAt"/>
+        <result column="overload_until" property="overloadUntil"/>
+        <result column="temp_unschedulable_until" property="tempUnschedulableUntil"/>
+        <result column="temp_unschedulable_reason" property="tempUnschedulableReason"/>
+        <result column="session_window_start" property="sessionWindowStart"/>
+        <result column="session_window_end" property="sessionWindowEnd"/>
+        <result column="session_window_status" property="sessionWindowStatus"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+        <result column="deleted_at" property="deletedAt"/>
+    </resultMap>
+
+    <select id="selectSchedulableByPlatform" resultMap="BaseResultMap">
+        SELECT * FROM accounts
+        WHERE platform = #{platform}
+        AND status = 'active'
+        AND schedulable = true
+        AND deleted_at IS NULL
+        AND (rate_limit_reset_at IS NULL OR rate_limit_reset_at &lt; NOW())
+        AND (overload_until IS NULL OR overload_until &lt; NOW())
+        AND (temp_unschedulable_until IS NULL OR temp_unschedulable_until &lt; NOW())
+        AND (expires_at IS NULL OR expires_at > NOW())
+        ORDER BY priority ASC
+    </select>
+
+    <select id="selectActiveByGroup" resultMap="BaseResultMap">
+        SELECT a.* FROM accounts a
+        INNER JOIN account_groups ag ON a.id = ag.account_id
+        WHERE ag.group_id = #{groupId}
+        AND a.status = 'active'
+        AND a.schedulable = true
+        AND a.deleted_at IS NULL
+        ORDER BY ag.priority ASC
+    </select>
+
+    <update id="updateLastUsed">
+        UPDATE accounts
+        SET last_used_at = NOW(), updated_at = NOW()
+        WHERE id = #{accountId}
+    </update>
+
+    <update id="setRateLimited">
+        UPDATE accounts
+        SET rate_limited_at = NOW(),
+            rate_limit_reset_at = #{resetAt},
+            updated_at = NOW()
+        WHERE id = #{accountId}
+    </update>
+
+    <update id="clearRateLimited">
+        UPDATE accounts
+        SET rate_limited_at = NULL,
+            rate_limit_reset_at = NULL,
+            updated_at = NOW()
+        WHERE id = #{accountId}
+    </update>
+
+</mapper>

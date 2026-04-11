@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sub2api.module.billing.mapper.UsageLogMapper">
+
+    <resultMap id="BaseResultMap" type="com.sub2api.module.billing.model.entity.UsageLog">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="api_key_id" property="apiKeyId"/>
+        <result column="account_id" property="accountId"/>
+        <result column="request_id" property="requestId"/>
+        <result column="model" property="model"/>
+        <result column="requested_model" property="requestedModel"/>
+        <result column="upstream_model" property="upstreamModel"/>
+        <result column="channel_id" property="channelId"/>
+        <result column="model_mapping_chain" property="modelMappingChain"/>
+        <result column="billing_tier" property="billingTier"/>
+        <result column="billing_mode" property="billingMode"/>
+        <result column="group_id" property="groupId"/>
+        <result column="subscription_id" property="subscriptionId"/>
+        <result column="input_tokens" property="inputTokens"/>
+        <result column="output_tokens" property="outputTokens"/>
+        <result column="cache_creation_tokens" property="cacheCreationTokens"/>
+        <result column="cache_read_tokens" property="cacheReadTokens"/>
+        <result column="cache_creation_5m_tokens" property="cacheCreation5mTokens"/>
+        <result column="cache_creation_1h_tokens" property="cacheCreation1hTokens"/>
+        <result column="input_cost" property="inputCost"/>
+        <result column="output_cost" property="outputCost"/>
+        <result column="cache_creation_cost" property="cacheCreationCost"/>
+        <result column="cache_read_cost" property="cacheReadCost"/>
+        <result column="total_cost" property="totalCost"/>
+        <result column="actual_cost" property="actualCost"/>
+        <result column="rate_multiplier" property="rateMultiplier"/>
+        <result column="account_rate_multiplier" property="accountRateMultiplier"/>
+        <result column="billing_type" property="billingType"/>
+        <result column="stream" property="stream"/>
+        <result column="duration_ms" property="durationMs"/>
+        <result column="first_token_ms" property="firstTokenMs"/>
+        <result column="user_agent" property="userAgent"/>
+        <result column="ip_address" property="ipAddress"/>
+        <result column="image_count" property="imageCount"/>
+        <result column="image_size" property="imageSize"/>
+        <result column="cache_ttl_overridden" property="cacheTtlOverridden"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <select id="selectByUserId" resultMap="BaseResultMap">
+        SELECT * FROM usage_logs
+        WHERE user_id = #{userId}
+        <if test="startTime != null">
+            AND created_at &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            AND created_at &lt;= #{endTime}
+        </if>
+        ORDER BY created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="selectByApiKeyId" resultMap="BaseResultMap">
+        SELECT * FROM usage_logs
+        WHERE api_key_id = #{apiKeyId}
+        <if test="startTime != null">
+            AND created_at &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            AND created_at &lt;= #{endTime}
+        </if>
+        ORDER BY created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="sumCostByUserId" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(total_cost), 0) FROM usage_logs
+        WHERE user_id = #{userId}
+        <if test="startTime != null">
+            AND created_at &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            AND created_at &lt;= #{endTime}
+        </if>
+    </select>
+
+</mapper>

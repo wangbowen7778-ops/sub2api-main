@@ -1,0 +1,151 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+        "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+        "https://checkstyle.org/dtds/configuration_1_3.dtd">
+
+<!--
+    Alibaba Java Coding Guidelines Checkstyle configuration
+    Based on Alibaba Java Code Guidelines
+-->
+<module name="Checker">
+    <property name="charset" value="UTF-8"/>
+    <property name="severity" value="error"/>
+    <property name="fileExtensions" value="java"/>
+
+    <!-- 文件长度限制 -->
+    <property name="max" value="2000"/>
+
+    <!-- 禁止package-info.java使用星号导入 -->
+    <module name="RegexpSinglelineJava">
+        <property name="format" value="import \*"/>
+        <property name="message" value="禁止使用星号导入"/>
+    </module>
+
+    <!-- 命名规范 -->
+    <module name="TreeWalker">
+        <!-- 类名规范 -->
+        <module name="TypeName">
+            <property name="format" value="^[A-Z][a-zA-Z0-9]*$"/>
+            <property name="message" value="类名必须使用 PascalCase"/>
+        </module>
+
+        <!-- 方法名规范 -->
+        <module name="MethodName">
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+            <property name="message" value="方法名必须使用 camelCase"/>
+        </module>
+
+        <!-- 变量名规范 -->
+        <module name="MemberName">
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+            <property name="message" value="成员变量必须使用 camelCase"/>
+        </module>
+
+        <module name="ParameterName">
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+            <property name="message" value="参数名必须使用 camelCase"/>
+        </module>
+
+        <module name="LocalVariableName">
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+            <property name="message" value="局部变量名必须使用 camelCase"/>
+        </module>
+
+        <module name="ConstantName">
+            <property name="format" value="^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$"/>
+            <property name="message" value="常量名必须使用 UPPER_SNAKE_CASE"/>
+        </module>
+
+        <!-- 禁止魔法值 -->
+        <module name="MagicNumber">
+            <property name="ignoreNumbers" value="-1,0,1,2,3,4,5,6,7,8,9,10,100,1000,3600,86400"/>
+            <property name="constantCommentPattern" value="^(\*|[A-Z][A-Z0-9_]*)$"/>
+            <property name="tokens" value="NUM_DOUBLE, NUM_INT, NUM_LONG"/>
+            <property name="message" value="禁止使用魔法数，使用常量替代"/>
+        </module>
+
+        <!-- 左大括号位置 -->
+        <module name="LeftCurly">
+            <property name="option" value="nl"/>
+            <property name="tokens" value="CLASS_DEF, INTERFACE_DEF, ENUM_DEF, ANNOTATION_DEF, ANNOTATION_MEMBER_DEF, METHOD_DEF, CTOR_DEF, VARIABLE_DEF"/>
+        </module>
+
+        <module name="RightCurly">
+            <property name="option" value="same"/>
+            <property name="tokens" value="CLASS_DEF, INTERFACE_DEF, ENUM_DEF, ANNOTATION_DEF, ANNOTATION_MEMBER_DEF, METHOD_DEF, CTOR_DEF, VARIABLE_DEF, LITERAL_TRY, LITERAL_CATCH, LITERAL_IF, LITERAL_ELSE, LITERAL_FOR, LITERAL_WHILE, LITERAL_DO"/>
+        </module>
+
+        <!-- 缩进 -->
+        <module name="Indentation">
+            <property name="basicOffset" value="4"/>
+            <property name="braceAdjustment" value="0"/>
+            <property name="caseIndent" value="4"/>
+        </module>
+
+        <!-- 禁止行过长 -->
+        <module name="LineLength">
+            <property name="max" value="200"/>
+            <property name="ignorePattern" value="^package.*|^import.*|href.*|//.*|^\** *\|[^:*&quot;<]*&quot;.*$"/>
+        </module>
+
+        <!-- 禁止使用 Tab -->
+        <module name="FileTabCharacter">
+            <property name="eachLine" value="true"/>
+        </module>
+
+        <!-- 空行检查 -->
+        <module name="EmptyLineSeparator">
+            <property name="allowNoEmptyLineBetweenFields" value="true"/>
+            <property name="allowMultipleEmptyLines" value="false"/>
+            <property name="allowMultipleEmptyLinesInsideMethodComments" value="false"/>
+        </module>
+
+        <!-- 注释检查 -->
+        <module name="CommentedOutCode"/>
+
+        <!-- Javadoc 检查 -->
+        <module name="JavadocMethod">
+            <property name="scope" value="public"/>
+            <property name="allowMissingParamTag" value="true"/>
+            <property name="allowMissingReturnTag" value="true"/>
+            <property name="allowMissingThrowsTag" value="true"/>
+        </module>
+
+        <module name="JavadocType">
+            <property name="scope" value="public"/>
+        </module>
+
+        <module name="JavadocVariable">
+            <property name="scope" value="public"/>
+        </module>
+
+        <module name="JavadocStyle">
+            <property name="checkFirstSentence" value="true"/>
+        </module>
+
+        <!-- 关键字检查 -->
+        <module name="NeedBraces">
+            <property name="tokens" value="LITERAL_DO, LITERAL_ELSE, LITERAL_FOR, LITERAL_IF, LITERAL_WHILE"/>
+        </module>
+
+        <!-- 禁止简化条件表达式 -->
+        <module name="SimplifyBooleanExpression"/>
+        <module name="SimplifyBooleanReturn"/>
+
+        <!-- Modifier 检查 -->
+        <module name="RedundantModifier"/>
+
+        <!-- Modifier 检查顺序 -->
+        <module name="ModifierOrder"/>
+
+        <!-- 静态导入检查 -->
+        <module name="AvoidStarImport">
+            <property name="excludes" value="java.io,java.net,java.lang.Math"/>
+            <property name="allowClassImports" value="false"/>
+            <property name="allowStaticMemberImports" value="true"/>
+        </module>
+
+        <!-- final 字段检查 -->
+        <module name="FinalParameters"/>
+    </module>
+</module>

@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mvn compile:*)",
+      "Bash(mvn clean:*)",
+      "Bash(javac --version)",
+      "Bash(mvn --version)",
+      "Bash(echo \"Exit code: $?\")",
+      "Bash(mvn:*)",
+      "Bash(tee compile.log)",
+      "Bash(/d/app/maven/apache-maven-3.8.4/bin/mvn:*)",
+      "Bash(cmd.exe:*)",
+      "Bash(powershell.exe:*)"
+    ]
+  }
+}

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sub2api.module.apikey.mapper.ApiKeyMapper">
+
+    <resultMap id="BaseResultMap" type="com.sub2api.module.apikey.model.entity.ApiKey">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="key" property="key"/>
+        <result column="name" property="name"/>
+        <result column="group_id" property="groupId"/>
+        <result column="status" property="status"/>
+        <result column="last_used_at" property="lastUsedAt"/>
+        <result column="ip_whitelist" property="ipWhitelist"/>
+        <result column="ip_blacklist" property="ipBlacklist"/>
+        <result column="quota" property="quota"/>
+        <result column="quota_used" property="quotaUsed"/>
+        <result column="expires_at" property="expiresAt"/>
+        <result column="rate_limit_5h" property="rateLimit5h"/>
+        <result column="rate_limit_1d" property="rateLimit1d"/>
+        <result column="rate_limit_7d" property="rateLimit7d"/>
+        <result column="usage_5h" property="usage5h"/>
+        <result column="usage_1d" property="usage1d"/>
+        <result column="usage_7d" property="usage7d"/>
+        <result column="window_5h_start" property="window5hStart"/>
+        <result column="window_1d_start" property="window1dStart"/>
+        <result column="window_7d_start" property="window7dStart"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+        <result column="deleted_at" property="deletedAt"/>
+    </resultMap>
+
+    <select id="selectByKey" resultMap="BaseResultMap">
+        SELECT * FROM api_keys
+        WHERE `key` = #{key}
+        AND deleted_at IS NULL
+    </select>
+
+    <select id="selectByUserId" resultMap="BaseResultMap">
+        SELECT * FROM api_keys
+        WHERE user_id = #{userId}
+        AND deleted_at IS NULL
+        ORDER BY created_at DESC
+    </select>
+
+    <update id="updateLastUsed">
+        UPDATE api_keys
+        SET last_used_at = NOW(), updated_at = NOW()
+        WHERE id = #{keyId}
+    </update>
+
+    <update id="addQuotaUsed">
+        UPDATE api_keys
+        SET quota_used = quota_used + #{amount},
+            updated_at = NOW()
+        WHERE id = #{keyId}
+    </update>
+
+</mapper>

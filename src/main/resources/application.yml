@@ -1,0 +1,199 @@
+server:
+  port: ${APP_PORT:8080}
+  servlet:
+    context-path: /
+  tomcat:
+    threads:
+      max: 200
+      min-spare: 10
+    connection-timeout: 60000
+
+spring:
+  application:
+    name: sub2api-backend
+
+  # 数据库配置
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:sub2api}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 50
+      idle-timeout: 300000
+      max-lifetime: 600000
+      connection-timeout: 30000
+      pool-name: Sub2API-HikariCP
+
+  # Redis 配置
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: ${REDIS_DB:0}
+      timeout: 10000
+      lettuce:
+        pool:
+          max-active: 50
+          max-idle: 20
+          min-idle: 5
+          max-wait: 10000
+
+  # Jackson 配置
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+
+  # Security 配置
+  security:
+    oauth2:
+      client:
+        registration:
+          anthropic:
+            client-id: ${ANTHROPIC_CLIENT_ID:}
+            client-secret: ${ANTHROPIC_CLIENT_SECRET:}
+            scope: openid,profile,email
+            authorization-grant-type: authorization_code
+            redirect-uri: ${OAUTH_CALLBACK_BASE:{baseUrl}/auth/oauth/callback/{registrationId}}
+          openai:
+            client-id: ${OPENAI_CLIENT_ID:}
+            client-secret: ${OPENAI_CLIENT_SECRET:}
+            scope: openid,profile,email
+            authorization-grant-type: authorization_code
+            redirect-uri: ${OAUTH_CALLBACK_BASE:{baseUrl}/auth/oauth/callback/{registrationId}}
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:}
+            client-secret: ${GOOGLE_CLIENT_SECRET:}
+            scope: openid,profile,email
+            authorization-grant-type: authorization_code
+            redirect-uri: ${OAUTH_CALLBACK_BASE:{baseUrl}/auth/oauth/callback/{registrationId}}
+          linuxdo:
+            client-id: ${LINUXDO_CLIENT_ID:}
+            client-secret: ${LINUXDO_CLIENT_SECRET:}
+            scope: openid,profile,email
+            authorization-grant-type: authorization_code
+            redirect-uri: ${OAUTH_CALLBACK_BASE:{baseUrl}/auth/oauth/callback/{registrationId}}
+        provider:
+          anthropic:
+            authorization-uri: https://auth.anthropic.com/oauth/authorize
+            token-uri: https://auth.anthropic.com/oauth/token
+            user-info-uri: https://auth.anthropic.com/oauth/userinfo
+            user-name-attribute: sub
+          openai:
+            authorization-uri: https://open.ai/oauth/authorize
+            token-uri: https://open.ai/oauth/token
+            user-info-uri: https://open.ai/oauth/userinfo
+            user-name-attribute: sub
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
+            token-uri: https://oauth2.googleapis.com/token
+            user-info-uri: https://openidconnect.googleapis.com/userinfo
+            user-name-attribute: sub
+          linuxdo:
+            authorization-uri: https://connect.linux.do/oauth/authorize
+            token-uri: https://connect.linux.do/oauth/token
+            user-info-uri: https://connect.linux.do/oauth/userinfo
+            user-name-attribute: sub
+
+# MyBatis-Plus 配置
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/**/*.xml
+  type-aliases-package: com.sub2api.module.**.model.entity
+  global-config:
+    enable-sql-runner: true
+    db-config:
+      id-type: assign_id
+      table-prefix: ""  # 不添加前缀，保持原有表名 (users, accounts, api_keys, etc.)
+      logic-delete-field: deletedAt
+      logic-delete-value: "IS NOT NULL"
+      logic-not-delete-value: "IS NULL"
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: false
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+    call-setters-on-nulls: true
+    jdbc-type-for-null: 'null'
+
+# JWT 配置
+jwt:
+  secret: ${JWT_SECRET:change-me-in-production-must-be-at-least-256-bits-long}
+  expiration: 86400000  # 24小时 (毫秒)
+  refresh-expiration: 604800000  # 7天 (毫秒)
+
+# 应用配置
+sub2api:
+  app:
+    host: 0.0.0.0
+    port: 8080
+    debug: false
+
+  # 网关配置
+  gateway:
+    default-timeout: 120
+    max-retries: 3
+    stream-timeout: 300
+
+  # OAuth 配置
+  oauth:
+    callback-base: ${OAUTH_CALLBACK_BASE:http://localhost:8080}
+
+  # TLS 指纹配置
+  tls:
+    enabled: true
+    default-profile: default
+
+# Springdoc OpenAPI 配置
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    com.sub2api: DEBUG
+    org.springframework.security: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+---
+# 开发环境配置
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:postgresql://localhost:5432/sub2api_dev
+  data:
+    redis:
+      host: localhost
+
+logging:
+  level:
+    com.sub2api: DEBUG
+    org.springframework.web: DEBUG
+
+---
+# 生产环境配置
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    hikari:
+      maximum-pool-size: 100
+
+logging:
+  level:
+    com.sub2api: INFO
+  file:
+    name: /var/log/sub2api/application.log

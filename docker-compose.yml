@@ -1,0 +1,96 @@
+version: '3.8'
+
+services:
+  # 后端服务
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sub2api-backend
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-prod}
+      - DB_HOST=${DB_HOST:-postgres}
+      - DB_PORT=${DB_PORT:-5432}
+      - DB_NAME=${DB_NAME:-sub2api}
+      - DB_USERNAME=${DB_USERNAME:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
+      - REDIS_HOST=${REDIS_HOST:-redis}
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+      - REDIS_DB=${REDIS_DB:-0}
+      - JWT_SECRET=${JWT_SECRET:-change-me-in-production-must-be-at-least-256-bits}
+      - ANTHROPIC_CLIENT_ID=${ANTHROPIC_CLIENT_ID:-}
+      - ANTHROPIC_CLIENT_SECRET=${ANTHROPIC_CLIENT_SECRET:-}
+      - OPENAI_CLIENT_ID=${OPENAI_CLIENT_ID:-}
+      - OPENAI_CLIENT_SECRET=${OPENAI_CLIENT_SECRET:-}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
+      - LINUXDO_CLIENT_ID=${LINUXDO_CLIENT_ID:-}
+      - LINUXDO_CLIENT_SECRET=${LINUXDO_CLIENT_SECRET:-}
+      - OAUTH_CALLBACK_BASE=${OAUTH_CALLBACK_BASE:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - sub2api-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    volumes:
+      - /var/log/sub2api:/var/log/sub2api
+
+  # PostgreSQL 数据库 (可选，如需自带数据库可启用)
+  postgres:
+    image: postgres:15-alpine
+    container_name: sub2api-postgres
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    environment:
+      - POSTGRES_DB=${DB_NAME:-sub2api}
+      - POSTGRES_USER=${DB_USERNAME:-postgres}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
+      - POSTGRES_INITDB_ARGS=-E UTF8
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - sub2api-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-postgres} -d ${DB_NAME:-sub2api}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis 缓存 (可选，如需自带缓存可启用)
+  redis:
+    image: redis:7-alpine
+    container_name: sub2api-redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    command: redis-server --requirepass ${REDIS_PASSWORD:-} --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - sub2api-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  sub2api-network:
+    driver: bridge

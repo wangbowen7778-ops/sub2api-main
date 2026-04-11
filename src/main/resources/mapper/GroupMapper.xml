@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sub2api.module.account.mapper.GroupMapper">
+
+    <resultMap id="BaseResultMap" type="com.sub2api.module.account.model.entity.Group">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="description" property="description"/>
+        <result column="rate_multiplier" property="rateMultiplier"/>
+        <result column="is_exclusive" property="isExclusive"/>
+        <result column="status" property="status"/>
+        <result column="platform" property="platform"/>
+        <result column="subscription_type" property="subscriptionType"/>
+        <result column="daily_limit_usd" property="dailyLimitUsd"/>
+        <result column="weekly_limit_usd" property="weeklyLimitUsd"/>
+        <result column="monthly_limit_usd" property="monthlyLimitUsd"/>
+        <result column="default_validity_days" property="defaultValidityDays"/>
+        <result column="image_price_1k" property="imagePrice1k"/>
+        <result column="image_price_2k" property="imagePrice2k"/>
+        <result column="image_price_4k" property="imagePrice4k"/>
+        <result column="claude_code_only" property="claudeCodeOnly"/>
+        <result column="fallback_group_id" property="fallbackGroupId"/>
+        <result column="fallback_group_id_on_invalid_request" property="fallbackGroupIdOnInvalidRequest"/>
+        <result column="model_routing" property="modelRouting"/>
+        <result column="model_routing_enabled" property="modelRoutingEnabled"/>
+        <result column="mcp_xml_inject" property="mcpXmlInject"/>
+        <result column="supported_model_scopes" property="supportedModelScopes"/>
+        <result column="sort_order" property="sortOrder"/>
+        <result column="allow_messages_dispatch" property="allowMessagesDispatch"/>
+        <result column="require_oauth_only" property="requireOauthOnly"/>
+        <result column="require_privacy_set" property="requirePrivacySet"/>
+        <result column="default_mapped_model" property="defaultMappedModel"/>
+        <result column="messages_dispatch_model_config" property="messagesDispatchModelConfig"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+        <result column="deleted_at" property="deletedAt"/>
+    </resultMap>
+
+    <select id="selectActiveList" resultMap="BaseResultMap">
+        SELECT * FROM groups
+        WHERE status = 'active'
+        AND deleted_at IS NULL
+        ORDER BY sort_order ASC
+    </select>
+
+    <select id="selectByPlatform" resultMap="BaseResultMap">
+        SELECT * FROM groups
+        WHERE platform = #{platform}
+        AND status = 'active'
+        AND deleted_at IS NULL
+        ORDER BY sort_order ASC
+    </select>
+
+</mapper>
