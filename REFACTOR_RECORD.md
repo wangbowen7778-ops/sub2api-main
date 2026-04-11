@@ -19,8 +19,8 @@
 - [x] Gateway - 用量预取 (UsagePrefetchService)
 
 **待完成:**
-- [ ] 完整的粘性会话管理
-- [ ] 延迟追踪集成到账号选择
+- [x] 完整的粘性会话管理 - 2026-04-12 已实现模型限流检查
+- [x] 延迟追踪集成到账号选择 - 2026-04-12 已实现
 - [ ] 账号健康检查增强
 - [ ] OAuth token刷新增强
 - [ ] 配额预取集成
@@ -465,8 +465,32 @@
 - [x] 延迟追踪 - ProxyLatencyService 追踪代理延迟
 - [x] 用量预取 - UsagePrefetchService 批量预取窗口用量
 - [x] Dashboard 统计 - 分组统计、用户排名
+- [x] 粘性会话模型限流检查 - shouldClearStickySession 检查模型限流
 
 ---
+
+### 2026-04-12 - 粘性会话模型限流检查实现
+
+**目标**: 实现 Go 版本 `shouldClearStickySession` 函数的核心功能，检查模型限流
+
+**修改的文件 (2个)**:
+
+1. `AccountSelector.java`
+   - 新增 `shouldClearStickySession(Account account, String requestedModel)` - 判断粘性会话是否需要清理
+   - 新增 `getModelRateLimitRemainingTime(Account account, String requestedModel)` - 获取模型限流剩余时间
+   - 新增 `getMappedModel(Account account, String requestedModel)` - 获取账号映射后的模型名
+   - 修改 `selectAccount/selectAccountByPlatform` - 添加 `requestedModel` 参数
+   - 新增 `deleteStickySession/deleteStickySessionByPlatform` - 删除粘性会话
+
+2. `ProxyService.java`
+   - 修改 `selectAccount` - 传递 model 到 AccountSelector
+   - 修改 `selectAccountWithFailover` - 传递 model 到 AccountSelector
+
+**实现的功能**:
+- [x] 粘性会话清理判断 - 检查账号状态（error/disabled）、临时不可调度、模型限流
+- [x] 模型限流时间解析 - 从 Extra 字段的 `model_rate_limits` 获取限流重置时间
+- [x] 模型映射解析 - 从 credentials 的 `model_mapping` 获取映射后的模型名
+- [x] 集成到账号选择 - 在粘性会话检查时考虑模型限流
 
 ## Git 提交记录
 
@@ -478,3 +502,4 @@
 | 2026-04-12 | d6f1452 | feat(gateway): 集成 Ops 监控和错误透传规则 |
 | 2026-04-12 | c2bd3f3 | feat(dashboard): 实现分组统计和用户消费排名 |
 | 2026-04-12 | 6c78515 | feat(gateway): 新增延迟追踪和用量预取服务 |
+| 2026-04-12 | 3dfd8f9 | feat(account): 实现粘性会话模型限流检查 |
