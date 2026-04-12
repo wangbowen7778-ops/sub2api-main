@@ -1,8 +1,10 @@
 package com.sub2api.module.common.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sub2api.module.admin.service.SettingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import jakarta.mail.Authenticator;
@@ -15,6 +17,7 @@ import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import java.security.SecureRandom;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Properties;
@@ -32,6 +35,8 @@ import java.util.concurrent.TimeUnit;
 public class EmailService {
 
     private final SettingService settingService;
+    private final StringRedisTemplate redisTemplate;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     private static final String SETTING_SMTP_HOST = "smtp_host";
     private static final String SETTING_SMTP_PORT = "smtp_port";
@@ -384,63 +389,108 @@ public class EmailService {
      * 从缓存获取验证码
      */
     protected VerificationCodeData getVerificationCodeFromCache(String key) {
-        // TODO: 实现 Redis 缓存
-        // 目前返回 null，后续集成 Redis
-        return null;
+        try {
+            String json = redisTemplate.opsForValue().get(key);
+            if (json == null || json.isBlank()) {
+                return null;
+            }
+            return objectMapper.readValue(json, VerificationCodeData.class);
+        } catch (Exception e) {
+            log.warn("Failed to get verification code from cache: key={}, error={}", key, e.getMessage());
+            return null;
+        }
     }
 
     /**
      * 保存验证码到缓存
      */
     protected void saveVerificationCodeToCache(String key, VerificationCodeData data, long ttlMinutes) {
-        // TODO: 实现 Redis 缓存
-        // 目前仅记录日志
-        log.debug("Saving verification code to cache: key={}, ttl={}min", key, ttlMinutes);
+        try {
+            String json = objectMapper.writeValueAsString(data);
+            redisTemplate.opsForValue().set(key, json, Duration.ofMinutes(ttlMinutes));
+            log.debug("Saved verification code to cache: key={}, ttl={}min", key, ttlMinutes);
+        } catch (Exception e) {
+            log.warn("Failed to save verification code to cache: key={}, error={}", key, e.getMessage());
+        }
     }
 
     /**
      * 从缓存删除验证码
      */
     protected void deleteVerificationCodeFromCache(String key) {
-        // TODO: 实现 Redis 缓存
+        try {
+            redisTemplate.delete(key);
+            log.debug("Deleted verification code from cache: key={}", key);
+        } catch (Exception e) {
+            log.warn("Failed to delete verification code from cache: key={}, error={}", key, e.getMessage());
+        }
     }
 
     /**
      * 从缓存获取密码重置令牌
      */
     protected PasswordResetTokenData getPasswordResetTokenFromCache(String key) {
-        // TODO: 实现 Redis 缓存
-        return null;
+        try {
+            String json = redisTemplate.opsForValue().get(key);
+            if (json == null || json.isBlank()) {
+                return null;
+            }
+            return objectMapper.readValue(json, PasswordResetTokenData.class);
+        } catch (Exception e) {
+            log.warn("Failed to get password reset token from cache: key={}, error={}", key, e.getMessage());
+            return null;
+        }
     }
 
     /**
      * 保存密码重置令牌到缓存
      */
     protected void savePasswordResetTokenToCache(String key, PasswordResetTokenData data, long ttlMinutes) {
-        // TODO: 实现 Redis 缓存
-        log.debug("Saving password reset token to cache: key={}, ttl={}min", key, ttlMinutes);
+        try {
+            String json = objectMapper.writeValueAsString(data);
+            redisTemplate.opsForValue().set(key, json, Duration.ofMinutes(ttlMinutes));
+            log.debug("Saved password reset token to cache: key={}, ttl={}min", key, ttlMinutes);
+        } catch (Exception e) {
+            log.warn("Failed to save password reset token to cache: key={}, error={}", key, e.getMessage());
+        }
     }
 
     /**
      * 从缓存删除密码重置令牌
      */
     protected void deletePasswordResetTokenFromCache(String key) {
-        // TODO: 实现 Redis 缓存
+        try {
+            redisTemplate.delete(key);
+            log.debug("Deleted password reset token from cache: key={}", key);
+        } catch (Exception e) {
+            log.warn("Failed to delete password reset token from cache: key={}, error={}", key, e.getMessage());
+        }
     }
 
     /**
      * 检查密码重置邮件冷却期
      */
     protected boolean isInPasswordResetCooldown(String key) {
-        // TODO: 实现 Redis 缓存
-        return false;
+        try {
+            String cooldownKey = PASSWORD_RESET_COOLDOWN_PREFIX + key;
+            return Boolean.TRUE.equals(redisTemplate.hasKey(cooldownKey));
+        } catch (Exception e) {
+            log.warn("Failed to check password reset cooldown: key={}, error={}", key, e.getMessage());
+            return false;
+        }
     }
 
     /**
      * 设置密码重置邮件冷却期
      */
     protected void setPasswordResetCooldown(String key, long ttlSeconds) {
-        // TODO: 实现 Redis 缓存
+        try {
+            String cooldownKey = PASSWORD_RESET_COOLDOWN_PREFIX + key;
+            redisTemplate.opsForValue().set(cooldownKey, "1", Duration.ofSeconds(ttlSeconds));
+            log.debug("Set password reset cooldown: key={}, ttl={}s", key, ttlSeconds);
+        } catch (Exception e) {
+            log.warn("Failed to set password reset cooldown: key={}, error={}", key, e.getMessage());
+        }
     }
 
     // ==================== 邮件模板 ====================
