@@ -28,6 +28,10 @@
 - [x] 邮件服务 - EmailService 实现（SMTP、验证码、密码重置）
 - [x] 延迟批量更新服务 - DeferredService 实现
 - [x] 身份服务 - IdentityService 实现（指纹管理）
+- [x] Redis 身份缓存 - RedisIdentityCache 实现
+- [x] 计费计算增强 - BillingCalculator 支持模型定价、缓存计费、服务等级
+- [x] Turnstile 验证服务 - Cloudflare Turnstile 机器人验证
+- [x] 系统指标服务 - SystemMetricsService 实现（CPU、内存、JVM 监控）
 
 ---
 
@@ -666,3 +670,7 @@
 | 2026-04-12 | 90a4e1c | feat(common): 实现邮件服务 |
 | 2026-04-12 | 175b1fa | feat(account): 实现延迟批量更新服务 |
 | 2026-04-12 | ccb7a76 | feat(account): 实现身份服务 |
+| 2026-04-12 | ba023bd | feat(account): 实现 Redis 身份缓存 |
+| 2026-04-12 | ec1fa9e | feat(billing): 增强计费计算器 |
+| 2026-04-12 | 3d7b58a | feat(common): 实现 Cloudflare Turnstile 验证服务 |
+| 2026-04-12 | eb70048 | feat(ops): 实现系统指标服务 |
