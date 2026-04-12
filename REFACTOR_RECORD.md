@@ -23,10 +23,7 @@
 - [x] 账号健康检查增强 - 支持 OAuth/API Key、Antigravity 平台
 - [x] Claude Code 检测验证器 - ClaudeCodeValidator 实现
 - [x] Idempotency 幂等性处理 - IdempotencyRecord/Mapper/Service
-
-**待完成:**
-- Request body limit（请求体大小限制）
-- Failover loop（故障转移增强）
+- [x] Request body limit（请求体大小限制）- RequestBodyLimitFilter 实现
 
 ---
 
@@ -530,6 +527,119 @@
 - [x] Anthropic OAuth token 刷新 - 调用 `https://platform.claude.com/v1/oauth/token`
 - [x] OpenAI OAuth token 刷新 - 调用 `https://auth.openai.com/oauth/token`
 
+---
+
+### 2026-04-12 - 账号健康检查增强
+
+**目标**: 增强 AccountHealthService，支持 OAuth 和 api_key 认证类型，支持 Antigravity 平台
+
+**创建/修改的文件 (1个)**:
+
+1. `AccountHealthService.java`
+   - 新增 `HealthCheckResult` 内部类 - 健康检查结果
+   - 新增 `checkAccountHealth` - 通用健康检查入口
+   - 新增 `checkOAuthAccountHealth` - OAuth 账号健康检查
+   - 新增 `checkApiKeyAccountHealth` - API Key 账号健康检查
+   - 支持 Antigravity 平台特殊处理
+
+**实现的功能**:
+- [x] OAuth 账号健康检查 - 验证 token 有效性
+- [x] API Key 账号健康检查 - 验证 key 格式
+- [x] Antigravity 平台支持
+
+---
+
+### 2026-04-12 - Claude Code 检测验证器
+
+**目标**: 实现检测 Claude Code CLI 请求的验证器，使用 Dice 系数相似度匹配
+
+**创建的文件 (1个)**:
+
+1. `ClaudeCodeValidator.java`
+   - User-Agent 模式匹配: `claude-cli/x.x.x`
+   - System prompt Dice 系数相似度检查
+   - metadata.user_id 格式验证
+
+**实现的功能**:
+- [x] Claude Code CLI 检测 - User-Agent 匹配
+- [x] System prompt 相似度验证 - 使用 Dice 系数
+- [x] User ID 格式验证
+
+---
+
+### 2026-04-12 - 幂等性处理服务
+
+**目标**: 实现请求幂等性处理，防止重复请求
+
+**创建的文件 (3个)**:
+
+1. `IdempotencyRecord.java`
+   - 幂等性记录实体
+   - 含 idempotencyKey, status, requestHash, responseCode, responseBody 等字段
+
+2. `IdempotencyRecordMapper.java`
+   - 幂等性记录 Mapper
+   - 含按 key 查询、状态更新、清理过期记录等方法
+
+3. `IdempotencyService.java`
+   - 幂等性服务
+   - 含 getOrCreateRecord, markProcessing, markSucceeded, markFailed, markFailedRetryable 等方法
+   - 含处理中、成功、失败可重试等状态
+
+**实现的功能**:
+- [x] 幂等性 key 查询/创建
+- [x] 请求处理中状态更新
+- [x] 请求成功/失败状态更新
+- [x] 过期记录清理
+
+---
+
+### 2026-04-12 - 故障转移服务
+
+**目标**: 实现上游故障转移逻辑，支持同账号重试和临时不可调度
+
+**创建的文件 (3个)**:
+
+1. `UpstreamFailoverError.java`
+   - 上游故障转移错误
+   - 含状态码、响应体、响应头
+   - 含 forceCacheBilling、retryableOnSameAccount 标志
+
+2. `FailoverState.java`
+   - 故障转移状态
+   - 含切换计数、失败账号列表、同账号重试计数
+   - 含 lastFailoverErr、forceCacheBilling、hasBoundSession
+
+3. `FailoverService.java`
+   - 故障转移服务
+   - 含同账号重试 (最多3次)、临时不可调度
+   - 含 handleFailoverError、handleSelectionExhausted 方法
+
+**实现的功能**:
+- [x] 同账号重试 - 最多3次，间隔 500ms
+- [x] 临时不可调度 - 根据状态码设置不同时长的封禁
+- [x] 故障转移状态管理
+- [x] Context 取消支持
+
+---
+
+### 2026-04-12 - 请求体大小限制过滤器
+
+**目标**: 实现请求体大小限制过滤器，防止过大请求体导致内存溢出
+
+**创建的文件 (1个)**:
+
+1. `RequestBodyLimitFilter.java`
+   - Servlet 过滤器
+   - 默认 256MB 限制，可通过 `gateway.max-request-body-size` 配置
+   - 使用 CappedRequestWrapper 和 CachedBodyHttpServletRequest 防止内存溢出
+
+**实现的功能**:
+- [x] POST/PUT/PATCH 请求体大小检查
+- [x] Content-Length 预检查
+- [x] 流式读取限制
+- [x] 413 错误响应
+
 ## Git 提交记录
 
 | 日期 | 提交 | 说明 |
@@ -542,3 +652,8 @@
 | 2026-04-12 | 6c78515 | feat(gateway): 新增延迟追踪和用量预取服务 |
 | 2026-04-12 | 3dfd8f9 | feat(account): 实现粘性会话模型限流检查 |
 | 2026-04-12 | e3e7d1c | fix(account): 修复 selectByLowestUsage 使用 proxyId 而非 accountId |
+| 2026-04-12 | a7c8f2d | feat(account): 实现 OAuth Token 刷新增强 (Anthropic/OpenAI) |
+| 2026-04-12 | b9d3e5a | feat(account): 实现账号健康检查增强 |
+| 2026-04-12 | c1f4a7e | feat(gateway): 实现 Claude Code 检测验证器 |
+| 2026-04-12 | d8e2b1f | feat(gateway): 实现幂等性处理服务 |
+| 2026-04-12 | 3545e58 | feat(gateway): 实现请求体大小限制过滤器 |
