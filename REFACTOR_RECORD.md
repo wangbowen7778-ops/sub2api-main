@@ -8,7 +8,8 @@
 ## 当前状态
 - **覆盖率**: ~40-50%
 - **状态**: 持续重构中，核心功能逐步完善
-- **最近更新**: 2026-04-12 - 并发控制、Ops监控、延迟追踪、用量预取
+- **最近更新**: 2026-04-13 - Antigravity 平台服务、配额获取
+- **状态**: 持续重构中，核心功能逐步完善
 
 **已完成:**
 - [x] Channel Management - setGroupIds 实现
@@ -36,6 +37,9 @@
 - [x] 分组容量服务 - GroupCapacityService 实现
 - [x] Redis 计费缓存 - RedisBillingCache 实现
 - [x] Redis API Key 认证缓存 - RedisApiKeyAuthCache 实现
+- [x] PricingService - 动态模型定价服务（LiteLLM 定价获取）
+- [x] AntigravityService - Antigravity 平台 OAuth/Token 管理
+- [x] AntigravityQuotaService - Antigravity 配额获取服务
 
 ---
 
@@ -784,3 +788,33 @@
 - [x] GroupCapacity RPM 追踪 - RpmCacheService
 - [x] OpsController 完整查询 - 支持过滤和分页
 - [x] OpsService 聚合查询 - 支持多维度错误统计
+
+### 2026-04-13 - Antigravity 平台服务
+
+**目标**: 实现 Antigravity 平台的 OAuth、Token 管理和配额获取
+
+**创建的文件 (3个)**:
+
+1. `backend-java/src/main/java/com/sub2api/module/billing/service/PricingService.java` (新建)
+   - 动态模型定价服务
+   - 从 LiteLLM 获取模型定价，支持本地 JSON 缓存和 SHA256 哈希校验
+   - 支持 fallback 定价文件
+
+2. `backend-java/src/main/java/com/sub2api/module/gateway/service/AntigravityService.java` (新建)
+   - Antigravity 平台核心服务
+   - OAuth 授权 URL 生成、Code 交换、Token 刷新
+   - 智能重试和限流处理
+   - 模型限流追踪
+
+3. `backend-java/src/main/java/com/sub2api/module/gateway/service/AntigravityQuotaService.java` (新建)
+   - Antigravity 配额获取服务
+   - 从 Antigravity API 获取账号额度信息
+   - 支持订阅等级和 Credits 余额查询
+   - Redis 缓存支持
+
+**实现的功能**:
+- [x] PricingService - LiteLLM 定价获取与缓存
+- [x] AntigravityService - OAuth Token 管理
+- [x] AntigravityQuotaService - 配额信息获取与缓存
+- [x] 模型限流追踪 - Redis 实现
+- [x] OAuth 会话管理 - 内存中会话存储
