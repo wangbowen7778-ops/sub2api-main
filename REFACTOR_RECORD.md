@@ -685,6 +685,7 @@
 | 2026-04-12 | 9b49cec | feat(apikey): 实现 Redis API Key 认证缓存 |
 | 2026-04-12 | 12f7d8e | fix: 修复导入问题 |
 | 2026-04-12 | e960778 | feat(common): 实现 EmailService Redis 缓存 |
+| 2026-04-12 | 8f842b3 | feat(ops): 实现 OpsService 系统指标和任务心跳 |
 
 ---
 
@@ -709,3 +710,23 @@
 - [x] 验证码 Redis 缓存 - 支持 TTL 自动过期
 - [x] 密码重置令牌 Redis 缓存 - 支持 TTL 自动过期
 - [x] 密码重置邮件冷却期追踪 - 防止频繁发送
+
+---
+
+### 2026-04-12 - OpsService 系统指标和任务心跳实现
+
+**目标**: 完善 OpsService 的系统指标获取和任务心跳功能
+
+**修改的文件 (1个)**:
+
+1. `backend-java/src/main/java/com/sub2api/module/ops/service/OpsService.java`
+   - 注入 SystemMetricsService 依赖
+   - 实现 getLatestSystemMetrics - 使用 SystemMetricsService 获取系统指标
+   - 实现 getJobHeartbeats - 返回活跃任务心跳列表，支持自动过期（5分钟）
+   - 新增 updateJobHeartbeat - 用于更新任务心跳状态
+   - 添加 jobHeartbeats 内存缓存
+
+**实现的功能**:
+- [x] 系统指标获取 - 集成 SystemMetricsService 获取 CPU、内存使用率
+- [x] 任务心跳追踪 - 内存中追踪任务状态，支持自动过期清理
+- [x] 任务心跳更新 - updateJobHeartbeat 方法供外部调用
