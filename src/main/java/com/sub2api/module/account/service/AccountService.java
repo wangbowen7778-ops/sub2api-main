@@ -343,4 +343,44 @@ public class AccountService extends ServiceImpl<AccountMapper, Account> {
         updateAccount.setUpdatedAt(LocalDateTime.now());
         updateById(updateAccount);
     }
+
+    /**
+     * Auto pause expired accounts
+     * Queries accounts where:
+     * 1. autoPauseOnExpired = true
+     * 2. expiresAt <= now
+     * 3. status != "paused"
+     *
+     * @param now current time
+     * @return number of accounts paused
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public int autoPauseExpiredAccounts(LocalDateTime now) {
+        // Find accounts that are expired but not yet paused
+        List<Account> expiredAccounts = list(new LambdaQueryWrapper<Account>()
+                .eq(Account::getAutoPauseOnExpired, true)
+                .isNotNull(Account::getExpiresAt)
+                .le(Account::getExpiresAt, now)
+                .ne(Account::getStatus, "paused")
+                .isNull(Account::getDeletedAt));
+
+        if (expiredAccounts.isEmpty()) {
+            return 0;
+        }
+
+        int count = 0;
+        for (Account account : expiredAccounts) {
+            Account updateAccount = new Account();
+            updateAccount.setId(account.getId());
+            updateAccount.setStatus("paused");
+            updateAccount.setUpdatedAt(now);
+            if (updateById(updateAccount)) {
+                count++;
+                log.info("Auto paused expired account: accountId={}, name={}, expiredAt={}",
+                        account.getId(), account.getName(), account.getExpiresAt());
+            }
+        }
+
+        return count;
+    }
 }
