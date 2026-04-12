@@ -35,6 +35,7 @@
 - [x] GitHub Release 服务 - GitHubReleaseService 实现
 - [x] 分组容量服务 - GroupCapacityService 实现
 - [x] Redis 计费缓存 - RedisBillingCache 实现
+- [x] Redis API Key 认证缓存 - RedisApiKeyAuthCache 实现
 
 ---
 
@@ -681,3 +682,5 @@
 | 2026-04-12 | 54d7419 | feat(account): 实现分组容量服务 |
 | 2026-04-12 | ef22242 | feat(billing): 实现 Redis 计费缓存 |
 | 2026-04-12 | 1ba7cf9 | fix: 修复 OAuth 处理器和 ErrorPassthroughRuleController 的导入 |
+| 2026-04-12 | 9b49cec | feat(apikey): 实现 Redis API Key 认证缓存 |
+| 2026-04-12 | 12f7d8e | fix: 修复导入问题 |
