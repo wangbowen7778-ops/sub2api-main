@@ -68,6 +68,20 @@ public class SettingService extends ServiceImpl<SettingMapper, Setting> {
     }
 
     /**
+     * 批量获取设置值
+     */
+    public Map<String, String> getMultiple(String... keys) {
+        Map<String, String> result = new HashMap<>();
+
+        for (String key : keys) {
+            String value = getValue(key);
+            result.put(key, value);
+        }
+
+        return result;
+    }
+
+    /**
      * 获取设置值（带默认值）
      */
     public String getValue(String key, String defaultValue) {
