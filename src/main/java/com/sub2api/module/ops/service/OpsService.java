@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Ops 监控服务
@@ -24,9 +26,13 @@ public class OpsService {
 
     private final OpsErrorLogMapper errorLogMapper;
     private final ObjectMapper objectMapper;
+    private final SystemMetricsService systemMetricsService;
 
     @Value("${ops.enabled:true}")
     private boolean opsEnabled;
+
+    // 任务心跳追踪 (简单内存实现，生产环境可考虑 Redis)
+    private final Map<String, JobHeartbeat> jobHeartbeats = new ConcurrentHashMap<>();
 
     /**
      * 记录错误日志
@@ -165,18 +171,60 @@ public class OpsService {
      * 获取最新的系统指标
      */
     public SystemMetrics getLatestSystemMetrics(int limit) {
-        // TODO: 实现系统指标获取
-        SystemMetrics metrics = new SystemMetrics();
-        metrics.setCollectedAt(LocalDateTime.now());
-        return metrics;
+        if (!opsEnabled) {
+            return null;
+        }
+        try {
+            // 使用 SystemMetricsService 获取 JVM/系统指标
+            SystemMetricsService.SystemMetrics jvmMetrics = systemMetricsService.getMetrics();
+
+            // 转换为 OpsDashboardOverview.SystemMetrics
+            SystemMetrics metrics = new SystemMetrics();
+            metrics.setCollectedAt(LocalDateTime.now());
+
+            // 设置 CPU 和内存使用率
+            if (jvmMetrics.getCpu() != null) {
+                metrics.setCpuUsage(jvmMetrics.getCpu().getProcessCpuUsage());
+            }
+            if (jvmMetrics.getMemory() != null) {
+                metrics.setMemoryUsage(jvmMetrics.getMemory().getUsagePercent());
+            }
+
+            return metrics;
+        } catch (Exception e) {
+            log.warn("Failed to get system metrics: {}", e.getMessage());
+            SystemMetrics metrics = new SystemMetrics();
+            metrics.setCollectedAt(LocalDateTime.now());
+            return metrics;
+        }
     }
 
     /**
      * 获取任务心跳列表
      */
     public List<JobHeartbeat> getJobHeartbeats() {
-        // TODO: 实现任务心跳获取
-        return List.of();
+        if (!opsEnabled) {
+            return List.of();
+        }
+        // 清理过期的任务心跳（超过5分钟未更新的）
+        LocalDateTime cutoff = LocalDateTime.now().minusMinutes(5);
+        jobHeartbeats.entrySet().removeIf(entry -> {
+            JobHeartbeat hb = entry.getValue();
+            return hb.getLastHeartbeat() != null && hb.getLastHeartbeat().isBefore(cutoff);
+        });
+        return List.copyOf(jobHeartbeats.values());
+    }
+
+    /**
+     * 更新任务心跳
+     */
+    public void updateJobHeartbeat(String jobName, String status, String message) {
+        JobHeartbeat heartbeat = jobHeartbeats.computeIfAbsent(jobName, k -> new JobHeartbeat());
+        heartbeat.setJobName(jobName);
+        heartbeat.setStatus(status);
+        heartbeat.setMessage(message);
+        heartbeat.setLastHeartbeat(LocalDateTime.now());
+        log.debug("Updated job heartbeat: job={}, status={}", jobName, status);
     }
 
     /**
