@@ -383,4 +383,37 @@ public class AccountService extends ServiceImpl<AccountMapper, Account> {
 
         return count;
     }
+
+    /**
+     * Batch update last used time for multiple accounts
+     * Used by DeferredService for batching updates
+     *
+     * @param accountIdToLastUsed map of account ID to last used time
+     * @return number of accounts updated
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public int batchUpdateLastUsed(java.util.Map<Long, LocalDateTime> accountIdToLastUsed) {
+        if (accountIdToLastUsed == null || accountIdToLastUsed.isEmpty()) {
+            return 0;
+        }
+
+        int count = 0;
+        LocalDateTime now = LocalDateTime.now();
+
+        for (java.util.Map.Entry<Long, LocalDateTime> entry : accountIdToLastUsed.entrySet()) {
+            Account updateAccount = new Account();
+            updateAccount.setId(entry.getKey());
+            updateAccount.setLastUsedAt(entry.getValue());
+            updateAccount.setUpdatedAt(now);
+            if (updateById(updateAccount)) {
+                count++;
+            }
+        }
+
+        if (count > 0) {
+            log.info("BatchUpdateLastUsed flushed {} accounts", count);
+        }
+
+        return count;
+    }
 }
