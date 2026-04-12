@@ -442,25 +442,26 @@ public class AccountSelector {
 
     /**
      * 根据最低用量选择账号
+     * 使用账号ID来预取窗口成本（与Go版本一致）
      */
     private Account selectByLowestUsage(List<Account> accounts) {
-        List<Long> proxyIds = accounts.stream()
-                .map(Account::getProxyId)
+        List<Long> accountIds = accounts.stream()
+                .map(Account::getId)
                 .filter(id -> id != null)
                 .distinct()
                 .toList();
 
-        if (proxyIds.isEmpty()) {
-            // 如果没有代理ID，使用 priority 策略
+        if (accountIds.isEmpty()) {
+            // 如果没有账号ID，使用 priority 策略
             return selectByStrategy(accounts, Strategy.PRIORITY, null);
         }
 
-        // 预取所有代理的用量
-        Map<Long, Double> usageCosts = usagePrefetchService.prefetchWindowCosts(proxyIds);
+        // 预取所有账号的窗口成本
+        Map<Long, Double> usageCosts = usagePrefetchService.prefetchWindowCosts(accountIds);
 
         return accounts.stream()
                 .min(Comparator.comparingDouble(a -> {
-                    Double cost = usageCosts.get(a.getProxyId());
+                    Double cost = usageCosts.get(a.getId());
                     return cost != null ? cost : 0.0;
                 }))
                 .orElse(accounts.get(0));
