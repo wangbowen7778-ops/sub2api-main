@@ -21,9 +21,12 @@
 - [x] 延迟追踪集成到账号选择 - 2026-04-12 已实现
 - [x] OAuth Token 刷新增强 - Anthropic 和 OpenAI 已实现
 - [x] 账号健康检查增强 - 支持 OAuth/API Key、Antigravity 平台
+- [x] Claude Code 检测验证器 - ClaudeCodeValidator 实现
 
 **待完成:**
-- (所有标注的模块已完成)
+- Idempotency 处理（幂等性）
+- Request body limit（请求体大小限制）
+- Failover loop（故障转移增强）
 
 ---
 
