@@ -30,8 +30,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AccountHealthService extends ServiceImpl<AccountMapper, Account> {
 
-    private static final Logger log = LoggerFactory.getLogger(AccountHealthService.class);
-
     private final AccountMapper accountMapper;
     private final WebClient webClient;
 

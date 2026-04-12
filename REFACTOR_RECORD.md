@@ -492,6 +492,41 @@
 - [x] 模型映射解析 - 从 credentials 的 `model_mapping` 获取映射后的模型名
 - [x] 集成到账号选择 - 在粘性会话检查时考虑模型限流
 
+---
+
+### 2026-04-12 - 修复 selectByLowestUsage 使用 proxyId 而非 accountId 的 bug
+
+**目标**: 修复 Go 版本与 Java 版本窗口成本查询不一致的问题
+
+**修改的文件 (1个)**:
+
+1. `AccountSelector.java`
+   - 修复 `selectByLowestUsage` 方法：错误使用 `proxyId` 而非 `accountId` 预取窗口成本
+   - Go 版本中窗口成本是按 `accountId` 追踪的，Java 版本必须保持一致
+
+**修复的问题**:
+- [x] `selectByLowestUsage` 使用 `proxyId` 查询窗口成本 - 已修复为 `accountId`
+
+---
+
+### 2026-04-12 - OAuth Token 刷新增强
+
+**目标**: 增强 AccountRefreshService，实现 Google 和 Linux.do OAuth token 刷新
+
+**修改的文件 (1个)**:
+
+1. `AccountRefreshService.java`
+   - 新增 `refreshGoogleToken` - Google OAuth token 刷新实现
+   - 新增 `refreshLinuxDoToken` - Linux.do OAuth token 刷新实现
+   - 新增 `refreshAnthropicToken` - 占位实现（待完成）
+   - 新增 `refreshOpenAIToken` - 占位实现（待完成）
+
+**实现的功能**:
+- [x] Google OAuth token 刷新 - 调用 `https://oauth2.googleapis.com/token`
+- [x] Linux.do OAuth token 刷新 - 调用 `https://connect.linux.do/oauth/token`
+- [ ] Anthropic OAuth token 刷新 - 占位返回 null
+- [ ] OpenAI OAuth token 刷新 - 占位返回 null
+
 ## Git 提交记录
 
 | 日期 | 提交 | 说明 |
@@ -503,3 +538,4 @@
 | 2026-04-12 | c2bd3f3 | feat(dashboard): 实现分组统计和用户消费排名 |
 | 2026-04-12 | 6c78515 | feat(gateway): 新增延迟追踪和用量预取服务 |
 | 2026-04-12 | 3dfd8f9 | feat(account): 实现粘性会话模型限流检查 |
+| 2026-04-12 | e3e7d1c | fix(account): 修复 selectByLowestUsage 使用 proxyId 而非 accountId |

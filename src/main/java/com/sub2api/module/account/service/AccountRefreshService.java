@@ -1,29 +1,34 @@
 package com.sub2api.module.account.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sub2api.module.account.model.entity.Account;
 import com.sub2api.module.account.model.enums.AccountStatus;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Account credential refresh service
  *
  * @author Alibaba Java Code Guidelines
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AccountRefreshService {
 
-    private static final Logger log = LoggerFactory.getLogger(AccountRefreshService.class);
-
     private final AccountService accountService;
+    private final WebClient webClient;
+    private final ObjectMapper objectMapper;
 
     /**
      * Refresh OAuth credentials (scheduled task)
@@ -64,21 +69,172 @@ public class AccountRefreshService {
         }
 
         try {
-            // OAuth refresh logic - call corresponding refresh API based on different platforms
-            // This is a placeholder implementation, actual needs to implement refresh logic for different platforms
-            log.info("Refreshing account credential: accountId={}, platform={}", account.getId(), platform);
+            Map<String, Object> newCredentials = null;
 
-            // Simulate successful refresh - should call platform API to get new credentials
-            // Update refresh time and error count
-            account.setLastRefreshAt(LocalDateTime.now());
-            account.setRefreshErrorCount(0);
-            account.setStatus(AccountStatus.ACTIVE.getValue());
-            account.setCredentialExpiredAt(LocalDateTime.now().plusDays(30)); // Assume validity extended by 30 days after refresh
-            accountService.updateById(account);
+            switch (platform != null ? platform.toLowerCase() : "") {
+                case "anthropic":
+                    newCredentials = refreshAnthropicToken(account, refreshToken);
+                    break;
+                case "openai":
+                    newCredentials = refreshOpenAIToken(account, refreshToken);
+                    break;
+                case "google":
+                    newCredentials = refreshGoogleToken(account, refreshToken);
+                    break;
+                case "linuxdo":
+                    newCredentials = refreshLinuxDoToken(account, refreshToken);
+                    break;
+                default:
+                    log.warn("Unsupported platform for token refresh: accountId={}, platform={}", account.getId(), platform);
+                    return;
+            }
+
+            if (newCredentials != null) {
+                // Update account credentials
+                account.setCredentials(newCredentials);
+                account.setLastRefreshAt(LocalDateTime.now());
+                account.setRefreshErrorCount(0);
+                account.setStatus(AccountStatus.ACTIVE.getValue());
+                account.setCredentialExpiredAt(LocalDateTime.now().plusDays(30));
+                accountService.updateById(account);
+                log.info("Successfully refreshed token: accountId={}, platform={}", account.getId(), platform);
+            }
 
         } catch (Exception e) {
             log.error("Failed to refresh account credential: accountId={}, error={}", account.getId(), e.getMessage());
             throw e;
+        }
+    }
+
+    /**
+     * Refresh Anthropic OAuth token
+     */
+    private Map<String, Object> refreshAnthropicToken(Account account, String refreshToken) {
+        try {
+            // Anthropic uses client credentials flow
+            Object clientId = account.getCredentials().get("client_id");
+            Object clientSecret = account.getCredentials().get("client_secret");
+
+            if (clientId == null || clientSecret == null) {
+                log.warn("Anthropic token refresh missing client credentials: accountId={}", account.getId());
+                return null;
+            }
+
+            // In reality, would call Anthropic token endpoint
+            // For now, return null to indicate refresh not implemented
+            return null;
+        } catch (Exception e) {
+            log.error("Anthropic token refresh failed: accountId={}, error={}", account.getId(), e.getMessage());
+            throw new RuntimeException("Anthropic token refresh failed", e);
+        }
+    }
+
+    /**
+     * Refresh OpenAI OAuth token
+     */
+    private Map<String, Object> refreshOpenAIToken(Account account, String refreshToken) {
+        try {
+            Object clientId = account.getCredentials().get("client_id");
+            Object clientSecret = account.getCredentials().get("client_secret");
+
+            if (clientId == null || clientSecret == null) {
+                log.warn("OpenAI token refresh missing client credentials: accountId={}", account.getId());
+                return null;
+            }
+
+            // Would call OpenAI token endpoint
+            return null;
+        } catch (Exception e) {
+            log.error("OpenAI token refresh failed: accountId={}, error={}", account.getId(), e.getMessage());
+            throw new RuntimeException("OpenAI token refresh failed", e);
+        }
+    }
+
+    /**
+     * Refresh Google OAuth token
+     */
+    private Map<String, Object> refreshGoogleToken(Account account, String refreshToken) {
+        try {
+            Object clientId = account.getCredentials().get("client_id");
+            Object clientSecret = account.getCredentials().get("client_secret");
+
+            if (clientId == null || clientSecret == null) {
+                log.warn("Google token refresh missing client credentials: accountId={}", account.getId());
+                return null;
+            }
+
+            // Call Google token endpoint
+            String response = webClient.post()
+                    .uri("https://oauth2.googleapis.com/token")
+                    .contentType(org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED)
+                    .bodyValue(String.format(
+                            "grant_type=refresh_token&client_id=%s&client_secret=%s&refresh_token=%s",
+                            clientId, clientSecret, refreshToken))
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .timeout(java.time.Duration.ofSeconds(10))
+                    .block();
+
+            if (response != null) {
+                JsonNode json = objectMapper.readTree(response);
+                Map<String, Object> credentials = new HashMap<>(account.getCredentials());
+                credentials.put("access_token", json.get("access_token").asText());
+                if (json.has("refresh_token")) {
+                    credentials.put("refresh_token", json.get("refresh_token").asText());
+                }
+                if (json.has("expires_in")) {
+                    account.setCredentialExpiredAt(LocalDateTime.now().plusSeconds(json.get("expires_in").asInt()));
+                }
+                return credentials;
+            }
+            return null;
+        } catch (Exception e) {
+            log.error("Google token refresh failed: accountId={}, error={}", account.getId(), e.getMessage());
+            throw new RuntimeException("Google token refresh failed", e);
+        }
+    }
+
+    /**
+     * Refresh Linux.do OAuth token
+     */
+    private Map<String, Object> refreshLinuxDoToken(Account account, String refreshToken) {
+        try {
+            Object clientId = account.getCredentials().get("client_id");
+            Object clientSecret = account.getCredentials().get("client_secret");
+
+            if (clientId == null || clientSecret == null) {
+                log.warn("Linux.do token refresh missing client credentials: accountId={}", account.getId());
+                return null;
+            }
+
+            // Call Linux.do token endpoint
+            String response = webClient.post()
+                    .uri("https://connect.linux.do/oauth/token")
+                    .contentType(org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED)
+                    .bodyValue(String.format(
+                            "grant_type=refresh_token&client_id=%s&client_secret=%s&refresh_token=%s",
+                            clientId, clientSecret, refreshToken))
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .timeout(java.time.Duration.ofSeconds(10))
+                    .block();
+
+            if (response != null) {
+                JsonNode json = objectMapper.readTree(response);
+                Map<String, Object> credentials = new HashMap<>(account.getCredentials());
+                credentials.put("access_token", json.get("access_token").asText());
+                if (json.has("refresh_token")) {
+                    credentials.put("refresh_token", json.get("refresh_token").asText());
+                }
+                if (json.has("expires_in")) {
+                    account.setCredentialExpiredAt(LocalDateTime.now().plusSeconds(json.get("expires_in").asInt()));
+                }
+                return credentials;
+            }
+            return null;
+        } catch (Exception e) {
+            log.error("Linux.do token refresh failed: accountId={}, error={}", account.getId(), e.getMessage());
+            throw new RuntimeException("Linux.do token refresh failed", e);
         }
     }
 
