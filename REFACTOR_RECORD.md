@@ -686,6 +686,8 @@
 | 2026-04-12 | 12f7d8e | fix: 修复导入问题 |
 | 2026-04-12 | e960778 | feat(common): 实现 EmailService Redis 缓存 |
 | 2026-04-12 | 8f842b3 | feat(ops): 实现 OpsService 系统指标和任务心跳 |
+| 2026-04-12 | 38ce8c2 | docs: 更新重构记录 |
+| 2026-04-13 | cbbea29 | feat: 完成 Dashboard/GroupCapacity/Ops 重构 |
 
 ---
 
@@ -730,3 +732,55 @@
 - [x] 系统指标获取 - 集成 SystemMetricsService 获取 CPU、内存使用率
 - [x] 任务心跳追踪 - 内存中追踪任务状态，支持自动过期清理
 - [x] 任务心跳更新 - updateJobHeartbeat 方法供外部调用
+
+---
+
+### 2026-04-13 - Dashboard/GroupCapacity/Ops 重构
+
+**目标**: 完成所有剩余 TODO 项的重构
+
+**创建的文件 (2个)**:
+
+1. `backend-java/src/main/java/com/sub2api/module/gateway/service/RpmCacheService.java` (新建)
+   - RPM 缓存服务
+   - 支持每分钟请求计数、批量查询
+   - Redis 有序集合实现
+
+2. `backend-java/src/main/java/com/sub2api/module/gateway/service/SessionCacheService.java` (新建)
+   - 会话限制缓存服务
+   - 支持空闲超时自动过期
+   - 批量查询活跃会话数
+
+**修改的文件 (5个)**:
+
+1. `backend-java/src/main/java/com/sub2api/module/dashboard/service/DashboardService.java`
+   - 注入 BillingCalculator 实现正确的成本计算
+   - 优先使用数据库实际成本，fallback 到估算
+
+2. `backend-java/src/main/java/com/sub2api/module/dashboard/mapper/DashboardMapper.java`
+   - 新增 sumTotalCost, sumTotalActualCost 查询
+   - 新增 sumTodayCost, sumTodayActualCost 查询
+   - 新增 sumTotalCacheCreationTokens, sumTotalCacheReadTokens 查询
+   - 新增 sumTodayCacheCreationTokens, sumTodayCacheReadTokens 查询
+
+3. `backend-java/src/main/java/com/sub2api/module/account/service/GroupCapacityService.java`
+   - 集成 SessionCacheService 实现会话追踪
+   - 集成 RpmCacheService 实现 RPM 追踪
+   - 新增 getIdleTimeout 方法
+
+4. `backend-java/src/main/java/com/sub2api/module/ops/controller/OpsController.java`
+   - 实现完整的 getErrorLogs 查询
+   - 支持平台过滤和分页
+
+5. `backend-java/src/main/java/com/sub2api/module/ops/service/OpsService.java`
+   - 实现完整的仪表板聚合查询
+   - 新增 calculateRequestStats 请求统计
+   - 新增 selectErrorsByFilter 错误日志过滤
+   - 支持按错误码和错误阶段统计
+
+**实现的功能**:
+- [x] Dashboard 成本计算 - 使用 BillingCalculator + 数据库实际成本
+- [x] GroupCapacity 会话追踪 - SessionCacheService
+- [x] GroupCapacity RPM 追踪 - RpmCacheService
+- [x] OpsController 完整查询 - 支持过滤和分页
+- [x] OpsService 聚合查询 - 支持多维度错误统计
