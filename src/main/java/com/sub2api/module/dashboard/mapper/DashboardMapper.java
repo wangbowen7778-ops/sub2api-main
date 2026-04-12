@@ -78,6 +78,18 @@ public interface DashboardMapper extends BaseMapper<UsageLog> {
     @Select("SELECT COALESCE(SUM(output_tokens), 0) FROM usage_logs")
     long sumTotalOutputTokens();
 
+    @Select("SELECT COALESCE(SUM(total_cost), 0) FROM usage_logs")
+    double sumTotalCost();
+
+    @Select("SELECT COALESCE(SUM(actual_cost), 0) FROM usage_logs")
+    double sumTotalActualCost();
+
+    @Select("SELECT COALESCE(SUM(cache_creation_tokens), 0) FROM usage_logs")
+    long sumTotalCacheCreationTokens();
+
+    @Select("SELECT COALESCE(SUM(cache_read_tokens), 0) FROM usage_logs")
+    long sumTotalCacheReadTokens();
+
     /**
      * 获取今日用量统计
      */
@@ -89,6 +101,18 @@ public interface DashboardMapper extends BaseMapper<UsageLog> {
 
     @Select("SELECT COALESCE(SUM(output_tokens), 0) FROM usage_logs WHERE created_at >= #{todayStart}")
     long sumTodayOutputTokens(@Param("todayStart") LocalDateTime todayStart);
+
+    @Select("SELECT COALESCE(SUM(total_cost), 0) FROM usage_logs WHERE created_at >= #{todayStart}")
+    double sumTodayCost(@Param("todayStart") LocalDateTime todayStart);
+
+    @Select("SELECT COALESCE(SUM(actual_cost), 0) FROM usage_logs WHERE created_at >= #{todayStart}")
+    double sumTodayActualCost(@Param("todayStart") LocalDateTime todayStart);
+
+    @Select("SELECT COALESCE(SUM(cache_creation_tokens), 0) FROM usage_logs WHERE created_at >= #{todayStart}")
+    long sumTodayCacheCreationTokens(@Param("todayStart") LocalDateTime todayStart);
+
+    @Select("SELECT COALESCE(SUM(cache_read_tokens), 0) FROM usage_logs WHERE created_at >= #{todayStart}")
+    long sumTodayCacheReadTokens(@Param("todayStart") LocalDateTime todayStart);
 
     /**
      * 获取用量趋势 (按天)

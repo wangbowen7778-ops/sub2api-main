@@ -1,5 +1,7 @@
 package com.sub2api.module.ops.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.sub2api.module.ops.mapper.OpsErrorLogMapper;
 import com.sub2api.module.ops.model.entity.OpsErrorLog;
 import com.sub2api.module.ops.model.vo.OpsDashboardOverview;
 import com.sub2api.module.ops.service.OpsService;
@@ -24,6 +26,7 @@ import java.util.List;
 public class OpsController {
 
     private final OpsService opsService;
+    private final OpsErrorLogMapper opsErrorLogMapper;
 
     @Operation(summary = "获取仪表板概览")
     @GetMapping("/dashboard")
@@ -48,10 +51,21 @@ public class OpsController {
     public Result<List<OpsErrorLog>> getErrorLogs(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime,
-            @RequestParam(required = false) String platform) {
+            @RequestParam(required = false) String platform,
+            @RequestParam(required = false, defaultValue = "100") int limit) {
 
-        // TODO: 实现完整的查询
-        return Result.ok(List.of());
+        LambdaQueryWrapper<OpsErrorLog> wrapper = new LambdaQueryWrapper<>();
+        wrapper.ge(OpsErrorLog::getCreatedAt, startTime)
+                .lt(OpsErrorLog::getCreatedAt, endTime)
+                .orderByDesc(OpsErrorLog::getCreatedAt)
+                .last("LIMIT " + limit);
+
+        if (platform != null && !platform.isBlank()) {
+            wrapper.eq(OpsErrorLog::getPlatform, platform);
+        }
+
+        List<OpsErrorLog> errorLogs = opsErrorLogMapper.selectList(wrapper);
+        return Result.ok(errorLogs);
     }
 
     @Operation(summary = "获取系统指标")

@@ -6,11 +6,14 @@ import com.sub2api.module.account.mapper.AccountGroupMapper;
 import com.sub2api.module.account.model.entity.Account;
 import com.sub2api.module.account.model.entity.Group;
 import com.sub2api.module.gateway.service.ConcurrencyService;
+import com.sub2api.module.gateway.service.SessionCacheService;
+import com.sub2api.module.gateway.service.RpmCacheService;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +34,8 @@ public class GroupCapacityService {
     private final AccountGroupMapper accountGroupMapper;
     private final GroupService groupService;
     private final ConcurrencyService concurrencyService;
+    private final SessionCacheService sessionCacheService;
+    private final RpmCacheService rpmCacheService;
 
     /**
      * 分组容量摘要
@@ -84,6 +89,7 @@ public class GroupCapacityService {
 
         // 收集账号 ID 和配置值
         List<Long> accountIds = new ArrayList<>();
+        Map<Long, Duration> idleTimeouts = new ConcurrentHashMap<>();
         int concurrencyMax = 0;
         int sessionsMax = 0;
 
@@ -100,18 +106,32 @@ public class GroupCapacityService {
             if (maxSessions != null && maxSessions > 0) {
                 sessionsMax += maxSessions;
             }
+
+            // 收集空闲超时配置
+            Duration idleTimeout = getIdleTimeout(account);
+            if (idleTimeout != null) {
+                idleTimeouts.put(account.getId(), idleTimeout);
+            }
         }
 
         // 批量查询运行时数据
         Map<Long, Integer> concurrencyMap = concurrencyService.getAccountConcurrencyBatch(accountIds);
         int concurrencyUsed = concurrencyMap.values().stream().mapToInt(Integer::intValue).sum();
 
+        // 批量查询会话数
+        Map<Long, Integer> sessionCountMap = sessionCacheService.getActiveSessionCountBatch(accountIds, idleTimeouts);
+        int sessionsUsed = sessionCountMap.values().stream().mapToInt(Integer::intValue).sum();
+
+        // 批量查询 RPM
+        Map<Long, Integer> rpmMap = rpmCacheService.getRpmBatch(accountIds);
+        int rpmUsed = rpmMap.values().stream().mapToInt(Integer::intValue).stream().max().orElse(0);
+
         summary.setConcurrencyUsed(concurrencyUsed);
         summary.setConcurrencyMax(concurrencyMax);
-        summary.setSessionsUsed(0); // TODO: 实现会话追踪
+        summary.setSessionsUsed(sessionsUsed);
         summary.setSessionsMax(sessionsMax);
-        summary.setRpmUsed(0); // TODO: 实现 RPM 追踪
-        summary.setRpmMax(0);
+        summary.setRpmUsed(rpmUsed);
+        summary.setRpmMax(0); // RPM 无全局上限，按需设置
 
         return summary;
     }
@@ -143,6 +163,23 @@ public class GroupCapacityService {
         Object maxSessions = account.getExtra().get("max_sessions");
         if (maxSessions instanceof Number) {
             return ((Number) maxSessions).intValue();
+        }
+        return null;
+    }
+
+    /**
+     * 获取账号空闲超时时间
+     */
+    private Duration getIdleTimeout(Account account) {
+        if (account.getExtra() == null) {
+            return null;
+        }
+        Object idleTimeout = account.getExtra().get("session_idle_timeout_seconds");
+        if (idleTimeout instanceof Number) {
+            int seconds = ((Number) idleTimeout).intValue();
+            if (seconds > 0) {
+                return Duration.ofSeconds(seconds);
+            }
         }
         return null;
     }

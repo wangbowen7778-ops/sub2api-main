@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sub2api.module.dashboard.mapper.DashboardMapper;
 import com.sub2api.module.dashboard.mapper.DashboardMapper.*;
 import com.sub2api.module.dashboard.model.vo.*;
+import com.sub2api.module.billing.service.BillingCalculator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,6 +13,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -33,6 +35,7 @@ public class DashboardService {
     private final DashboardMapper dashboardMapper;
     private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper;
+    private final BillingCalculator billingCalculator;
 
     @Value("${dashboard.stats-cache-ttl-seconds:30}")
     private int statsCacheTtlSeconds;
@@ -42,6 +45,10 @@ public class DashboardService {
 
     private static final String DASHBOARD_STATS_CACHE_KEY = "dashboard:stats";
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE;
+
+    // 默认费率 (每 1M tokens 的价格，单位：元)
+    private static final BigDecimal DEFAULT_INPUT_RATE = new BigDecimal("0.000001");
+    private static final BigDecimal DEFAULT_OUTPUT_RATE = new BigDecimal("0.000003");
 
     /**
      * 获取仪表盘统计
@@ -108,14 +115,22 @@ public class DashboardService {
         stats.setTotalOutputTokens(dashboardMapper.sumTotalOutputTokens());
         stats.setTotalTokens(stats.getTotalInputTokens() + stats.getTotalOutputTokens());
 
+        // 累计缓存 token 统计
+        stats.setTotalCacheCreationTokens(dashboardMapper.sumTotalCacheCreationTokens());
+        stats.setTotalCacheReadTokens(dashboardMapper.sumTotalCacheReadTokens());
+
         // 今日用量统计
         stats.setTodayRequests(dashboardMapper.countTodayRequests(todayStart));
         stats.setTodayInputTokens(dashboardMapper.sumTodayInputTokens(todayStart));
         stats.setTodayOutputTokens(dashboardMapper.sumTodayOutputTokens(todayStart));
         stats.setTodayTokens(stats.getTodayInputTokens() + stats.getTodayOutputTokens());
 
-        // 计算成本
-        calculateCosts(stats);
+        // 今日缓存 token 统计
+        stats.setTodayCacheCreationTokens(dashboardMapper.sumTodayCacheCreationTokens(todayStart));
+        stats.setTodayCacheReadTokens(dashboardMapper.sumTodayCacheReadTokens(todayStart));
+
+        // 计算成本（优先使用数据库中的实际成本）
+        calculateCosts(stats, todayStart);
 
         // 统计新鲜度
         stats.setStatsUpdatedAt(now.format(DateTimeFormatter.ISO_DATE_TIME));
@@ -126,20 +141,52 @@ public class DashboardService {
 
     /**
      * 计算成本
+     * 优先使用数据库中的实际成本，必要时使用费率估算
      */
-    private void calculateCosts(DashboardStats stats) {
-        // TODO: 实际实现需要根据计费规则计算
-        // 简单按 token 数量估算
-        double inputPricePerToken = 0.000001;  // $0.001/1K input
-        double outputPricePerToken = 0.000003; // $0.003/1K output
+    private void calculateCosts(DashboardStats stats, LocalDateTime todayStart) {
+        // 获取数据库中存储的实际成本
+        double dbTotalCost = dashboardMapper.sumTotalCost();
+        double dbTotalActualCost = dashboardMapper.sumTotalActualCost();
+        double dbTodayCost = dashboardMapper.sumTodayCost(todayStart);
+        double dbTodayActualCost = dashboardMapper.sumTodayActualCost(todayStart);
 
-        stats.setTotalCost(stats.getTotalInputTokens() * inputPricePerToken +
-                stats.getTotalOutputTokens() * outputPricePerToken);
-        stats.setTotalActualCost(stats.getTotalCost());
+        // 如果数据库成本有效（约大于0），使用数据库值；否则使用估算
+        if (dbTotalCost > 0) {
+            stats.setTotalCost(dbTotalCost);
+        } else {
+            stats.setTotalCost(estimateCost(stats.getTotalInputTokens(), stats.getTotalOutputTokens()));
+        }
 
-        stats.setTodayCost(stats.getTodayInputTokens() * inputPricePerToken +
-                stats.getTodayOutputTokens() * outputPricePerToken);
-        stats.setTodayActualCost(stats.getTodayCost());
+        if (dbTotalActualCost > 0) {
+            stats.setTotalActualCost(dbTotalActualCost);
+        } else {
+            stats.setTotalActualCost(stats.getTotalCost());
+        }
+
+        if (dbTodayCost > 0) {
+            stats.setTodayCost(dbTodayCost);
+        } else {
+            stats.setTodayCost(estimateCost(stats.getTodayInputTokens(), stats.getTodayOutputTokens()));
+        }
+
+        if (dbTodayActualCost > 0) {
+            stats.setTodayActualCost(dbTodayActualCost);
+        } else {
+            stats.setTodayActualCost(stats.getTodayCost());
+        }
+    }
+
+    /**
+     * 使用默认费率估算成本
+     */
+    private double estimateCost(long inputTokens, long outputTokens) {
+        BigDecimal inputCost = BigDecimal.valueOf(inputTokens)
+                .divide(BigDecimal.valueOf(1_000_000), 6, java.math.RoundingMode.HALF_UP)
+                .multiply(DEFAULT_INPUT_RATE);
+        BigDecimal outputCost = BigDecimal.valueOf(outputTokens)
+                .divide(BigDecimal.valueOf(1_000_000), 6, java.math.RoundingMode.HALF_UP)
+                .multiply(DEFAULT_OUTPUT_RATE);
+        return inputCost.add(outputCost).doubleValue();
     }
 
     /**
