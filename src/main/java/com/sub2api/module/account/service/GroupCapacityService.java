@@ -5,6 +5,7 @@ import com.sub2api.module.account.mapper.AccountMapper;
 import com.sub2api.module.account.mapper.AccountGroupMapper;
 import com.sub2api.module.account.model.entity.Account;
 import com.sub2api.module.account.model.entity.Group;
+import com.sub2api.module.gateway.service.ConcurrencyService;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

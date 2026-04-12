@@ -4,10 +4,7 @@ import com.sub2api.module.admin.service.SettingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import javax.mail.*;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
+;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Map;
