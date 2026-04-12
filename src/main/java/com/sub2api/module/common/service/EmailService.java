@@ -4,8 +4,17 @@ import com.sub2api.module.admin.service.SettingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-;
+
+import jakarta.mail.Authenticator;
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.PasswordAuthentication;
+import jakarta.mail.Session;
+import jakarta.mail.Transport;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
 import java.security.SecureRandom;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Properties;
@@ -50,6 +59,7 @@ public class EmailService {
      * SMTP 配置
      */
     @lombok.Data
+    @lombok.experimental.Accessors(chain = true)
     public static class SMTPConfig {
         private String host;
         private int port;
@@ -64,6 +74,7 @@ public class EmailService {
      * 验证码数据
      */
     @lombok.Data
+    @lombok.experimental.Accessors(chain = true)
     public static class VerificationCodeData {
         private String code;
         private int attempts;
@@ -74,6 +85,7 @@ public class EmailService {
      * 密码重置令牌数据
      */
     @lombok.Data
+    @lombok.experimental.Accessors(chain = true)
     public static class PasswordResetTokenData {
         private String token;
         private LocalDateTime createdAt;

@@ -96,7 +96,7 @@ public class ErrorPassthroughRuleService extends ServiceImpl<ErrorPassthroughRul
     public ErrorPassthroughRule getById(Long id) {
         ErrorPassthroughRule rule = mapper.selectByIdNotDeleted(id);
         if (rule == null) {
-            throw new BusinessException(ErrorCode.NOT_FOUND, "错误透传规则不存在");
+            throw new BusinessException(ErrorCode.DATA_NOT_FOUND, "错误透传规则不存在");
         }
         return rule;
     }
@@ -382,25 +382,25 @@ public class ErrorPassthroughRuleService extends ServiceImpl<ErrorPassthroughRul
      */
     private void validateRule(ErrorPassthroughRule rule) {
         if (rule.getName() == null || rule.getName().trim().isEmpty()) {
-            throw new BusinessException(ErrorCode.BAD_REQUEST, "name is required");
+            throw new BusinessException(ErrorCode.PARAM_INVALID, "name is required");
         }
         if (rule.getMatchMode() != null
                 && !ErrorPassthroughRule.MATCH_MODE_ANY.equals(rule.getMatchMode())
                 && !ErrorPassthroughRule.MATCH_MODE_ALL.equals(rule.getMatchMode())) {
-            throw new BusinessException(ErrorCode.BAD_REQUEST, "match_mode must be 'any' or 'all'");
+            throw new BusinessException(ErrorCode.PARAM_INVALID, "match_mode must be 'any' or 'all'");
         }
         // 至少需要配置一个匹配条件（错误码或关键词）
         if ((rule.getErrorCodes() == null || rule.getErrorCodes().isEmpty())
                 && (rule.getKeywords() == null || rule.getKeywords().isEmpty())) {
-            throw new BusinessException(ErrorCode.BAD_REQUEST, "at least one error_code or keyword is required");
+            throw new BusinessException(ErrorCode.PARAM_INVALID, "at least one error_code or keyword is required");
         }
         if (rule.getPassthroughCode() != null && !rule.getPassthroughCode()
                 && (rule.getResponseCode() == null || rule.getResponseCode() <= 0)) {
-            throw new BusinessException(ErrorCode.BAD_REQUEST, "response_code is required when passthrough_code is false");
+            throw new BusinessException(ErrorCode.PARAM_INVALID, "response_code is required when passthrough_code is false");
         }
         if (rule.getPassthroughBody() != null && !rule.getPassthroughBody()
                 && (rule.getCustomMessage() == null || rule.getCustomMessage().trim().isEmpty())) {
-            throw new BusinessException(ErrorCode.BAD_REQUEST, "custom_message is required when passthrough_body is false");
+            throw new BusinessException(ErrorCode.PARAM_INVALID, "custom_message is required when passthrough_body is false");
         }
     }
 

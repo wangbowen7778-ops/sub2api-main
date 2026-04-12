@@ -134,9 +134,12 @@ public class GitHubReleaseService {
 
             log.info("Downloaded file to: {}", dest);
 
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             Files.deleteIfExists(dest);
-            throw e;
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            throw new IOException("Download failed: " + e.getMessage(), e);
         }
     }
 

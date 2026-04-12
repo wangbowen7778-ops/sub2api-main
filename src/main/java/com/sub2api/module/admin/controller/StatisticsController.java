@@ -77,7 +77,6 @@ public class StatisticsController {
 
         // Count total requests
         LambdaQueryWrapper<UsageLog> usageWrapper = new LambdaQueryWrapper<>();
-        usageWrapper.isNull(UsageLog::getDeletedAt);
         long totalRequests = usageLogService.count(usageWrapper);
 
         // Calculate total cost

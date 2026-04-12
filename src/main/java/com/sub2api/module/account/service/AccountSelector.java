@@ -155,7 +155,7 @@ public class AccountSelector {
     /**
      * 根据分组获取可用账号
      */
-    private List<Account> getAvailableAccountsByGroup(Long groupId) {
+    public List<Account> getAvailableAccountsByGroup(Long groupId) {
         // 先获取分组下的所有账号ID
         List<Long> accountIds = accountGroupMapper.selectAccountIdsByGroupId(groupId);
         if (accountIds == null || accountIds.isEmpty()) {
@@ -199,7 +199,7 @@ public class AccountSelector {
     /**
      * 根据平台获取可用账号
      */
-    private List<Account> getAvailableAccountsByPlatform(String platform) {
+    public List<Account> getAvailableAccountsByPlatform(String platform) {
         LambdaQueryWrapper<Account> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Account::getPlatform, platform)
                 .eq(Account::getStatus, AccountStatus.ACTIVE.getValue())

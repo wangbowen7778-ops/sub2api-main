@@ -44,8 +44,8 @@ public class AuthController {
             return Result.fail(2031, "密码必须包含字母和数字，且长度不少于8位");
         }
 
-        LoginResponse response = authService.regier(
-                request.getUsername(),
+        LoginResponse response = authService.register(
+                request.getEmail(), // username derived from email
                 request.getEmail(),
                 request.getPassword(),
                 clientIp

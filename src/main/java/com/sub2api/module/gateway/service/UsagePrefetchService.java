@@ -166,7 +166,7 @@ public class UsagePrefetchService {
             try {
                 // 查询该账号在窗口内的总用量
                 // 这里简化处理，实际应该用聚合查询
-                List<Object> usages = usageLogMapper.selectList(
+                List<com.sub2api.module.billing.model.entity.UsageLog> usages = usageLogMapper.selectList(
                         new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<com.sub2api.module.billing.model.entity.UsageLog>()
                                 .eq(com.sub2api.module.billing.model.entity.UsageLog::getAccountId, accountId)
                                 .ge(com.sub2api.module.billing.model.entity.UsageLog::getCreatedAt, windowStart)
@@ -174,13 +174,11 @@ public class UsagePrefetchService {
                 );
 
                 double totalCost = 0;
-                for (Object obj : usages) {
-                    if (obj instanceof com.sub2api.module.billing.model.entity.UsageLog usage) {
-                        long totalTokens = (usage.getInputTokens() != null ? usage.getInputTokens() : 0)
-                                + (usage.getOutputTokens() != null ? usage.getOutputTokens() : 0);
-                        // 简单按 token 数量估算成本
-                        totalCost += totalTokens * 0.000002;
-                    }
+                for (com.sub2api.module.billing.model.entity.UsageLog usage : usages) {
+                    long totalTokens = (usage.getInputTokens() != null ? usage.getInputTokens() : 0)
+                            + (usage.getOutputTokens() != null ? usage.getOutputTokens() : 0);
+                    // 简单按 token 数量估算成本
+                    totalCost += totalTokens * 0.000002;
                 }
 
                 results.put(accountId, totalCost);

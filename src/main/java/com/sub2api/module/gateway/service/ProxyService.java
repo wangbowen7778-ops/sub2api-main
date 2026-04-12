@@ -149,14 +149,15 @@ public class ProxyService {
         String upstreamUrl = buildUpstreamUrl(account, request);
 
         // 5. 发送流式请求，并在完成时释放槽位
+        ConcurrencyService.SlotResult finalUserSlot = userSlot;
         return sendStreamRequest(upstreamUrl, request, account)
                 .doOnTerminate(() -> {
                     // 释放并发槽位
                     if (accountSlot.releaseFunc() != null) {
                         accountSlot.releaseFunc().run();
                     }
-                    if (userSlot != null && userSlot.releaseFunc() != null) {
-                        userSlot.releaseFunc().run();
+                    if (finalUserSlot != null && finalUserSlot.releaseFunc() != null) {
+                        finalUserSlot.releaseFunc().run();
                     }
                 })
                 .doOnError(e -> {
@@ -283,7 +284,7 @@ public class ProxyService {
      * 判断错误是否可重试
      */
     private boolean isRetryableError(BusinessException e) {
-        String code = e.getCode();
+        Integer code = e.getCode();
         return ErrorCode.GATEWAY_TIMEOUT.getCode().equals(code) ||
                 ErrorCode.GATEWAY_UPSTREAM_ERROR.getCode().equals(code);
     }
@@ -540,7 +541,6 @@ public class ProxyService {
             usageLog.setApiKeyId(request.getApiKeyId());
             usageLog.setAccountId(account.getId());
             usageLog.setGroupId(request.getGroupId());
-            usageLog.setPlatform(request.getPlatform());
             usageLog.setModel(request.getModel());
             usageLog.setInputTokens(inputTokens != null ? inputTokens.intValue() : 0);
             usageLog.setOutputTokens(outputTokens != null ? outputTokens.intValue() : 0);

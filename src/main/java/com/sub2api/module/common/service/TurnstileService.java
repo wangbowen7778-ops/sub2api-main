@@ -10,6 +10,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
 /**
@@ -67,10 +68,10 @@ public class TurnstileService {
 
         try {
             // 构建表单数据
-            String formData = "secret=" + URI.encode(actualSecretKey) +
-                    "&response=" + URI.encode(token);
+            String formData = "secret=" + java.net.URLEncoder.encode(actualSecretKey, StandardCharsets.UTF_8) +
+                    "&response=" + java.net.URLEncoder.encode(token, StandardCharsets.UTF_8);
             if (remoteIP != null && !remoteIP.isBlank()) {
-                formData += "&remoteip=" + URI.encode(remoteIP);
+                formData += "&remoteip=" + java.net.URLEncoder.encode(remoteIP, StandardCharsets.UTF_8);
             }
 
             HttpRequest request = HttpRequest.newBuilder()

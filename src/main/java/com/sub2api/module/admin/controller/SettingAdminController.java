@@ -28,21 +28,21 @@ public class SettingAdminController {
     @GetMapping("/{key}")
     public Result<Map<String, String>> getSetting(@PathVariable String key) {
         String value = settingService.getValue(key);
-        return Result.success(Map.of("key", key, "value", value != null ? value : ""));
+        return Result.ok(Map.of("key", key, "value", value != null ? value : ""));
     }
 
     @Operation(summary = "获取所有设置")
     @GetMapping
     public Result<Map<String, String>> getAllSettings() {
         Map<String, String> settings = settingService.getAllSettings();
-        return Result.success(settings);
+        return Result.ok(settings);
     }
 
     @Operation(summary = "按分类获取设置")
     @GetMapping("/category/{category}")
     public Result<Map<String, String>> getSettingsByCategory(@PathVariable String category) {
         Map<String, String> settings = settingService.getSettingsByCategory(category);
-        return Result.success(settings);
+        return Result.ok(settings);
     }
 
     @Operation(summary = "设置值")
@@ -52,34 +52,34 @@ public class SettingAdminController {
             @RequestBody Map<String, String> body) {
         String value = body.get("value");
         settingService.setValue(key, value);
-        return Result.success();
+        return Result.ok();
     }
 
     @Operation(summary = "批量设置值")
     @PutMapping
     public Result<Void> setSettings(@RequestBody Map<String, String> settings) {
         settingService.setValues(settings);
-        return Result.success();
+        return Result.ok();
     }
 
     @Operation(summary = "删除设置")
     @DeleteMapping("/{key}")
     public Result<Void> deleteSetting(@PathVariable String key) {
         settingService.deleteSetting(key);
-        return Result.success();
+        return Result.ok();
     }
 
     @Operation(summary = "清除所有设置缓存")
     @PostMapping("/cache/clear")
     public Result<Void> clearCache() {
         settingService.clearCache();
-        return Result.success();
+        return Result.ok();
     }
 
     @Operation(summary = "获取常用设置")
     @GetMapping("/common")
     public Result<Map<String, String>> getCommonSettings() {
-        return Result.success(Map.of(
+        return Result.ok(Map.of(
                 "registration_enabled", String.valueOf(settingService.isRegistrationEnabled()),
                 "maintenance_mode", String.valueOf(settingService.isMaintenanceMode()),
                 "default_group_id", String.valueOf(settingService.getDefaultGroupId()),

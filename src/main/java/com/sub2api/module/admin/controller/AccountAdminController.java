@@ -90,7 +90,7 @@ public class AccountAdminController {
     @Operation(summary = "Update account status")
     @PatchMapping("/{id}/status")
     public Result<Void> updateAccountStatus(@PathVariable Long id, @RequestParam String status) {
-        accountService.updateStatus(id, AccountStatus.fromValue(status));
+        accountService.updateStatus(id, status);
         return Result.ok();
     }
 
@@ -111,8 +111,8 @@ public class AccountAdminController {
     @Operation(summary = "Test account connectivity")
     @PostMapping("/{id}/test")
     public Result<Boolean> testConnection(@PathVariable Long id) {
-        boolean result = accountHealthService.testAccountConnection(id);
-        return Result.ok(result);
+        var result = accountHealthService.testAccountConnection(id);
+        return Result.ok(result.isHealthy());
     }
 
     @Operation(summary = "Delete account")

@@ -273,7 +273,7 @@ public class IdempotencyService {
                     throw new BusinessException(ErrorCode.CONFLICT, "Idempotency request is in retry backoff window");
                 }
                 // 尝试重新获取锁
-                int updated = idempotencyRecordMapper.tryReclaim(
+                updated = idempotencyRecordMapper.tryReclaim(
                         existing.getId(),
                         IdempotencyRecord.STATUS_FAILED_RETRYABLE,
                         LocalDateTime.now().plus(PROCESSING_TIMEOUT),

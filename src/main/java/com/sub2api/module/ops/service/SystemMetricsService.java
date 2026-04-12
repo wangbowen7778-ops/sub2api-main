@@ -128,27 +128,17 @@ public class SystemMetricsService {
     private MemoryMetrics getMemoryMetrics() {
         MemoryMetrics memory = new MemoryMetrics();
         try {
-            MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
-            MemoryUsage heapUsage = memoryBean.getHeapMemoryUsage();
-            MemoryUsage nonHeapUsage = memoryBean.getNonHeapMemoryUsage();
+            com.sun.management.OperatingSystemMXBean osBean = (com.sun.management.OperatingSystemMXBean)
+                    ManagementFactory.getOperatingSystemMXBean();
 
-            // 堆内存使用
-            memory.setHeapUsed(heapUsage.getUsed());
-            memory.setHeapMax(heapUsage.getMax());
+            long total = osBean.getTotalMemorySize();
+            long free = osBean.getFreeMemorySize();
+            long used = total - free;
 
-            // 非堆内存使用
-            memory.setNonHeapUsed(nonHeapUsage.getUsed());
-            memory.setNonHeapMax(nonHeapUsage.getMax());
-
-            // Metaspace (if available)
-            try {
-                memory.setMetaspaceUsed(getMetaspaceUsed());
-                memory.setMetaspaceMax(getMetaspaceMax());
-            } catch (Exception e) {
-                // Metaspace not available on all JVMs
-                memory.setMetaspaceUsed(-1);
-                memory.setMetaspaceMax(-1);
-            }
+            memory.setTotalPhysicalMemory(total);
+            memory.setFreePhysicalMemory(free);
+            memory.setUsedPhysicalMemory(used);
+            memory.setUsagePercent(total > 0 ? (double) used / total * 100 : 0);
 
         } catch (Exception e) {
             log.warn("Failed to get memory metrics: {}", e.getMessage());
@@ -162,16 +152,17 @@ public class SystemMetricsService {
     private MemoryMetrics getSimpleMemoryMetrics() {
         MemoryMetrics memory = new MemoryMetrics();
         try {
-            MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
-            MemoryUsage heapUsage = memoryBean.getHeapMemoryUsage();
+            com.sun.management.OperatingSystemMXBean osBean = (com.sun.management.OperatingSystemMXBean)
+                    ManagementFactory.getOperatingSystemMXBean();
 
-            memory.setHeapUsed(heapUsage.getUsed());
-            memory.setHeapMax(heapUsage.getMax());
-            memory.setHeapCommitted(heapUsage.getCommitted());
+            long total = osBean.getTotalMemorySize();
+            long free = osBean.getFreeMemorySize();
+            long used = total - free;
 
-            if (heapUsage.getMax() > 0) {
-                memory.setHeapUsagePercent((double) heapUsage.getUsed() / heapUsage.getMax() * 100);
-            }
+            memory.setTotalPhysicalMemory(total);
+            memory.setFreePhysicalMemory(free);
+            memory.setUsedPhysicalMemory(used);
+            memory.setUsagePercent(total > 0 ? (double) used / total * 100 : 0);
 
         } catch (Exception e) {
             log.warn("Failed to get memory metrics: {}", e.getMessage());

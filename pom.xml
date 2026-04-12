@@ -21,7 +21,7 @@
     <description>AI API Gateway Backend Service</description>
 
     <properties>
-        <java.version>21</java.version>
+        <java.version>17</java.version>
         <mybatis-plus.version>3.5.7</mybatis-plus.version>
         <jwt.version>0.12.6</jwt.version>
         <springdoc.version>2.6.0</springdoc.version>
@@ -165,11 +165,10 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
-        <!-- Lombok -->
+        <!-- Mail -->
         <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <scope>provided</scope>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
 
         <!-- Spring Boot DevTools -->

@@ -38,6 +38,7 @@ public class IdentityService {
      * 指纹数据
      */
     @Data
+    @lombok.experimental.Accessors(chain = true)
     public static class Fingerprint {
         private String clientId;
         private String userAgent;

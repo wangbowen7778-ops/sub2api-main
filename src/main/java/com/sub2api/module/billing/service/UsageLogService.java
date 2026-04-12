@@ -65,9 +65,7 @@ public class UsageLogService extends ServiceImpl<UsageLogMapper, UsageLog> {
                 .eq(UsageLog::getUserId, userId)
                 .orderByDesc(UsageLog::getCreatedAt);
 
-        if (StringUtils.hasText(platform)) {
-            wrapper.eq(UsageLog::getPlatform, platform);
-        }
+        // Note: platform filter is not supported by UsageLog entity (no platform field)
         if (StringUtils.hasText(model)) {
             wrapper.like(UsageLog::getModel, model);
         }

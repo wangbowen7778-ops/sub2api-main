@@ -50,7 +50,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 .addInterceptors(authHandshakeInterceptor);
     }
 
-    @Override
+    // Note: registerWebSocketHandlers is not part of WebSocketMessageBrokerConfigurer interface
+    // This method is for standalone WebSocket handler registration
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         // 注册 OpenAI WebSocket 端点
         registry.addHandler(openAIWebSocketHandler, "/v1/responses/ws")

@@ -40,7 +40,7 @@ public class OpsController {
         filter.setGroupId(groupId);
 
         OpsDashboardOverview overview = opsService.getDashboardOverview(filter);
-        return Result.success(overview);
+        return Result.ok(overview);
     }
 
     @Operation(summary = "获取错误日志列表")
@@ -51,27 +51,27 @@ public class OpsController {
             @RequestParam(required = false) String platform) {
 
         // TODO: 实现完整的查询
-        return Result.success(List.of());
+        return Result.ok(List.of());
     }
 
     @Operation(summary = "获取系统指标")
     @GetMapping("/metrics")
     public Result<OpsDashboardOverview.SystemMetrics> getSystemMetrics() {
         OpsDashboardOverview.SystemMetrics metrics = opsService.getLatestSystemMetrics(1);
-        return Result.success(metrics);
+        return Result.ok(metrics);
     }
 
     @Operation(summary = "获取任务心跳")
     @GetMapping("/heartbeats")
     public Result<List<OpsDashboardOverview.JobHeartbeat>> getJobHeartbeats() {
         List<OpsDashboardOverview.JobHeartbeat> heartbeats = opsService.getJobHeartbeats();
-        return Result.success(heartbeats);
+        return Result.ok(heartbeats);
     }
 
     @Operation(summary = "记录错误日志")
     @PostMapping("/errors")
     public Result<Void> recordError(@RequestBody OpsErrorLog errorLog) {
         opsService.recordError(errorLog);
-        return Result.success();
+        return Result.ok();
     }
 }

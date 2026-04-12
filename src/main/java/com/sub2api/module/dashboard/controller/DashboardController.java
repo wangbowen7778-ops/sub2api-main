@@ -81,7 +81,7 @@ public class DashboardController {
     @Operation(summary = "获取分组用量摘要")
     @GetMapping("/groups/summary")
     public Result<List<GroupUsageSummary>> getGroupUsageSummary() {
-        List<GroupUsageSummary> summary = dashboardService.getGroupUsageSummary(LocalDateTime.now().withLocalTime());
+        List<GroupUsageSummary> summary = dashboardService.getGroupUsageSummary(LocalDateTime.now());
         return Result.ok(summary);
     }
 

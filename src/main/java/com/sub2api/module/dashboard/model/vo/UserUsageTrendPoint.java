@@ -21,6 +21,9 @@ public class UserUsageTrendPoint implements Serializable {
     private String email;
     private String username;
     private long requests;
+    private long inputTokens;
+    private long outputTokens;
+    private long totalTokens;
     private long tokens;
     private double cost;
     private double actualCost;

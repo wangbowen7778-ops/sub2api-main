@@ -198,10 +198,14 @@ public class ChannelService {
      * 获取渠道列表（分页）
      */
     public PageResult<Channel> list(int page, int pageSize, String status, String search) {
-        LambdaQueryWrapper<Channel> wrapper = channelMapper.selectList(new LambdaQueryWrapper<>())
-                .like(StringUtils.hasText(search), "name", search)
-                .eq(StringUtils.hasText(status), "status", status)
-                .orderByDesc("id");
+        LambdaQueryWrapper<Channel> wrapper = new LambdaQueryWrapper<>();
+        if (StringUtils.hasText(search)) {
+            wrapper.like(Channel::getName, search);
+        }
+        if (StringUtils.hasText(status)) {
+            wrapper.eq(Channel::getStatus, status);
+        }
+        wrapper.orderByDesc(Channel::getId);
 
         // 使用 MyBatis-Plus 分页
         long total = channelMapper.selectCount(wrapper);
@@ -221,7 +225,7 @@ public class ChannelService {
      */
     public List<Channel> listAll() {
         List<Channel> channels = channelMapper.selectList(
-                new LambdaQueryWrapper<Channel>().eq("status", "active")
+                new LambdaQueryWrapper<Channel>().eq(Channel::getStatus, "active")
         );
         for (Channel ch : channels) {
             loadRelations(ch);
@@ -283,7 +287,8 @@ public class ChannelService {
 
         // 解析模型映射
         Map<String, Map<String, String>> modelMapping = deserializeModelMapping(channel.getModelMapping());
-        Map<String, String> platformMapping = modelMapping.get(channel.getPlatform());
+        // Note: Channel doesn't have platform field, using default platform key
+        Map<String, String> platformMapping = modelMapping.get("default");
         if (platformMapping != null) {
             String mapped = platformMapping.get(model.toLowerCase());
             if (mapped != null && !mapped.isEmpty()) {
@@ -351,9 +356,9 @@ public class ChannelService {
         // 删除旧的定价
         List<ChannelModelPricing> oldPricing = pricingMapper.selectByChannelId(channelId);
         for (ChannelModelPricing p : oldPricing) {
-            intervalMapper.delete(new LambdaQueryWrapper<PricingInterval>().eq("pricing_id", p.getId()));
+            intervalMapper.delete(new LambdaQueryWrapper<PricingInterval>().eq(PricingInterval::getPricingId, p.getId()));
         }
-        pricingMapper.delete(new LambdaQueryWrapper<ChannelModelPricing>().eq("channel_id", channelId));
+        pricingMapper.delete(new LambdaQueryWrapper<ChannelModelPricing>().eq(ChannelModelPricing::getChannelId, channelId));
 
         // 插入新的定价
         for (ChannelModelPricing pricing : newPricing) {

@@ -59,7 +59,6 @@ public class UserController {
 
         // 清除敏感信息
         user.setPasswordHash(null);
-        user.setPasswordSalt(null);
         user.setTotpSecretEncrypted(null);
 
         return Result.ok(user);

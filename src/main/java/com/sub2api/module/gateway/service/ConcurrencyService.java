@@ -6,6 +6,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -104,6 +105,23 @@ public class ConcurrencyService {
             log.error("获取账号并发数失败: accountId={}, error={}", accountId, e.getMessage());
             return 0;
         }
+    }
+
+    /**
+     * 批量获取账号并发数
+     *
+     * @param accountIds 账号ID列表
+     * @return 账号ID到并发数的映射
+     */
+    public Map<Long, Integer> getAccountConcurrencyBatch(List<Long> accountIds) {
+        Map<Long, Integer> result = new java.util.HashMap<>();
+        if (accountIds == null || accountIds.isEmpty()) {
+            return result;
+        }
+        for (Long accountId : accountIds) {
+            result.put(accountId, getAccountConcurrency(accountId));
+        }
+        return result;
     }
 
     /**

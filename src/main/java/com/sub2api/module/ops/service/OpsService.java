@@ -61,8 +61,8 @@ public class OpsService {
                 if (entry.getCreatedAt() == null) {
                     entry.setCreatedAt(LocalDateTime.now());
                 }
+                errorLogMapper.insert(entry);
             }
-            errorLogMapper.insertBatch(entries);
         } catch (Exception e) {
             log.error("Failed to batch record error logs: {}", e.getMessage());
         }

@@ -27,6 +27,9 @@ public enum ErrorCode {
     DATA_NOT_FOUND(1004, "数据不存在"),
     DATA_EXISTS(1005, "数据已存在"),
     DATA_DELETED(1006, "数据已删除"),
+    CONFLICT(1007, "数据冲突"),
+    NOT_FOUND(1008, "资源不存在"),
+    BAD_REQUEST(1009, "请求无效"),
     INTERNAL_ERROR(1999, "内部系统错误"),
 
     // ========== 认证模块错误 2xxx ==========
