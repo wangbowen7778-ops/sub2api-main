@@ -32,6 +32,9 @@
 - [x] 计费计算增强 - BillingCalculator 支持模型定价、缓存计费、服务等级
 - [x] Turnstile 验证服务 - Cloudflare Turnstile 机器人验证
 - [x] 系统指标服务 - SystemMetricsService 实现（CPU、内存、JVM 监控）
+- [x] GitHub Release 服务 - GitHubReleaseService 实现
+- [x] 分组容量服务 - GroupCapacityService 实现
+- [x] Redis 计费缓存 - RedisBillingCache 实现
 
 ---
 
@@ -674,3 +677,7 @@
 | 2026-04-12 | ec1fa9e | feat(billing): 增强计费计算器 |
 | 2026-04-12 | 3d7b58a | feat(common): 实现 Cloudflare Turnstile 验证服务 |
 | 2026-04-12 | eb70048 | feat(ops): 实现系统指标服务 |
+| 2026-04-12 | 34a7518 | feat(common): 实现 GitHub Release 服务 |
+| 2026-04-12 | 54d7419 | feat(account): 实现分组容量服务 |
+| 2026-04-12 | ef22242 | feat(billing): 实现 Redis 计费缓存 |
+| 2026-04-12 | 1ba7cf9 | fix: 修复 OAuth 处理器和 ErrorPassthroughRuleController 的导入 |
