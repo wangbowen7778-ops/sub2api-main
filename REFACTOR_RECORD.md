@@ -17,13 +17,12 @@
 - [x] Dashboard - 分组统计、用户消费排名
 - [x] Gateway - 延迟追踪 (ProxyLatencyService)
 - [x] Gateway - 用量预取 (UsagePrefetchService)
-
-**待完成:**
 - [x] 完整的粘性会话管理 - 2026-04-12 已实现模型限流检查
 - [x] 延迟追踪集成到账号选择 - 2026-04-12 已实现
+- [x] OAuth Token 刷新增强 - Anthropic 和 OpenAI 已实现
+
+**待完成:**
 - [ ] 账号健康检查增强
-- [ ] OAuth token刷新增强
-- [ ] 配额预取集成
 
 ---
 
@@ -511,21 +510,21 @@
 
 ### 2026-04-12 - OAuth Token 刷新增强
 
-**目标**: 增强 AccountRefreshService，实现 Google 和 Linux.do OAuth token 刷新
+**目标**: 增强 AccountRefreshService，实现 Google、Linux.do、Anthropic 和 OpenAI OAuth token 刷新
 
 **修改的文件 (1个)**:
 
 1. `AccountRefreshService.java`
    - 新增 `refreshGoogleToken` - Google OAuth token 刷新实现
    - 新增 `refreshLinuxDoToken` - Linux.do OAuth token 刷新实现
-   - 新增 `refreshAnthropicToken` - 占位实现（待完成）
-   - 新增 `refreshOpenAIToken` - 占位实现（待完成）
+   - 新增 `refreshAnthropicToken` - Anthropic OAuth token 刷新实现
+   - 新增 `refreshOpenAIToken` - OpenAI OAuth token 刷新实现
 
 **实现的功能**:
 - [x] Google OAuth token 刷新 - 调用 `https://oauth2.googleapis.com/token`
 - [x] Linux.do OAuth token 刷新 - 调用 `https://connect.linux.do/oauth/token`
-- [ ] Anthropic OAuth token 刷新 - 占位返回 null
-- [ ] OpenAI OAuth token 刷新 - 占位返回 null
+- [x] Anthropic OAuth token 刷新 - 调用 `https://platform.claude.com/v1/oauth/token`
+- [x] OpenAI OAuth token 刷新 - 调用 `https://auth.openai.com/oauth/token`
 
 ## Git 提交记录
 

@@ -108,20 +108,51 @@ public class AccountRefreshService {
 
     /**
      * Refresh Anthropic OAuth token
+     * 端点: https://platform.claude.com/v1/oauth/token
      */
     private Map<String, Object> refreshAnthropicToken(Account account, String refreshToken) {
         try {
-            // Anthropic uses client credentials flow
             Object clientId = account.getCredentials().get("client_id");
-            Object clientSecret = account.getCredentials().get("client_secret");
-
-            if (clientId == null || clientSecret == null) {
-                log.warn("Anthropic token refresh missing client credentials: accountId={}", account.getId());
+            if (clientId == null) {
+                log.warn("Anthropic token refresh missing client_id: accountId={}", account.getId());
                 return null;
             }
 
-            // In reality, would call Anthropic token endpoint
-            // For now, return null to indicate refresh not implemented
+            // 构建请求体
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("grant_type", "refresh_token");
+            requestBody.put("refresh_token", refreshToken);
+            requestBody.put("client_id", clientId.toString());
+
+            // 调用 Anthropic token 刷新端点
+            String response = webClient.post()
+                    .uri("https://platform.claude.com/v1/oauth/token")
+                    .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                    .bodyValue(requestBody)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .timeout(java.time.Duration.ofSeconds(10))
+                    .block();
+
+            if (response != null) {
+                JsonNode json = objectMapper.readTree(response);
+                Map<String, Object> credentials = new HashMap<>(account.getCredentials());
+                credentials.put("access_token", json.get("access_token").asText());
+                if (json.has("refresh_token")) {
+                    credentials.put("refresh_token", json.get("refresh_token").asText());
+                }
+                if (json.has("expires_in")) {
+                    account.setCredentialExpiredAt(LocalDateTime.now().plusSeconds(json.get("expires_in").asInt()));
+                }
+                if (json.has("token_type")) {
+                    credentials.put("token_type", json.get("token_type").asText());
+                }
+                if (json.has("scope")) {
+                    credentials.put("scope", json.get("scope").asText());
+                }
+                log.info("Anthropic token refreshed successfully: accountId={}", account.getId());
+                return credentials;
+            }
             return null;
         } catch (Exception e) {
             log.error("Anthropic token refresh failed: accountId={}, error={}", account.getId(), e.getMessage());
@@ -131,18 +162,49 @@ public class AccountRefreshService {
 
     /**
      * Refresh OpenAI OAuth token
+     * 端点: https://auth.openai.com/oauth/token
+     * 使用 form data 而不是 JSON
      */
     private Map<String, Object> refreshOpenAIToken(Account account, String refreshToken) {
         try {
             Object clientId = account.getCredentials().get("client_id");
-            Object clientSecret = account.getCredentials().get("client_secret");
-
-            if (clientId == null || clientSecret == null) {
-                log.warn("OpenAI token refresh missing client credentials: accountId={}", account.getId());
+            if (clientId == null) {
+                log.warn("OpenAI token refresh missing client_id: accountId={}", account.getId());
                 return null;
             }
 
-            // Would call OpenAI token endpoint
+            // OpenAI 使用 form data 格式
+            String response = webClient.post()
+                    .uri("https://auth.openai.com/oauth/token")
+                    .contentType(org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED)
+                    .bodyValue(String.format(
+                            "grant_type=refresh_token&refresh_token=%s&client_id=%s&scope=openai%20api",
+                            java.net.URLEncoder.encode(refreshToken, java.nio.charset.StandardCharsets.UTF_8),
+                            java.net.URLEncoder.encode(clientId.toString(), java.nio.charset.StandardCharsets.UTF_8)))
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .timeout(java.time.Duration.ofSeconds(10))
+                    .block();
+
+            if (response != null) {
+                JsonNode json = objectMapper.readTree(response);
+                Map<String, Object> credentials = new HashMap<>(account.getCredentials());
+                credentials.put("access_token", json.get("access_token").asText());
+                if (json.has("refresh_token") && !json.get("refresh_token").isNull()) {
+                    credentials.put("refresh_token", json.get("refresh_token").asText());
+                }
+                if (json.has("expires_in")) {
+                    account.setCredentialExpiredAt(LocalDateTime.now().plusSeconds(json.get("expires_in").asInt()));
+                }
+                if (json.has("token_type")) {
+                    credentials.put("token_type", json.get("token_type").asText());
+                }
+                if (json.has("scope")) {
+                    credentials.put("scope", json.get("scope").asText());
+                }
+                log.info("OpenAI token refreshed successfully: accountId={}", account.getId());
+                return credentials;
+            }
             return null;
         } catch (Exception e) {
             log.error("OpenAI token refresh failed: accountId={}, error={}", account.getId(), e.getMessage());
