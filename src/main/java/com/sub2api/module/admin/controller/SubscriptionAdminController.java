@@ -36,21 +36,21 @@ public class SubscriptionAdminController {
                 request.getSubscriptionType(),
                 request.getExpiresAt()
         );
-        return Result.success(subscription);
+        return Result.ok(subscription);
     }
 
     @Operation(summary = "获取订阅详情")
     @GetMapping("/{id}")
     public Result<UserSubscription> getSubscription(@PathVariable Long id) {
         UserSubscription subscription = subscriptionService.getSubscription(id);
-        return Result.success(subscription);
+        return Result.ok(subscription);
     }
 
     @Operation(summary = "查询用户订阅")
     @GetMapping("/user/{userId}")
     public Result<List<UserSubscription>> getUserSubscriptions(@PathVariable Long userId) {
         List<UserSubscription> subscriptions = subscriptionService.getUserSubscriptions(userId);
-        return Result.success(subscriptions);
+        return Result.ok(subscriptions);
     }
 
     @Operation(summary = "获取用户活跃订阅")
@@ -59,14 +59,14 @@ public class SubscriptionAdminController {
             @PathVariable Long userId,
             @RequestParam(required = false) Long groupId) {
         UserSubscription subscription = subscriptionService.getActiveSubscription(userId, groupId);
-        return Result.success(subscription);
+        return Result.ok(subscription);
     }
 
     @Operation(summary = "取消订阅")
     @PostMapping("/{id}/cancel")
     public Result<Void> cancelSubscription(@PathVariable Long id) {
         subscriptionService.cancelSubscription(id);
-        return Result.success();
+        return Result.ok();
     }
 
     @Operation(summary = "续期订阅")
@@ -75,7 +75,7 @@ public class SubscriptionAdminController {
             @PathVariable Long id,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime newExpiresAt) {
         UserSubscription subscription = subscriptionService.renewSubscription(id, newExpiresAt);
-        return Result.success(subscription);
+        return Result.ok(subscription);
     }
 
     @Operation(summary = "更新订阅状态")
@@ -85,14 +85,14 @@ public class SubscriptionAdminController {
             @RequestBody Map<String, String> body) {
         String status = body.get("status");
         subscriptionService.updateSubscriptionStatus(id, status);
-        return Result.success();
+        return Result.ok();
     }
 
     @Operation(summary = "删除订阅")
     @DeleteMapping("/{id}")
     public Result<Void> deleteSubscription(@PathVariable Long id) {
         subscriptionService.deleteSubscription(id);
-        return Result.success();
+        return Result.ok();
     }
 
     @Operation(summary = "检查订阅是否有效")
@@ -102,7 +102,7 @@ public class SubscriptionAdminController {
             @RequestParam(required = false) Long groupId) {
         boolean valid = subscriptionService.isSubscriptionValid(userId, groupId);
         long remainingDays = subscriptionService.getRemainingDays(userId, groupId);
-        return Result.success(Map.of(
+        return Result.ok(Map.of(
                 "valid", valid,
                 "remainingDays", remainingDays
         ));
@@ -112,7 +112,7 @@ public class SubscriptionAdminController {
     @PostMapping("/expire")
     public Result<Void> expireSubscriptions() {
         subscriptionService.expireSubscriptions();
-        return Result.success();
+        return Result.ok();
     }
 
     /**
