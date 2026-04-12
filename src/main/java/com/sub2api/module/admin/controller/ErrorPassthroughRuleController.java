@@ -2,7 +2,7 @@ package com.sub2api.module.admin.controller;
 
 import com.sub2api.module.admin.model.entity.ErrorPassthroughRule;
 import com.sub2api.module.admin.service.ErrorPassthroughRuleService;
-import com.sub2api.module.common.model.Result;
+import com.sub2api.module.common.model.vo.Result;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;

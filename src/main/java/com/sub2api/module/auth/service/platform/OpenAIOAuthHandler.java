@@ -2,6 +2,7 @@ package com.sub2api.module.auth.service.platform;
 
 import com.sub2api.module.account.model.entity.Account;
 import com.sub2api.module.account.service.AccountService;
+import com.sub2api.module.auth.model.vo.OAuthTokenInfo;
 import com.sub2api.module.auth.service.OAuthService.OAuthPlatform;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
