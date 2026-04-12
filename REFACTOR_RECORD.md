@@ -24,6 +24,10 @@
 - [x] Claude Code 检测验证器 - ClaudeCodeValidator 实现
 - [x] Idempotency 幂等性处理 - IdempotencyRecord/Mapper/Service
 - [x] Request body limit（请求体大小限制）- RequestBodyLimitFilter 实现
+- [x] 账号过期自动暂停服务 - AccountExpiryService 实现
+- [x] 邮件服务 - EmailService 实现（SMTP、验证码、密码重置）
+- [x] 延迟批量更新服务 - DeferredService 实现
+- [x] 身份服务 - IdentityService 实现（指纹管理）
 
 ---
 
@@ -657,3 +661,8 @@
 | 2026-04-12 | c1f4a7e | feat(gateway): 实现 Claude Code 检测验证器 |
 | 2026-04-12 | d8e2b1f | feat(gateway): 实现幂等性处理服务 |
 | 2026-04-12 | 3545e58 | feat(gateway): 实现请求体大小限制过滤器 |
+| 2026-04-12 | 6d9ea0f | feat(gateway): 实现 Failover Loop 故障转移服务 |
+| 2026-04-12 | f616562 | feat(account): 实现账号过期自动暂停服务 |
+| 2026-04-12 | 90a4e1c | feat(common): 实现邮件服务 |
+| 2026-04-12 | 175b1fa | feat(account): 实现延迟批量更新服务 |
+| 2026-04-12 | ccb7a76 | feat(account): 实现身份服务 |
