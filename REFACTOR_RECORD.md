@@ -684,3 +684,28 @@
 | 2026-04-12 | 1ba7cf9 | fix: 修复 OAuth 处理器和 ErrorPassthroughRuleController 的导入 |
 | 2026-04-12 | 9b49cec | feat(apikey): 实现 Redis API Key 认证缓存 |
 | 2026-04-12 | 12f7d8e | fix: 修复导入问题 |
+| 2026-04-12 | e960778 | feat(common): 实现 EmailService Redis 缓存 |
+
+---
+
+### 2026-04-12 - EmailService Redis 缓存实现
+
+**目标**: 实现验证码和密码重置令牌的 Redis 缓存
+
+**修改的文件 (1个)**:
+
+1. `backend-java/src/main/java/com/sub2api/module/common/service/EmailService.java`
+   - 注入 StringRedisTemplate
+   - 实现 getVerificationCodeFromCache - 从 Redis 获取验证码
+   - 实现 saveVerificationCodeToCache - 保存验证码到 Redis
+   - 实现 deleteVerificationCodeFromCache - 删除验证码
+   - 实现 getPasswordResetTokenFromCache - 获取密码重置令牌
+   - 实现 savePasswordResetTokenToCache - 保存密码重置令牌
+   - 实现 deletePasswordResetTokenFromCache - 删除密码重置令牌
+   - 实现 isInPasswordResetCooldown - 检查密码重置冷却期
+   - 实现 setPasswordResetCooldown - 设置密码重置冷却期
+
+**实现的功能**:
+- [x] 验证码 Redis 缓存 - 支持 TTL 自动过期
+- [x] 密码重置令牌 Redis 缓存 - 支持 TTL 自动过期
+- [x] 密码重置邮件冷却期追踪 - 防止频繁发送
