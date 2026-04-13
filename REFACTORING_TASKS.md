@@ -84,7 +84,7 @@
 |------|------|------|
 | ApiKeyService | ✅ 已完成 | API Key 服务 |
 | ApiKeyCacheService | ✅ 已完成 | API Key 缓存服务 |
-| RedisApiKeyAuthCache | ⏳ 待处理 | Redis API Key 认证缓存（实现不完整） |
+| RedisApiKeyAuthCache | ✅ 已完成 | Redis API Key 认证缓存（L2 Redis 缓存，基础功能完整） |
 
 ### 1.9 Channel 相关
 | 任务 | 状态 | 说明 |
@@ -164,11 +164,11 @@
 | Billing | 4 | 4 | 100% |
 | Ops | 4 | 4 | 100% |
 | User | 3 | 3 | 100% |
-| API Key | 2 | 3 | 67% |
+| API Key | 3 | 3 | 100% |
 | Channel | 1 | 1 | 100% |
 | Dashboard | 3 | 3 | 100% |
 | 其他服务 | 10 | 10 | 100% |
-| **缺失服务** | 0 | 14 | 0% |
+| **缺失服务** | 0 | 13 | 0% |
 
 ---
 
