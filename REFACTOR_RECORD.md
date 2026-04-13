@@ -6,9 +6,9 @@
 - **重构项目**: `sub2api-main/backend-java` (Java)
 
 ## 当前状态
-- **覆盖率**: ~40-50%
-- **状态**: 持续重构中，核心功能逐步完善
-- **最近更新**: 2026-04-13 - Antigravity 平台服务、配额获取
+- **覆盖率**: ~70-80%
+- **状态**: 持续重构中，核心功能基本完善
+- **最近更新**: 2026-04-13 - DashboardAggregationService 仪表盘预聚合服务
 - **状态**: 持续重构中，核心功能逐步完善
 
 **已完成:**
@@ -40,6 +40,10 @@
 - [x] PricingService - 动态模型定价服务（LiteLLM 定价获取）
 - [x] AntigravityService - Antigravity 平台 OAuth/Token 管理
 - [x] AntigravityQuotaService - Antigravity 配额获取服务
+- [x] OpsScheduledReportService - 定时报表服务（日报、周报、错误摘要、账号健康）
+- [x] AnnouncementController - 用户公告 API（列表、详情、已读）
+- [x] BillingService - 综合计费服务（统一计费入口、渠道覆盖、长上下文计费）
+- [x] DashboardAggregationService - 仪表盘预聚合服务（定时聚合、回填、保留清理）
 
 ---
 
@@ -692,6 +696,15 @@
 | 2026-04-12 | 8f842b3 | feat(ops): 实现 OpsService 系统指标和任务心跳 |
 | 2026-04-12 | 38ce8c2 | docs: 更新重构记录 |
 | 2026-04-13 | cbbea29 | feat: 完成 Dashboard/GroupCapacity/Ops 重构 |
+| 2026-04-13 | 9245a4b | docs: 更新重构记录 - Antigravity 平台服务 |
+| 2026-04-13 | b598f97 | feat: 实现 Antigravity 平台服务和配额获取 |
+| 2026-04-13 | 5110681 | docs: 更新重构记录 - Dashboard/GroupCapacity/Ops 重构 |
+| 2026-04-13 | d027fe7 | feat: 实现 BillingCacheService, OpenAIGatewayService, GeminiMessagesCompatService |
+| 2026-04-13 | a607353 | feat: 实现 AdminService, AccountTestService, OpsAlertEvaluatorService |
+| 2026-04-13 | f5019ad | feat: 实现 OpenAIOAuthService 和 OpsScheduledReportService |
+| 2026-04-13 | 4951c96 | feat: 添加用户公告控制器 AnnouncementController |
+| 2026-04-13 | xxxxxxx | feat: 实现 DashboardAggregationService 仪表盘预聚合服务 |
+| 2026-04-13 | 321ec83 | feat: 实现 BillingService 综合计费服务和 CostBreakdown |
 
 ---
 
@@ -818,3 +831,133 @@
 - [x] AntigravityQuotaService - 配额信息获取与缓存
 - [x] 模型限流追踪 - Redis 实现
 - [x] OAuth 会话管理 - 内存中会话存储
+
+---
+
+### 2026-04-13 - OpsScheduledReportService 定时报表服务
+
+**目标**: 实现定时报表服务，支持日报、周报、错误摘要、账号健康报告
+
+**创建的文件 (1个)**:
+
+1. `backend-java/src/main/java/com/sub2api/module/ops/service/OpsScheduledReportService.java` (新建)
+   - 定时报表服务
+   - 使用 cron-utils 解析 cron 表达式
+   - 支持分布式锁（Redis leader election）
+   - 支持心跳追踪和错误记录
+   - 支持日报、周报、错误摘要、账号健康四种报表
+
+**实现的功能**:
+- [x] 定时报表调度 - 基于 cron 表达式
+- [x] 分布式 leader 锁 - 避免多实例重复执行
+- [x] 报表生成 - HTML 格式邮件内容
+- [x] 心跳追踪 - Redis 存储上次运行状态
+- [x] 错误处理 - 记录心跳错误状态
+
+---
+
+### 2026-04-13 - AnnouncementController 用户公告 API
+
+**目标**: 实现用户公告接口，提供公告列表和已读功能
+
+**创建的文件 (1个)**:
+
+1. `backend-java/src/main/java/com/sub2api/module/user/controller/AnnouncementController.java` (新建)
+   - 用户公告控制器
+   - GET /api/v1/announcements - 获取公告列表
+   - GET /api/v1/announcements/{id} - 获取公告详情
+   - POST /api/v1/announcements/{id}/read - 标记已读
+   - 支持 targeting 条件过滤（订阅、余额等）
+
+**实现的功能**:
+- [x] 公告列表查询 - 支持未读筛选
+- [x] 公告详情查询 - 支持可见性检查
+- [x] 已读标记 - 防止重复标记
+- [x] targeting 条件评估 - subscription、balance 类型
+
+---
+
+### 2026-04-13 - BillingService 综合计费服务
+
+**目标**: 实现完整的综合计费服务，整合 PricingService、BillingCalculator、ChannelService
+
+**创建的文件 (1个)**:
+
+1. `backend-java/src/main/java/com/sub2api/module/billing/service/BillingService.java` (新建)
+   - 综合计费服务
+   - 整合 PricingService、BillingCalculator、ChannelService
+   - 支持动态定价 + 硬编码 fallback
+   - 支持渠道价格覆盖
+   - 统一计费入口 calculateCostUnified
+
+**修改的文件 (1个)**:
+
+1. `backend-java/src/main/java/com/sub2api/module/billing/service/BillingCalculator.java`
+   - 添加 BillingMode 枚举（TOKEN/PER_REQUEST/IMAGE）
+   - 添加 CostBreakdown 类（费用明细）
+   - 添加 ImagePriceConfig 类
+   - 添加 computeTokenBreakdown - Token 计费核心逻辑
+   - 添加 calculatePerRequestCost - 按次计费
+   - 添加 calculateImageCost - 图片计费
+   - 添加 shouldApplySessionLongContextPricing - 长上下文判断
+   - 添加 convertPricing - PricingService.ModelPricing 转换
+
+**实现的功能**:
+- [x] 动态定价获取 - PricingService + Fallback
+- [x] 渠道价格覆盖 - ChannelModelPricing
+- [x] 统一计费入口 - calculateCostUnified
+- [x] 长上下文计费 - calculateCostWithLongContext
+- [x] 图片生成计费 - calculateImageCost
+- [x] 前端费用估算 - getEstimatedCost
+- [x] 完整 fallback 定价 - Claude/GPT/Gemini 系列
+
+---
+
+### 2026-04-13 - DashboardAggregationService 仪表盘预聚合服务
+
+**目标**: 实现仪表盘预聚合服务，支持定时聚合、回填、重新计算和保留策略清理
+
+**创建的文件 (8个)**:
+
+1. `backend-java/src/main/java/com/sub2api/module/dashboard/service/DashboardAggregationConfig.java` (新建)
+   - 仪表盘预聚合配置
+   - 支持 enabled, intervalSeconds, lookbackSeconds, backfillEnabled 等配置
+   - 支持保留策略配置（usageLogsDays, hourlyDays, dailyDays 等）
+
+2. `backend-java/src/main/java/com/sub2api/module/dashboard/model/entity/UsageDashboardHourly.java` (新建)
+   - 小时聚合实体
+   - 包含 bucketStart, totalRequests, inputTokens, outputTokens, cacheTokens, costs, activeUsers 等
+
+3. `backend-java/src/main/java/com/sub2api/module/dashboard/model/entity/UsageDashboardDaily.java` (新建)
+   - 天聚合实体
+   - 包含 bucketDate, totalRequests, inputTokens, outputTokens, cacheTokens, costs, activeUsers 等
+
+4. `backend-java/src/main/java/com/sub2api/module/dashboard/model/entity/UsageDashboardHourlyUsers.java` (新建)
+   - 小时活跃用户实体（去重）
+
+5. `backend-java/src/main/java/com/sub2api/module/dashboard/model/entity/UsageDashboardDailyUsers.java` (新建)
+   - 天活跃用户实体（去重）
+
+6. `backend-java/src/main/java/com/sub2api/module/dashboard/model/entity/DashboardAggregationWatermark.java` (新建)
+   - 聚合水位标记实体（单行表）
+
+7. `backend-java/src/main/java/com/sub2api/module/dashboard/mapper/DashboardAggregationMapper.java` (新建)
+   - 仪表盘预聚合 Mapper
+   - 支持水位管理、活跃用户插入、聚合 upsert、清理等操作
+   - 使用 PostgreSQL 特有的 date_trunc 和时区转换
+
+8. `backend-java/src/main/java/com/sub2api/module/dashboard/service/DashboardAggregationService.java` (新建)
+   - 仪表盘预聚合服务
+   - 定时聚合 usage_logs 到 hour/daily 聚合表
+   - 支持全量回填和重新计算
+   - 自动清理过期数据（保留策略）
+
+**实现的功能**:
+- [x] 定时聚合 - 每分钟执行，聚合到小时桶和天桶
+- [x] 回填功能 - 支持指定时间范围的全量回填
+- [x] 重新计算 - 支持清空后重建指定范围数据
+- [x] 保留清理 - 定期清理过期的小时/天聚合和 usage_logs
+- [x] 分区管理 - 支持 PostgreSQL 分区表的分区创建和删除
+- [x] 水位追踪 - 记录上次聚合时间，支持断点续传
+
+

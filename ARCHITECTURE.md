@@ -28,167 +28,226 @@ backend-java/
 ├── pom.xml                              # Maven 配置
 ├── Dockerfile                           # Docker 镜像构建
 ├── docker-compose.yml                    # Docker Compose 部署
+├── REFACTORING_TASKS.md                  # 重构任务清单
+├── REFACTOR_RECORD.md                   # 重构记录
+├── ARCHITECTURE.md                      # 架构文档
 │
 ├── src/main/java/com/sub2api/
-│   ├── Sub2ApiApplication.java          # 启动类
+│   ├── Sub2ApiApplication.java           # 启动类
 │   │
-│   ├── config/                          # 配置层
-│   │   ├── AppConfig.java               # 应用配置 (YAML映射)
-│   │   ├── RedisConfig.java             # Redis 配置
-│   │   ├── SecurityConfig.java          # Spring Security 配置
-│   │   ├── WebSocketConfig.java         # WebSocket 配置
-│   │   └── CorsConfig.java              # 跨域配置
+│   ├── config/                         # 配置层
+│   │   ├── AppConfig.java              # 应用配置 (YAML映射)
+│   │   ├── RedisConfig.java            # Redis 配置
+│   │   ├── SecurityConfig.java         # Spring Security 配置
+│   │   ├── WebSocketConfig.java        # WebSocket 配置
+│   │   └── CorsConfig.java             # 跨域配置
 │   │
 │   ├── module/                          # 业务模块 (DDD分层)
 │   │   ├── gateway/                     # API网关模块
 │   │   │   ├── controller/
-│   │   │   │   ├── ProxyController.java       # 代理转发入口
-│   │   │   │   ├── ClaudeController.java  # Claude兼容API
-│   │   │   │   ├── OpenAIController.java  # OpenAI兼容API
-│   │   │   │   ├── GeminiController.java  # Gemini兼容API
-│   │   │   │   └── AntigravityController.java
+│   │   │   │   ├── GatewayController.java      # 代理转发入口
+│   │   │   │   ├── ClaudeController.java        # Claude兼容API
+│   │   │   │   ├── OpenAIController.java        # OpenAI兼容API
+│   │   │   │   ├── GeminiController.java        # Gemini兼容API
+│   │   │   │   └── AntigravityController.java   # Antigravity API
 │   │   │   ├── service/
-│   │   │   │   ├── DispatchService.java       # 账号调度服务
-│   │   │   │   ├── ProxyService.java          # 代理转发服务
-│   │   │   │   ├── RateLimitService.java      # 限流服务
-│   │   │   │   ├── BillingService.java        # 计费服务
-│   │   │   │   └── UsageTrackService.java     # 用量追踪
+│   │   │   │   ├── ProxyService.java             # 代理转发服务
+│   │   │   │   ├── ConcurrencyService.java       # 并发控制服务
+│   │   │   │   ├── ProxyLatencyService.java      # 代理延迟追踪
+│   │   │   │   ├── UsagePrefetchService.java     # 用量预取服务
+│   │   │   │   ├── RpmCacheService.java          # RPM缓存服务
+│   │   │   │   ├── SessionCacheService.java      # 会话缓存服务
+│   │   │   │   ├── FailoverService.java          # 故障转移服务
+│   │   │   │   ├── ClaudeCodeValidator.java        # Claude Code验证
+│   │   │   │   ├── OpenAIGatewayService.java      # OpenAI网关服务
+│   │   │   │   ├── GeminiMessagesCompatService.java # Gemini兼容性
+│   │   │   │   ├── AntigravityService.java        # Antigravity服务
+│   │   │   │   └── AntigravityQuotaService.java   # Antigravity配额
 │   │   │   ├── websocket/
-│   │   │   │   └── OpenAIWebSocketHandler.java # WebSocket处理器
-│   │   │   └── handler/
-│   │   │       └── StreamHandler.java         # 流式响应处理器
+│   │   │   │   └── OpenAIWebSocketHandler.java   # WebSocket处理器
+│   │   │   └── filter/
+│   │   │       └── RequestBodyLimitFilter.java    # 请求体大小限制
 │   │   │
 │   │   ├── auth/                        # 认证模块
 │   │   │   ├── controller/
-│   │   │   │   ├── AuthController.java        # 登录/注册
-│   │   │   │   ├── OAuthController.java       # OAuth跳转/回调
-│   │   │   │   └── TokenController.java       # Token刷新
+│   │   │   │   ├── AuthController.java         # 登录/注册
+│   │   │   │   ├── OAuthController.java        # OAuth跳转/回调
+│   │   │   │   └── TokenController.java        # Token刷新
 │   │   │   ├── service/
-│   │   │   │   ├── AuthService.java           # 认证核心逻辑
+│   │   │   │   ├── AuthService.java            # 认证核心逻辑
 │   │   │   │   ├── OAuthService.java           # OAuth流程处理
-│   │   │   │   ├── JwtService.java            # JWT生成/验证
-│   │   │   │   └── TOTPService.java           # 双因素认证
-│   │   │   ├── strategy/                      # 认证策略
-│   │   │   │   ├── AuthStrategy.java          # 策略接口
-│   │   │   │   ├── PasswordStrategy.java
-│   │   │   │   ├── APIKeyStrategy.java
-│   │   │   │   └── OAuthStrategy.java
-│   │   │   ├── platform/                      # OAuth 平台处理器
-│   │   │   │   ├── OAuthHandler.java          # OAuth处理器接口
+│   │   │   │   ├── OpenAIOAuthService.java     # OpenAI OAuth服务
+│   │   │   │   ├── JwtService.java             # JWT生成/验证
+│   │   │   │   └── TOTPService.java            # 双因素认证
+│   │   │   ├── platform/                       # OAuth 平台处理器
+│   │   │   │   ├── OAuthHandler.java           # OAuth处理器接口
 │   │   │   │   ├── AnthropicOAuthHandler.java
 │   │   │   │   ├── OpenAIOAuthHandler.java
 │   │   │   │   └── GoogleOAuthHandler.java
-│   │   │   ├── websocket/
-│   │   │   │   └── AuthHandshakeInterceptor.java # WebSocket认证
 │   │   │   └── filter/
 │   │   │       ├── JwtAuthenticationFilter.java
 │   │   │       └── ApiKeyAuthenticationFilter.java
 │   │   │
 │   │   ├── admin/                       # 管理后台模块
 │   │   │   ├── controller/
-│   │   │   │   ├── UserAdminController.java     # 用户管理
-│   │   │   │   ├── AccountAdminController.java  # 账号管理
-│   │   │   │   ├── GroupAdminController.java    # 分组管理
-│   │   │   │   ├── APIKeyAdminController.java   # API Key管理
+│   │   │   │   ├── UserAdminController.java
+│   │   │   │   ├── AccountAdminController.java
+│   │   │   │   ├── GroupAdminController.java
+│   │   │   │   ├── APIKeyAdminController.java
 │   │   │   │   ├── SubscriptionAdminController.java
 │   │   │   │   ├── ProxyAdminController.java
 │   │   │   │   ├── PromoCodeAdminController.java
 │   │   │   │   ├── AnnouncementAdminController.java
 │   │   │   │   ├── StatisticsController.java
 │   │   │   │   ├── SettingAdminController.java
-│   │   │   │   └── ScheduledTestAdminController.java
-│   │   │   └── service/
-│   │   │       ├── UserAdminService.java
-│   │   │       ├── AccountAdminService.java
-│   │   │       ├── BillingAdminService.java
-│   │   │       ├── SettingService.java
-│   │   │       ├── SubscriptionService.java
-│   │   │       ├── ScheduledTestService.java
-│   │   │       ├── TLSFingerprintProfileService.java
-│   │   │       └── ErrorPassthroughRuleService.java
+│   │   │   │   ├── ScheduledTestAdminController.java
+│   │   │   │   └── ErrorPassthroughRuleController.java
+│   │   │   ├── service/
+│   │   │   │   ├── AdminService.java
+│   │   │   │   └── ScheduledTestService.java
+│   │   │   └── mapper/
 │   │   │
 │   │   ├── account/                      # 账号域 (核心)
-│   │   │   ├── model/
-│   │   │   │   ├── Account.java               # 账号实体
-│   │   │   │   ├── AccountGroup.java
-│   │   │   │   ├── AccountStatus.java          # 枚举: ACTIVE/EXHAUSTED/ERROR
-│   │   │   │   └── Platform.java               # 枚举: CLAUDE/OPENAI/GOOGLE/GEMINI
-│   │   │   ├── repository/
-│   │   │   │   └── AccountRepository.java
+│   │   │   ├── model/entity/
+│   │   │   │   └── Account.java
+│   │   │   ├── mapper/
+│   │   │   │   ├── AccountMapper.java
+│   │   │   │   └── AccountGroupMapper.java
 │   │   │   └── service/
-│   │   │       ├── AccountRefreshService.java  # 凭证刷新
-│   │   │       ├── AccountHealthService.java   # 健康检查
-│   │   │       └── AccountSelector.java        # 账号选择算法
+│   │   │       ├── AccountService.java
+│   │   │       ├── AccountSelector.java
+│   │   │       ├── AccountRefreshService.java
+│   │   │       ├── AccountHealthService.java
+│   │   │       ├── AccountExpiryService.java
+│   │   │       ├── AccountTestService.java
+│   │   │       ├── GroupService.java
+│   │   │       ├── GroupCapacityService.java
+│   │   │       ├── DeferredService.java
+│   │   │       ├── IdentityService.java
+│   │   │       └── RedisIdentityCache.java
 │   │   │
-│   │   ├── user/                        # 用户域
-│   │   │   ├── model/
+│   │   ├── user/                         # 用户域
+│   │   │   ├── controller/
+│   │   │   │   └── AnnouncementController.java  # 用户公告API
+│   │   │   ├── mapper/
+│   │   │   │   └── AnnouncementReadMapper.java
+│   │   │   ├── model/entity/
 │   │   │   │   ├── User.java
 │   │   │   │   ├── UserSubscription.java
-│   │   │   │   ├── UserAttribute.java
-│   │   │   │   └── AllowedGroup.java
-│   │   │   ├── repository/
-│   │   │   │   └── UserRepository.java
+│   │   │   │   └── AnnouncementRead.java
 │   │   │   └── service/
 │   │   │       ├── UserService.java
-│   │   │       ├── BalanceService.java
 │   │   │       └── SubscriptionService.java
 │   │   │
-│   │   ├── billing/                     # 计费域
-│   │   │   ├── model/
+│   │   ├── billing/                      # 计费域
+│   │   │   ├── model/entity/
 │   │   │   │   ├── UsageLog.java
 │   │   │   │   ├── PromoCode.java
 │   │   │   │   └── RedeemCode.java
-│   │   │   ├── service/
-│   │   │   │   ├── UsageLogService.java
-│   │   │   │   ├── BillingCalculator.java
-│   │   │   │   └── PromoCodeService.java
-│   │   │   └── repository/
-│   │   │       └── UsageLogRepository.java
+│   │   │   ├── mapper/
+│   │   │   │   ├── UsageLogMapper.java
+│   │   │   │   ├── PromoCodeMapper.java
+│   │   │   │   └── RedeemCodeMapper.java
+│   │   │   └── service/
+│   │   │       ├── BillingService.java          # 综合计费服务
+│   │   │       ├── BillingCalculator.java        # 计费计算器
+│   │   │       ├── BillingCacheService.java      # 计费缓存服务
+│   │   │       ├── RedisBillingCache.java        # Redis计费缓存
+│   │   │       ├── PricingService.java           # 动态定价服务
+│   │   │       ├── UsageLogService.java          # 用量日志服务
+│   │   │       ├── PromoCodeService.java         # 兑换码服务
+│   │   │       └── RateLimitService.java         # 限流服务
 │   │   │
-│   │   ├── apikey/                      # API Key域
-│   │   │   ├── model/
-│   │   │   │   ├── ApiKey.java
-│   │   │   │   └── ApiKeyPermission.java
-│   │   │   ├── repository/
-│   │   │   │   └── ApiKeyRepository.java
+│   │   ├── apikey/                        # API Key域
+│   │   │   ├── model/entity/
+│   │   │   │   └── ApiKey.java
+│   │   │   ├── mapper/
+│   │   │   │   └── ApiKeyMapper.java
 │   │   │   └── service/
 │   │   │       ├── ApiKeyService.java
-│   │   │       └── ApiKeyCacheService.java   # Redis缓存
+│   │   │       ├── ApiKeyCacheService.java
+│   │   │       └── RedisApiKeyAuthCache.java
 │   │   │
-│   │   └── common/                      # 通用模块
+│   │   ├── channel/                      # 渠道域
+│   │   │   ├── model/entity/
+│   │   │   │   ├── Channel.java
+│   │   │   │   ├── ChannelModelPricing.java
+│   │   │   │   └── PricingInterval.java
+│   │   │   ├── mapper/
+│   │   │   │   ├── ChannelMapper.java
+│   │   │   │   ├── ChannelModelPricingMapper.java
+│   │   │   │   ├── PricingIntervalMapper.java
+│   │   │   │   └── ChannelGroupMapper.java
+│   │   │   └── service/
+│   │   │       └── ChannelService.java
+│   │   │
+│   │   ├── dashboard/                    # 仪表盘域
+│   │   │   ├── model/entity/
+│   │   │   │   ├── UsageDashboardHourly.java       # 小时聚合实体
+│   │   │   │   ├── UsageDashboardDaily.java        # 天聚合实体
+│   │   │   │   ├── UsageDashboardHourlyUsers.java  # 小时活跃用户
+│   │   │   │   ├── UsageDashboardDailyUsers.java   # 天活跃用户
+│   │   │   │   └── DashboardAggregationWatermark.java # 聚合水位
+│   │   │   ├── model/vo/
+│   │   │   │   ├── DashboardStats.java
+│   │   │   │   ├── TrendDataPoint.java
+│   │   │   │   ├── ModelStat.java
+│   │   │   │   ├── GroupStat.java
+│   │   │   │   ├── GroupUsageSummary.java
+│   │   │   │   ├── UserUsageTrendPoint.java
+│   │   │   │   └── UserSpendingRankingResponse.java
+│   │   │   ├── mapper/
+│   │   │   │   ├── DashboardMapper.java
+│   │   │   │   └── DashboardAggregationMapper.java # 预聚合 Mapper
+│   │   │   ├── controller/
+│   │   │   │   └── DashboardController.java
+│   │   │   └── service/
+│   │   │       ├── DashboardService.java
+│   │   │       ├── DashboardAggregationService.java # 预聚合服务
+│   │   │       └── DashboardAggregationConfig.java  # 预聚合配置
+│   │   │
+│   │   ├── ops/                           # 运维监控域
+│   │   │   ├── model/entity/
+│   │   │   │   └── OpsErrorLog.java
+│   │   │   ├── model/vo/
+│   │   │   │   └── OpsDashboardOverview.java
+│   │   │   ├── mapper/
+│   │   │   │   └── OpsErrorLogMapper.java
+│   │   │   ├── controller/
+│   │   │   │   └── OpsController.java
+│   │   │   └── service/
+│   │   │       ├── OpsService.java
+│   │   │       ├── OpsAlertEvaluatorService.java
+│   │   │       ├── OpsScheduledReportService.java  # 定时报表
+│   │   │       └── SystemMetricsService.java
+│   │   │
+│   │   └── common/                       # 通用模块
 │   │       ├── model/
-│   │       │   ├── Result.java               # 统一响应
+│   │       │   ├── Result.java
 │   │       │   ├── PageResult.java
 │   │       │   └── ErrorCode.java
 │   │       ├── exception/
 │   │       │   ├── GlobalExceptionHandler.java
 │   │       │   ├── BusinessException.java
 │   │       │   └── RateLimitException.java
-│   │       └── util/
-│   │           ├── IpUtil.java
-│   │           ├── EncryptionUtil.java
-│   │           └── DateTimeUtil.java
+│   │       └── service/
+│   │           ├── EmailService.java
+│   │           ├── SettingService.java
+│   │           ├── TurnstileService.java
+│   │           └── GitHubReleaseService.java
 │   │
 │   └── resources/
 │       ├── application.yml
 │       ├── application-dev.yml
 │       ├── application-prod.yml
-│       └── mapper/                       # MyBatis XML
-│           ├── AccountMapper.xml
-│           ├── UserMapper.xml
-│           └── UsageLogMapper.xml
+│       └── mapper/
+│           └── ChannelGroupMapper.xml
 │
 ├── src/main/resources/
-│   └── db/migration/                     # Flyway 迁移
-│       ├── V1__init_schema.sql
-│       └── V2__add_xxx.sql
+│   └── db/migration/
 │
-├── src/test/java/                        # 测试
-│   ├── unit/
-│   └── integration/
-│
-├── build.gradle.kts
-└── settings.gradle.kts
+└── src/test/java/
+    └── unit/
 ```
 
 ---

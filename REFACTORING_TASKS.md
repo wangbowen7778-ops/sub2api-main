@@ -95,6 +95,7 @@
 | 任务 | 状态 | 说明 |
 |------|------|------|
 | DashboardService | ✅ 已完成 | 仪表盘服务 |
+| DashboardAggregationService | ✅ 已完成 | 仪表盘预聚合服务 |
 | GroupService | ✅ 已完成 | 分组服务 |
 
 ### 1.11 其他服务
@@ -121,7 +122,7 @@
 | 优先级 | 服务 | Go 对应文件 | 状态 |
 |--------|------|-------------|------|
 | P0 | **BillingService** | billing_service.go | ✅ 已完成 |
-| P0 | **DashboardAggregationService** | dashboard_aggregation_service.go | ⏳ 待处理 |
+| P0 | **DashboardAggregationService** | dashboard_aggregation_service.go | ✅ 已完成 |
 | P0 | **TokenRefreshService** | token_refresh_service.go | ⏳ 待处理 |
 
 ### P1 - 高优先级 (影响生产稳定性)
