@@ -128,7 +128,7 @@
 ### P1 - 高优先级 (影响生产稳定性)
 | 优先级 | 服务 | Go 对应文件 | 状态 |
 |--------|------|-------------|------|
-| P1 | **APIKeyAuthCacheService** | api_key_auth_cache.go | ⏳ 待处理 |
+| P1 | **APIKeyAuthCacheService** | api_key_auth_cache.go | ✅ 已完成 (RedisApiKeyAuthCache) |
 | P1 | **EmailQueueService** | email_queue_service.go | ✅ 已完成 |
 | P1 | **SubscriptionExpiryService** | subscription_expiry_service.go | ✅ 已完成 |
 | P1 | **IdempotencyCleanupService** | idempotency_cleanup_service.go | ✅ 已完成 |
@@ -168,7 +168,7 @@
 | Channel | 1 | 1 | 100% |
 | Dashboard | 3 | 3 | 100% |
 | 其他服务 | 10 | 10 | 100% |
-| **缺失服务** | 0 | 10 | 0% |
+| **缺失服务** | 0 | 9 | 0% |
 
 ---
 
