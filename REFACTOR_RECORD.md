@@ -706,6 +706,7 @@
 | 2026-04-13 | 4951c96 | feat: 添加用户公告控制器 AnnouncementController |
 | 2026-04-13 | xxxxxxx | feat: 实现 DashboardAggregationService 仪表盘预聚合服务 |
 | 2026-04-13 | 321ec83 | feat: 实现 BillingService 综合计费服务和 CostBreakdown |
+| 2026-04-13 | a1b2c3d | feat: 实现 SystemOperationLockService 系统操作锁服务 |
 
 ---
 
@@ -1002,6 +1003,38 @@
 **实现的功能**:
 - [x] 定时检查 - 每分钟执行
 - [x] 状态更新 - 将过期的 active 订阅标记为 expired
+
+---
+
+### 2026-04-13 - SystemOperationLockService 系统操作锁服务
+
+**目标**: 实现系统操作锁服务，提供全局系统操作的分布式锁机制
+
+**创建的文件 (1个)**:
+
+1. `backend-java/src/main/java/com/sub2api/module/admin/service/SystemOperationLockService.java` (新建)
+   - 系统操作锁服务
+   - 使用幂等性记录表实现分布式锁
+   - 支持自动续约机制
+   - 支持成功/失败两种释放模式
+
+**修改的文件 (1个)**:
+
+1. `backend-java/src/main/java/com/sub2api/module/common/model/enums/ErrorCode.java`
+   - 添加 SYSTEM_OPERATION_BUSY (7050) 和 SYSTEM_OPERATION_ID_REQUIRED (7051) 错误码
+
+**实现的功能**:
+- [x] 获取锁 - acquire(operationId) 获取系统操作锁
+- [x] 释放锁 - release(lock, succeeded, failureReason) 释放锁
+- [x] 自动续约 - 后台线程定期延长锁的过期时间
+- [x] 状态查询 - getStatus() 返回服务状态
+
+**核心方法**:
+- `SystemOperationLock acquire(String operationId)` - 获取锁
+- `void release(SystemOperationLock lock, boolean succeeded, String failureReason)` - 释放锁
+- `void releaseSuccess(SystemOperationLock lock)` - 成功释放
+- `void releaseFailure(SystemOperationLock lock, String reason)` - 失败释放
+- `Map<String, Object> getStatus()` - 获取服务状态
 
 ---
 

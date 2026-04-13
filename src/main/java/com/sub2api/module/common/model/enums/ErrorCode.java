@@ -96,6 +96,8 @@ public enum ErrorCode {
     PROXY_NOT_FOUND(7030, "代理配置不存在"),
     PROXY_DISABLED(7031, "代理已被禁用"),
     BACKUP_FAIL(7040, "数据备份失败"),
+    SYSTEM_OPERATION_BUSY(7050, "系统操作正在进行中"),
+    SYSTEM_OPERATION_ID_REQUIRED(7051, "操作ID不能为空"),
 
     // ========== 外部服务错误 8xxx ==========
     EXTERNAL_SERVICE_UNAVAILABLE(8001, "外部服务不可用"),

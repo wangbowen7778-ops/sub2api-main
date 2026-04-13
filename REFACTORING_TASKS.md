@@ -111,8 +111,8 @@
 | ScheduledTestService | ✅ 已完成 | 定时测试服务 |
 | UsageLogService | ✅ 已完成 | 用量日志服务 |
 | IdentityService | ✅ 已完成 | 身份服务 |
-| IdempotencyCleanupService | ⏳ 待处理 | 幂等性清理服务 |
-| SubscriptionExpiryService | ⏳ 待处理 | 订阅过期服务 |
+| IdempotencyCleanupService | ✅ 已完成 | 幂等性清理服务 |
+| SubscriptionExpiryService | ✅ 已完成 | 订阅过期服务 |
 
 ---
 
@@ -137,7 +137,7 @@
 | 优先级 | 服务 | Go 对应文件 | 状态 |
 |--------|------|-------------|------|
 | P2 | **GeminiOAuthService** | gemini_oauth_service.go | ⏳ 待处理 |
-| P2 | **SystemOperationLockService** | system_operation_lock_service.go | ⏳ 待处理 |
+| P2 | **SystemOperationLockService** | system_operation_lock_service.go | ✅ 已完成 |
 | P2 | **UsageCleanupService** | usage_cleanup_service.go | ⏳ 待处理 |
 | P2 | **SchedulerSnapshotService** | scheduler_snapshot_service.go | ⏳ 待处理 |
 | P2 | **SchedulerCache** | scheduler_cache.go | ⏳ 待处理 |
@@ -168,7 +168,7 @@
 | Channel | 1 | 1 | 100% |
 | Dashboard | 3 | 3 | 100% |
 | 其他服务 | 10 | 10 | 100% |
-| **缺失服务** | 0 | 9 | 0% |
+| **缺失服务** | 5 | 9 | 56% |
 
 ---
 
