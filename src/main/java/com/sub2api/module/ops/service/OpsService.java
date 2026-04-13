@@ -320,4 +320,79 @@ public class OpsService {
         private Long groupId;
         private String queryMode; // raw, preagg, auto
     }
+
+    /**
+     * 错误日志过滤器
+     */
+    @lombok.Data
+    public static class OpsErrorLogFilter {
+        private LocalDateTime startTime;
+        private LocalDateTime endTime;
+        private String platform;
+        private Long groupId;
+        private Integer page;
+        private Integer pageSize;
+    }
+
+    /**
+     * 获取错误日志列表
+     */
+    public List<OpsErrorLog> getErrorLogs(OpsErrorLogFilter filter) {
+        if (filter == null) {
+            return List.of();
+        }
+        try {
+            List<OpsErrorLog> errors;
+            if (filter.getPlatform() != null && !filter.getPlatform().isBlank()) {
+                errors = errorLogMapper.selectByTimeRangeAndPlatform(
+                        filter.getStartTime(), filter.getEndTime(), filter.getPlatform());
+            } else if (filter.getGroupId() != null) {
+                errors = errorLogMapper.selectByTimeRangeAndGroupId(
+                        filter.getStartTime(), filter.getEndTime(), filter.getGroupId());
+            } else {
+                errors = errorLogMapper.selectByTimeRange(filter.getStartTime(), filter.getEndTime());
+            }
+
+            // Apply pagination
+            if (filter.getPage() != null && filter.getPageSize() != null && filter.getPage() > 0) {
+                int start = (filter.getPage() - 1) * filter.getPageSize();
+                int end = Math.min(start + filter.getPageSize(), errors.size());
+                if (start < errors.size()) {
+                    return errors.subList(start, end);
+                }
+                return List.of();
+            }
+            return errors;
+        } catch (Exception e) {
+            log.warn("Failed to get error logs: {}", e.getMessage());
+            return List.of();
+        }
+    }
+
+    /**
+     * 账号可用性信息
+     */
+    @lombok.Data
+    public static class AccountAvailability {
+        private List<AccountStatus> accounts;
+    }
+
+    @lombok.Data
+    public static class AccountStatus {
+        private Long accountId;
+        private String platform;
+        private Boolean isAvailable;
+        private Boolean isRateLimited;
+        private Boolean hasError;
+    }
+
+    /**
+     * 获取账号可用性（模拟实现）
+     */
+    public AccountAvailability getAccountAvailability(String platformFilter, Long groupIdFilter) {
+        // 简化实现，实际应查询账号表获取真实状态
+        AccountAvailability availability = new AccountAvailability();
+        availability.setAccounts(List.of());
+        return availability;
+    }
 }
