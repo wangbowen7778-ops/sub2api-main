@@ -123,7 +123,7 @@
 |--------|------|-------------|------|
 | P0 | **BillingService** | billing_service.go | ✅ 已完成 |
 | P0 | **DashboardAggregationService** | dashboard_aggregation_service.go | ✅ 已完成 |
-| P0 | **TokenRefreshService** | token_refresh_service.go | ⏳ 待处理 |
+| P0 | **TokenRefreshService** | token_refresh_service.go | ✅ 已完成 (AccountRefreshService) |
 
 ### P1 - 高优先级 (影响生产稳定性)
 | 优先级 | 服务 | Go 对应文件 | 状态 |
@@ -166,25 +166,20 @@
 | User | 3 | 3 | 100% |
 | API Key | 2 | 3 | 67% |
 | Channel | 1 | 1 | 100% |
-| Dashboard | 2 | 2 | 100% |
+| Dashboard | 3 | 3 | 100% |
 | 其他服务 | 10 | 10 | 100% |
-| **缺失服务** | 0 | 16 | 0% |
+| **缺失服务** | 0 | 14 | 0% |
 
 ---
 
 ## 四、Git 提交历史
 
 ```
+8a0ad2b feat: 实现 DashboardAggregationService 仪表盘预聚合服务
 4951c96 feat: 添加用户公告控制器 AnnouncementController
 f5019ad feat: 实现 OpenAIOAuthService 和 OpsScheduledReportService
 d027fe7 feat: 实现 BillingCacheService, OpenAIGatewayService, GeminiMessagesCompatService
 a607353 feat: 实现 AdminService, AccountTestService, OpsAlertEvaluatorService
-9245a4b docs: 更新重构记录 - Antigravity 平台服务
-b598f97 feat: 实现 Antigravity 平台服务和配额获取
-5110681 docs: 更新重构记录 - Dashboard/GroupCapacity/Ops 重构
-cbbea29 feat: 完成 Dashboard/GroupCapacity/Ops 重构
-38ce8c2 docs: 更新重构记录 - OpsService 系统指标和任务心跳
-8f842b3 feat(ops): 实现 OpsService 系统指标和任务心跳
 ```
 
 ---

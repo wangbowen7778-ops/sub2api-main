@@ -8,7 +8,7 @@
 ## 当前状态
 - **覆盖率**: ~70-80%
 - **状态**: 持续重构中，核心功能基本完善
-- **最近更新**: 2026-04-13 - DashboardAggregationService 仪表盘预聚合服务
+- **最近更新**: 2026-04-13 - DashboardAggregationService 仪表盘预聚合服务、TokenRefreshService（基础实现）
 - **状态**: 持续重构中，核心功能逐步完善
 
 **已完成:**
@@ -44,6 +44,7 @@
 - [x] AnnouncementController - 用户公告 API（列表、详情、已读）
 - [x] BillingService - 综合计费服务（统一计费入口、渠道覆盖、长上下文计费）
 - [x] DashboardAggregationService - 仪表盘预聚合服务（定时聚合、回填、保留清理）
+- [x] TokenRefreshService - OAuth Token 刷新服务（AccountRefreshService 已实现基础功能）
 
 ---
 
