@@ -166,9 +166,10 @@ public class SubscriptionService extends ServiceImpl<UserSubscriptionMapper, Use
 
     /**
      * 过期订阅清理 (定时任务调用)
+     * @return 更新了多少条订阅
      */
     @Transactional(rollbackFor = Exception.class)
-    public void expireSubscriptions() {
+    public int expireSubscriptions() {
         LambdaQueryWrapper<UserSubscription> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(UserSubscription::getStatus, "active")
                 .lt(UserSubscription::getExpiresAt, LocalDateTime.now())
@@ -181,5 +182,6 @@ public class SubscriptionService extends ServiceImpl<UserSubscriptionMapper, Use
             updateById(subscription);
             log.info("订阅已过期: subscriptionId={}", subscription.getId());
         }
+        return expiredSubscriptions.size();
     }
 }

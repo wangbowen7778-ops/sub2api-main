@@ -8,7 +8,7 @@
 ## 当前状态
 - **覆盖率**: ~70-80%
 - **状态**: 持续重构中，核心功能基本完善
-- **最近更新**: 2026-04-13 - DashboardAggregationService 仪表盘预聚合服务、TokenRefreshService（基础实现）
+- **最近更新**: 2026-04-13 - EmailQueueService、SubscriptionExpiryService、IdempotencyCleanupService
 - **状态**: 持续重构中，核心功能逐步完善
 
 **已完成:**
@@ -960,5 +960,67 @@
 - [x] 保留清理 - 定期清理过期的小时/天聚合和 usage_logs
 - [x] 分区管理 - 支持 PostgreSQL 分区表的分区创建和删除
 - [x] 水位追踪 - 记录上次聚合时间，支持断点续传
+
+---
+
+### 2026-04-13 - EmailQueueService 异步邮件队列服务
+
+**目标**: 实现异步邮件队列服务，将邮件发送任务放入队列异步执行
+
+**创建的文件 (1个)**:
+
+1. `backend-java/src/main/java/com/sub2api/module/common/service/EmailQueueService.java` (新建)
+   - 异步邮件队列服务
+   - 支持验证码邮件和密码重置邮件两种任务类型
+   - 默认 3 个工作线程，队列容量 100
+   - 支持优雅关闭
+
+**实现的功能**:
+- [x] 任务入队 - enqueueVerifyCode, enqueuePasswordReset
+- [x] 工作线程池 - 固定线程数执行任务
+- [x] 优雅关闭 - PreDestroy 时等待任务完成
+- [x] 状态查询 - getStatus 返回队列状态
+
+---
+
+### 2026-04-13 - SubscriptionExpiryService 订阅过期服务
+
+**目标**: 实现订阅过期服务，定期检查并更新过期的订阅状态
+
+**创建的文件 (1个)**:
+
+1. `backend-java/src/main/java/com/sub2api/module/user/service/SubscriptionExpiryService.java` (新建)
+   - 订阅过期服务
+   - 每分钟检查一次过期订阅
+   - 调用 SubscriptionService.expireSubscriptions() 更新状态
+
+**修改的文件 (1个)**:
+
+1. `backend-java/src/main/java/com/sub2api/module/user/service/SubscriptionService.java`
+   - expireSubscriptions() 方法改为返回 int（更新的记录数）
+
+**实现的功能**:
+- [x] 定时检查 - 每分钟执行
+- [x] 状态更新 - 将过期的 active 订阅标记为 expired
+
+---
+
+### 2026-04-13 - IdempotencyCleanupService 幂等性清理服务
+
+**目标**: 实现幂等性记录清理服务，定期清理已过期的幂等记录
+
+**创建的文件 (1个)**:
+
+1. `backend-java/src/main/java/com/sub2api/module/admin/service/IdempotencyCleanupService.java` (新建)
+   - 幂等性清理服务
+   - 启动时先清理一轮防止积压
+   - 支持配置清理间隔和批次大小
+
+**实现的功能**:
+- [x] 启动时清理 - 防止重启后积压
+- [x] 定时清理 - 每分钟执行
+- [x] 配置化 - cleanupIntervalSeconds, cleanupBatchSize
+
+
 
 
