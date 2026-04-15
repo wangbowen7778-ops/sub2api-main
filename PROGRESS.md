@@ -103,9 +103,9 @@
 | Service | Go Source | Status | Description |
 |---------|-----------|--------|-------------|
 | GeminiOAuthService | `gemini_oauth_service.go` | Pending | Gemini Code Assist + AI Studio OAuth |
-| UsageCleanupService | `usage_cleanup_service.go` | Pending | Periodic usage_logs cleanup by retention policy |
-| SchedulerSnapshotService | `scheduler_snapshot_service.go` | Pending | Account scheduler state snapshot for debugging |
-| SchedulerCache | `scheduler_cache.go` | Pending | In-memory cache for account scheduling decisions |
+| UsageCleanupService | `usage_cleanup_service.go` | Done | Periodic usage_logs cleanup by retention policy |
+| SchedulerSnapshotService | `scheduler_snapshot_service.go` | Done | Account scheduler state snapshot for debugging |
+| SchedulerCache | `scheduler_cache.go` | Done | Redis cache for account scheduling decisions |
 
 #### P3 - Low Priority (Optional Features)
 
