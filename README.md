@@ -1,90 +1,193 @@
 # Sub2API Java Backend
 
-AI API Gateway 后端服务 (Java 版)
+AI API Gateway Platform - Java backend implementation.
 
-## 技术栈
+Distributes and manages AI product subscription API quotas. Users access upstream AI services (Claude, OpenAI, Gemini, etc.) via platform-generated API keys with authentication, billing, load balancing, and request forwarding.
 
-- Java 21
-- Spring Boot 3.4
-- MyBatis-Plus 3.5
-- PostgreSQL 15+
-- Redis 7+
-- Spring Security + JWT
+## Tech Stack
 
-## 快速开始
+| Layer | Technology |
+|-------|-----------|
+| Language | Java 21 |
+| Framework | Spring Boot 3.4 |
+| ORM | MyBatis-Plus 3.5 |
+| Database | PostgreSQL 15+ |
+| Cache | Redis 7+ |
+| Security | Spring Security + JWT (jjwt) |
+| API Docs | SpringDoc OpenAPI 3 (Swagger UI) |
+| Build | Maven 3.9+ |
+| HTTP Client | Spring WebClient (Reactor Netty) |
+| Deploy | Docker + Docker Compose |
 
-### 前置条件
+## Prerequisites
 
 - JDK 21+
 - Maven 3.9+
 - PostgreSQL 15+
 - Redis 7+
 
-### 配置
+## Quick Start
 
-1. 复制配置模板:
 ```bash
+# 1. Configure
 cp src/main/resources/application.yml src/main/resources/application-local.yml
-```
+# Edit application-local.yml with your DB and Redis connection info
 
-2. 修改 `application-local.yml` 中的数据库和 Redis 连接信息
-
-### 构建
-
-```bash
+# 2. Build
 mvn clean package -DskipTests
-```
 
-### 运行
-
-```bash
+# 3. Run
 java -jar target/sub2api-backend.jar
-```
 
-### Docker 部署
-
-```bash
+# Or with Docker
 docker-compose up -d
 ```
 
-## 项目结构
+API docs available at: `http://localhost:8080/swagger-ui.html`
+
+## Project Structure
 
 ```
 src/main/java/com/sub2api/
-├── module/
-│   ├── common/          # 通用模块 (配置/异常/工具)
-│   ├── auth/           # 认证模块 (JWT/OAuth/API Key)
-│   ├── user/           # 用户模块
-│   ├── apikey/         # API Key 模块
-│   ├── account/        # 账号模块
-│   ├── billing/        # 计费模块
-│   ├── gateway/        # API 网关模块
-│   └── admin/          # 管理后台模块
-└── resources/
-    └── mapper/         # MyBatis XML
+├── Sub2ApiApplication.java          # Spring Boot entry point
+└── module/
+    ├── common/                      # Cross-cutting concerns
+    │   ├── config/                  # Redis, Security, WebSocket, WebClient, MyBatis
+    │   ├── exception/               # GlobalExceptionHandler, BusinessException
+    │   ├── model/                   # Result, PageResult, ErrorCode
+    │   ├── service/                 # Email, Turnstile, GitHub Release
+    │   └── util/                    # DateTime, Encryption, IP utilities
+    │
+    ├── auth/                        # Authentication & Authorization
+    │   ├── controller/              # Login, Register, OAuth endpoints
+    │   ├── filter/                  # JWT filter, API Key filter
+    │   ├── service/                 # Auth, JWT, TOTP, OAuth services
+    │   │   └── platform/            # Anthropic, OpenAI, Google OAuth handlers
+    │   └── websocket/               # WebSocket auth interceptor
+    │
+    ├── user/                        # User Management
+    │   ├── controller/              # User self-service, Announcements
+    │   ├── mapper/                  # User, Subscription, AnnouncementRead
+    │   ├── model/entity/            # User, UserSubscription, AnnouncementRead
+    │   └── service/                 # User, Subscription, SubscriptionExpiry
+    │
+    ├── account/                     # Upstream Account Management (Core)
+    │   ├── mapper/                  # Account, AccountGroup, Group, Proxy
+    │   ├── model/                   # Account, Group, Proxy entities + enums
+    │   └── service/                 # Account CRUD, Selector, Health, Refresh, Expiry, Test
+    │
+    ├── apikey/                      # API Key Management
+    │   ├── mapper/                  # ApiKey mapper
+    │   ├── model/                   # ApiKey entity, ApiKeyInfo VO
+    │   └── service/                 # ApiKey CRUD, Cache (memory + Redis L2)
+    │
+    ├── gateway/                     # API Gateway (Core)
+    │   ├── controller/              # Gateway, OpenAI, Antigravity endpoints
+    │   ├── filter/                  # Request body limit filter
+    │   ├── service/                 # Proxy, Failover, Concurrency, Latency, Session,
+    │   │                            # RPM, UsagePrefetch, ClaudeCode, OpenAI, Gemini,
+    │   │                            # Antigravity, AntigravityQuota
+    │   └── websocket/               # OpenAI WebSocket handler
+    │
+    ├── billing/                     # Billing & Pricing
+    │   ├── mapper/                  # UsageLog, PromoCode, RedeemCode
+    │   ├── model/                   # Billing entities + BillingStatistics VO
+    │   └── service/                 # Billing, Calculator, Pricing, Cache, RateLimit,
+    │                                # UsageLog, PromoCode, RedeemCode
+    │
+    ├── channel/                     # Channel Routing
+    │   ├── controller/              # Channel admin API
+    │   ├── mapper/                  # Channel, ChannelModelPricing, PricingInterval, ChannelGroup
+    │   ├── model/entity/            # Channel, ChannelModelPricing, PricingInterval
+    │   └── service/                 # Channel CRUD, model mapping, cache
+    │
+    ├── dashboard/                   # Analytics & Reporting
+    │   ├── controller/              # Dashboard admin API
+    │   ├── mapper/                  # Dashboard queries, Aggregation mapper
+    │   ├── model/                   # Aggregation entities + stats VOs
+    │   └── service/                 # Dashboard stats, Aggregation (hourly/daily), Config
+    │
+    ├── admin/                       # Admin Panel
+    │   ├── controller/              # 12 admin controllers
+    │   ├── mapper/                  # Announcement, Setting, ErrorRule, TLS, etc.
+    │   ├── model/entity/            # Admin-specific entities
+    │   └── service/                 # Admin, Announcement, ErrorRule, Idempotency,
+    │                                # ScheduledTest, Setting, SystemLock, TLS
+    │
+    └── ops/                         # Operations Monitoring
+        ├── controller/              # Ops dashboard, errors, metrics
+        ├── mapper/                  # Error log mapper
+        ├── model/                   # OpsErrorLog entity, OpsDashboardOverview VO
+        └── service/                 # Ops, AlertEvaluator, ScheduledReport, SystemMetrics
 ```
 
-## API 文档
+## Environment Variables
 
-启动后访问: http://localhost:8080/swagger-ui.html
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `DB_HOST` | PostgreSQL host | `localhost` |
+| `DB_PORT` | PostgreSQL port | `5432` |
+| `DB_NAME` | Database name | `sub2api` |
+| `DB_USERNAME` | Database user | `postgres` |
+| `DB_PASSWORD` | Database password | `postgres` |
+| `REDIS_HOST` | Redis host | `localhost` |
+| `REDIS_PORT` | Redis port | `6379` |
+| `REDIS_PASSWORD` | Redis password | (none) |
+| `JWT_SECRET` | JWT signing secret | **(required)** |
+| `ANTHROPIC_CLIENT_ID` | Anthropic OAuth client ID | (optional) |
+| `ANTHROPIC_CLIENT_SECRET` | Anthropic OAuth client secret | (optional) |
+| `OPENAI_CLIENT_ID` | OpenAI OAuth client ID | (optional) |
+| `OPENAI_CLIENT_SECRET` | OpenAI OAuth client secret | (optional) |
+| `GOOGLE_CLIENT_ID` | Google OAuth client ID | (optional) |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret | (optional) |
 
-## 环境变量
+## API Endpoints Overview
 
-| 变量 | 说明 | 默认值 |
-|------|------|--------|
-| DB_HOST | 数据库主机 | localhost |
-| DB_PORT | 数据库端口 | 5432 |
-| DB_NAME | 数据库名 | sub2api |
-| DB_USERNAME | 数据库用户名 | postgres |
-| DB_PASSWORD | 数据库密码 | postgres |
-| REDIS_HOST | Redis 主机 | localhost |
-| REDIS_PORT | Redis 端口 | 6379 |
-| JWT_SECRET | JWT 密钥 | (需设置) |
-| OAUTH_* | OAuth 配置 | (可选) |
+### Public
 
-## 开发规范
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/auth/login` | User login |
+| POST | `/auth/register` | User registration |
+| GET | `/health` | Health check |
 
-- 遵循阿里巴巴 Java 开发规范
-- 使用 Lombok 简化代码
-- 所有接口返回统一响应格式 (Result)
-- 异常通过 GlobalExceptionHandler 统一处理
+### API Gateway (API Key auth)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/v1/messages` | Anthropic Claude API (SSE) |
+| POST | `/v1/chat/completions` | OpenAI Chat API |
+| POST | `/v1/responses` | OpenAI Responses API |
+| POST | `/v1/embeddings` | Embeddings API |
+| GET | `/v1/models` | List available models |
+| GET | `/v1/usage` | API Key usage info |
+| ANY | `/v1beta/**` | Gemini API passthrough |
+| ANY | `/antigravity/**` | Antigravity API |
+| WS | `/v1/responses/ws` | OpenAI WebSocket |
+
+### Admin (JWT + ROLE_ADMIN)
+
+`/admin/users`, `/admin/accounts`, `/admin/groups`, `/admin/channels`, `/admin/api-keys`, `/admin/settings`, `/admin/dashboard`, `/admin/ops`, `/admin/announcements`, `/admin/subscriptions`, `/admin/billing`, `/admin/proxies`, `/admin/error-passthrough-rules`, `/admin/scheduled-tests`, `/admin/tls-fingerprints`
+
+## Docker Deployment
+
+```bash
+# Start all services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f backend
+
+# Stop
+docker-compose down
+```
+
+Services: backend (8080), PostgreSQL (5432), Redis (6379)
+
+## Documentation
+
+| File | Purpose |
+|------|---------|
+| [CLAUDE.md](CLAUDE.md) | AI context, coding standards, git conventions |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | System architecture and design |
+| [PROGRESS.md](PROGRESS.md) | Refactoring progress and pending items |
