@@ -24,7 +24,7 @@
         <java.version>17</java.version>
         <mybatis-plus.version>3.5.7</mybatis-plus.version>
         <jwt.version>0.12.6</jwt.version>
-        <springdoc.version>2.6.0</springdoc.version>
+        <springdoc.version>2.7.0</springdoc.version>
         <hutool.version>5.8.26</hutool.version>
         <lombok.version>1.18.38</lombok.version>
         <easyexcel.version>3.3.4</easyexcel.version>
