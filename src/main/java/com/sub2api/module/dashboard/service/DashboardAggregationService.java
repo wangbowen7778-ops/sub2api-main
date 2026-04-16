@@ -141,13 +141,13 @@ public class DashboardAggregationService {
         }
 
         final LocalDateTime startUTC = start, endUTC = end;
-        Thread.ofVirtual().start(() -> {
+        new Thread(() -> {
             try {
                 backfillRange(startUTC, endUTC);
             } catch (Exception e) {
                 log.error("Backfill failed: {}", e.getMessage(), e);
             }
-        });
+        }).start();
     }
 
     /**
@@ -165,7 +165,7 @@ public class DashboardAggregationService {
         }
 
         final LocalDateTime startUTC = start, endUTC = end;
-        Thread.ofVirtual().start(() -> {
+        new Thread(() -> {
             int maxRetries = 3;
             for (int i = 0; i < maxRetries; i++) {
                 try {
@@ -225,7 +225,7 @@ public class DashboardAggregationService {
     /**
      * 执行重新计算（清空范围内数据后重建）
      */
-    private void recomputeRange(LocalDateTime start, LocalDateTime end) {
+    public void recomputeRange(LocalDateTime start, LocalDateTime end) {
         if (!running.compareAndSet(false, true)) {
             throw new RuntimeException("aggregation job is already running");
         }
@@ -337,7 +337,7 @@ public class DashboardAggregationService {
 
         try {
             LocalDateTime hourlyCutoff = now.minusDays(config.getRetention().getHourlyDays());
-            LocalDate dailyCutoff = now.minusDays(config.getRetention().getDailyDays());
+            LocalDate dailyCutoff = now.minusDays(config.getRetention().getDailyDays()).toLocalDate();
             LocalDateTime usageCutoff = now.minusDays(config.getRetention().getUsageLogsDays());
 
             // 清理聚合表
@@ -379,7 +379,7 @@ public class DashboardAggregationService {
     private void cleanupUsageLogsPartitions(LocalDateTime cutoff) {
         try {
             List<String> partitions = aggregationMapper.getUsageLogsPartitions();
-            LocalDate cutoffMonth = LocalDate.from(cutoff.atStartOfDay(zoneId)).toLocalDate().withDayOfMonth(1);
+            LocalDate cutoffMonth = cutoff.atZone(zoneId).toLocalDate().withDayOfMonth(1);
 
             for (String partition : partitions) {
                 if (!partition.startsWith("usage_logs_")) {

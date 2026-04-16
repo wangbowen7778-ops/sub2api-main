@@ -18,6 +18,7 @@ import java.util.Map;
 
 /**
  * Account credential refresh service
+ * Note: Go backend stores refresh token in credentials JSONB, not as separate field
  *
  * @author Alibaba Java Code Guidelines
  */
@@ -38,7 +39,7 @@ public class AccountRefreshService {
     public void refreshOAuthCredentials() {
         log.debug("Starting OAuth credential refresh...");
 
-        List<Account> accounts = accountService.listAllWithRefreshToken();
+        List<Account> accounts = accountService.listAllOAuthAccounts();
         for (Account account : accounts) {
             try {
                 refreshAccountCredential(account);
@@ -53,24 +54,25 @@ public class AccountRefreshService {
      * Refresh single account credential
      */
     private void refreshAccountCredential(Account account) {
-        // Check if refresh is needed
-        if (account.getCredentialExpiredAt() == null ||
-                account.getCredentialExpiredAt().isAfter(LocalDateTime.now().plusHours(1))) {
+        Map<String, Object> credentials = account.getCredentials();
+        if (credentials == null) {
+            log.warn("Account has no credentials, skipping refresh: accountId={}", account.getId());
             return;
         }
 
-        // Call corresponding refresh API based on different platforms
-        String platform = account.getPlatform();
-        String refreshToken = account.getRefreshToken();
+        // Get refresh token from credentials JSON
+        Object refreshTokenObj = credentials.get("refresh_token");
+        String refreshToken = refreshTokenObj != null ? refreshTokenObj.toString() : null;
 
         if (refreshToken == null || refreshToken.isBlank()) {
-            log.warn("Account has no refresh token, skipping refresh: accountId={}, platform={}", account.getId(), platform);
+            log.warn("Account has no refresh token in credentials, skipping refresh: accountId={}, platform={}", account.getId(), account.getPlatform());
             return;
         }
 
         try {
             Map<String, Object> newCredentials = null;
 
+            String platform = account.getPlatform();
             switch (platform != null ? platform.toLowerCase() : "") {
                 case "anthropic":
                     newCredentials = refreshAnthropicToken(account, refreshToken);
@@ -92,10 +94,8 @@ public class AccountRefreshService {
             if (newCredentials != null) {
                 // Update account credentials
                 account.setCredentials(newCredentials);
-                account.setLastRefreshAt(LocalDateTime.now());
-                account.setRefreshErrorCount(0);
                 account.setStatus(AccountStatus.ACTIVE.getValue());
-                account.setCredentialExpiredAt(LocalDateTime.now().plusDays(30));
+                account.setErrorMessage(null);
                 accountService.updateById(account);
                 log.info("Successfully refreshed token: accountId={}, platform={}", account.getId(), platform);
             }
@@ -140,9 +140,6 @@ public class AccountRefreshService {
                 credentials.put("access_token", json.get("access_token").asText());
                 if (json.has("refresh_token")) {
                     credentials.put("refresh_token", json.get("refresh_token").asText());
-                }
-                if (json.has("expires_in")) {
-                    account.setCredentialExpiredAt(LocalDateTime.now().plusSeconds(json.get("expires_in").asInt()));
                 }
                 if (json.has("token_type")) {
                     credentials.put("token_type", json.get("token_type").asText());
@@ -193,9 +190,6 @@ public class AccountRefreshService {
                 if (json.has("refresh_token") && !json.get("refresh_token").isNull()) {
                     credentials.put("refresh_token", json.get("refresh_token").asText());
                 }
-                if (json.has("expires_in")) {
-                    account.setCredentialExpiredAt(LocalDateTime.now().plusSeconds(json.get("expires_in").asInt()));
-                }
                 if (json.has("token_type")) {
                     credentials.put("token_type", json.get("token_type").asText());
                 }
@@ -244,9 +238,6 @@ public class AccountRefreshService {
                 if (json.has("refresh_token")) {
                     credentials.put("refresh_token", json.get("refresh_token").asText());
                 }
-                if (json.has("expires_in")) {
-                    account.setCredentialExpiredAt(LocalDateTime.now().plusSeconds(json.get("expires_in").asInt()));
-                }
                 return credentials;
             }
             return null;
@@ -288,9 +279,6 @@ public class AccountRefreshService {
                 if (json.has("refresh_token")) {
                     credentials.put("refresh_token", json.get("refresh_token").asText());
                 }
-                if (json.has("expires_in")) {
-                    account.setCredentialExpiredAt(LocalDateTime.now().plusSeconds(json.get("expires_in").asInt()));
-                }
                 return credentials;
             }
             return null;
@@ -304,15 +292,8 @@ public class AccountRefreshService {
      * Handle refresh failure
      */
     private void handleRefreshFailure(Account account, String error) {
-        int errorCount = account.getRefreshErrorCount() != null ? account.getRefreshErrorCount() : 0;
-        account.setRefreshErrorCount(errorCount + 1);
-        account.setLastError(error);
-
-        if (errorCount >= 3) {
-            account.setStatus(AccountStatus.CREDENTIAL_EXPIRED.getValue());
-            log.warn("Account credential refresh failed too many times, disabled: accountId={}", account.getId());
-        }
-
+        account.setErrorMessage(error);
+        account.setStatus(AccountStatus.ERROR.getValue());
         accountService.updateById(account);
     }
 

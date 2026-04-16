@@ -98,16 +98,14 @@ public class OpsScheduledReportService {
     private List<String> reportRecipients;
 
     private ZoneId zoneId;
-    private final CronParser cronParser;
-
-    public OpsScheduledReportService() {
-        // Initialize cron parser with UNIX definition
-        CronDefinition cronDefinition = CronDefinitionBuilder.instanceDefinitionFor(CronType.UNIX);
-        this.cronParser = new CronParser(cronDefinition);
-    }
+    private CronParser cronParser;
 
     @PostConstruct
     public void init() {
+        // Initialize cron parser with UNIX definition
+        CronDefinition cronDefinition = CronDefinitionBuilder.instanceDefinitionFor(CronType.UNIX);
+        this.cronParser = new CronParser(cronDefinition);
+
         try {
             this.zoneId = ZoneId.of(timezone);
         } catch (Exception e) {
@@ -265,12 +263,16 @@ public class OpsScheduledReportService {
 
         if (overview.getRequestStats() != null) {
             sb.append("<li><b>Total Requests</b>: ").append(overview.getRequestStats().getTotalRequests()).append("</li>");
-            sb.append("<li><b>Success</b>: ").append(overview.getRequestStats().getSuccessCount()).append("</li>");
+            sb.append("<li><b>Success</b>: ").append(overview.getRequestStats().getSuccessfulRequests()).append("</li>");
         }
 
         if (overview.getErrorStats() != null) {
             sb.append("<li><b>Errors (SLA)</b>: ").append(overview.getErrorStats().getTotalErrors()).append("</li>");
-            sb.append("<li><b>Error Rate</b>: ").append(String.format("%.2f%%", overview.getErrorStats().getErrorRate() * 100)).append("</li>");
+            double errorRate = 0.0;
+            if (overview.getRequestStats() != null && overview.getRequestStats().getTotalRequests() > 0) {
+                errorRate = (double) overview.getErrorStats().getTotalErrors() / overview.getRequestStats().getTotalRequests();
+            }
+            sb.append("<li><b>Error Rate</b>: ").append(String.format("%.2f%%", errorRate * 100)).append("</li>");
         }
 
         if (overview.getSystemMetrics() != null && overview.getSystemMetrics().getCpuUsage() != null) {
@@ -313,7 +315,7 @@ public class OpsScheduledReportService {
             sb.append("<td>").append(error.getCreatedAt() != null ? error.getCreatedAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : "-").append("</td>");
             sb.append("<td>").append(escapeHtml(nullSafe(error.getPlatform()))).append("</td>");
             sb.append("<td>").append(error.getStatusCode() != null ? error.getStatusCode() : "-").append("</td>");
-            sb.append("<td>").append(escapeHtml(truncateString(nullSafe(error.getMessage()), 180))).append("</td>");
+            sb.append("<td>").append(escapeHtml(truncateString(nullSafe(error.getErrorMessage()), 180))).append("</td>");
             sb.append("</tr>");
         }
 

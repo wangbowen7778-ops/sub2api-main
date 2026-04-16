@@ -1,6 +1,7 @@
 package com.sub2api.module.common.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.PostConstruct;
@@ -83,6 +84,7 @@ public class EmailQueueService {
         }
     }
 
+    @Autowired
     public EmailQueueService(EmailService emailService) {
         this(emailService, DEFAULT_WORKERS);
     }

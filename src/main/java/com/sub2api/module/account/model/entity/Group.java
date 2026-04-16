@@ -1,6 +1,7 @@
 package com.sub2api.module.account.model.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -89,16 +90,19 @@ public class Group implements Serializable {
     /**
      * 图片生成计费配置 - 1K
      */
+    @TableField("image_price_1k")
     private BigDecimal imagePrice1k;
 
     /**
      * 图片生成计费配置 - 2K
      */
+    @TableField("image_price_2k")
     private BigDecimal imagePrice2k;
 
     /**
      * 图片生成计费配置 - 4K
      */
+    @TableField("image_price_4k")
     private BigDecimal imagePrice4k;
 
     /**
@@ -119,6 +123,7 @@ public class Group implements Serializable {
     /**
      * 模型路由配置 (JSONB)
      */
+    @TableField(typeHandler = JacksonTypeHandler.class)
     private Map<String, List<Long>> modelRouting;
 
     /**
@@ -164,6 +169,7 @@ public class Group implements Serializable {
     /**
      * OpenAI Messages 调度模型配置 (JSONB)
      */
+    @TableField(typeHandler = JacksonTypeHandler.class)
     private Map<String, Object> messagesDispatchModelConfig;
 
     /**

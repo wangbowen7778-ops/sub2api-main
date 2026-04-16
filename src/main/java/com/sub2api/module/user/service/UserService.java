@@ -9,6 +9,8 @@ import com.sub2api.module.user.model.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,6 +40,13 @@ public class UserService extends ServiceImpl<UserMapper, User> {
     }
 
     /**
+     * Get user by email (alias for findByEmail)
+     */
+    public User getByEmail(String email) {
+        return findByEmail(email);
+    }
+
+    /**
      * Find user by username
      */
     public User findByUsername(String username) {
@@ -55,6 +64,27 @@ public class UserService extends ServiceImpl<UserMapper, User> {
             return null;
         }
         return user;
+    }
+
+    /**
+     * Get current user ID from security context
+     */
+    public Long getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return null;
+        }
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof Long) {
+            return (Long) principal;
+        }
+        if (principal instanceof org.springframework.security.core.userdetails.UserDetails) {
+            // Try to find user by username
+            String username = ((org.springframework.security.core.userdetails.UserDetails) principal).getUsername();
+            User user = findByUsername(username);
+            return user != null ? user.getId() : null;
+        }
+        return null;
     }
 
     /**

@@ -122,6 +122,16 @@ public class AntigravityService {
         private String body;
         private boolean success;
         private String error;
+
+        public ForwardResult() {}
+
+        public ForwardResult(int statusCode, HttpHeaders headers, String body, boolean success, String error) {
+            this.statusCode = statusCode;
+            this.headers = headers;
+            this.body = body;
+            this.success = success;
+            this.error = error;
+        }
     }
 
     /**
@@ -663,20 +673,6 @@ public class AntigravityService {
             return hexString.toString().substring(0, 16);
         } catch (Exception e) {
             return UUID.randomUUID().toString().replace("-", "").substring(0, 16);
-        }
-    }
-
-    private boolean isTokenExpired(String accessToken) {
-        String key = TOKEN_CACHE_PREFIX + "account:" + hashToken(accessToken) + ":expires";
-        String expiresAtStr = redisTemplate.opsForValue().get(key);
-        if (expiresAtStr == null) {
-            return false;
-        }
-        try {
-            long expiresAt = Long.parseLong(expiresAtStr);
-            return Instant.now().getEpochSecond() >= expiresAt - 300;
-        } catch (NumberFormatException e) {
-            return false;
         }
     }
 

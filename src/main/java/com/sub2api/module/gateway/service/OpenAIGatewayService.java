@@ -62,19 +62,6 @@ public class OpenAIGatewayService {
     }
 
     /**
-     * 转发请求结果
-     */
-    @Data
-    public static class ForwardResult {
-        private int statusCode;
-        private HttpHeaders headers;
-        private String body;
-        private CodexUsageSnapshot codexUsage;
-        private boolean success;
-        private String error;
-    }
-
-    /**
      * 获取 Token Provider
      */
     public Object getTokenProvider() {

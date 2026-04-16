@@ -144,4 +144,15 @@ public class User implements Serializable {
 
     public LocalDateTime getDeletedAt() { return deletedAt; }
     public User setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; return this; }
+
+    /**
+     * Set password (hashes the plaintext password using BCrypt)
+     */
+    public void setPassword(String plaintextPassword) {
+        if (plaintextPassword == null || plaintextPassword.isBlank()) {
+            return;
+        }
+        this.passwordHash = new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder(12)
+                .encode(plaintextPassword);
+    }
 }

@@ -16,7 +16,7 @@ spring:
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:sub2api}
     username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:postgres}
+    password: ${DB_PASSWORD:admin@123}
     driver-class-name: org.postgresql.Driver
     hikari:
       minimum-idle: 5
@@ -31,7 +31,7 @@ spring:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:}
+      password: ${REDIS_PASSWORD:admin@123}
       database: ${REDIS_DB:0}
       timeout: 10000
       lettuce:
@@ -103,16 +103,13 @@ spring:
 
 # MyBatis-Plus 配置
 mybatis-plus:
-  mapper-locations: classpath*:/mapper/**/*.xml
+  mapper-locations:
   type-aliases-package: com.sub2api.module.**.model.entity
   global-config:
     enable-sql-runner: true
     db-config:
       id-type: assign_id
       table-prefix: ""  # 不添加前缀，保持原有表名 (users, accounts, api_keys, etc.)
-      logic-delete-field: deletedAt
-      logic-delete-value: "IS NOT NULL"
-      logic-not-delete-value: "IS NULL"
   configuration:
     map-underscore-to-camel-case: true
     cache-enabled: false
@@ -172,10 +169,26 @@ spring:
     activate:
       on-profile: dev
   datasource:
-    url: jdbc:postgresql://localhost:5432/sub2api_dev
+    url: jdbc:postgresql://localhost:5432/sub2api
   data:
     redis:
       host: localhost
+  security:
+    oauth2:
+      client:
+        registration:
+          anthropic:
+            client-id: dev-anthropic-placeholder
+            client-secret: dev-placeholder-secret
+          openai:
+            client-id: dev-openai-placeholder
+            client-secret: dev-placeholder-secret
+          google:
+            client-id: dev-google-placeholder
+            client-secret: dev-placeholder-secret
+          linuxdo:
+            client-id: dev-linuxdo-placeholder
+            client-secret: dev-placeholder-secret
 
 logging:
   level:

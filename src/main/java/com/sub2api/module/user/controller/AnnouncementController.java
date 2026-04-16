@@ -6,6 +6,7 @@ import com.sub2api.module.admin.mapper.AnnouncementMapper;
 import com.sub2api.module.admin.model.entity.Announcement;
 import com.sub2api.module.user.mapper.AnnouncementReadMapper;
 import com.sub2api.module.user.model.entity.AnnouncementRead;
+import com.sub2api.module.user.model.entity.User;
 import com.sub2api.module.user.service.UserService;
 import com.sub2api.module.user.service.SubscriptionService;
 import com.sub2api.module.common.model.vo.Result;
@@ -48,7 +49,7 @@ public class AnnouncementController {
             return Result.fail("User not logged in");
         }
 
-        var user = userService.getUserById(userId);
+        var user = userService.findById(userId);
         if (user == null) {
             return Result.fail("User not found");
         }
@@ -99,7 +100,7 @@ public class AnnouncementController {
                 })
                 .collect(Collectors.toList());
 
-        return Result.success(visibleAnnouncements);
+        return Result.ok(visibleAnnouncements);
     }
 
     /**
@@ -117,7 +118,7 @@ public class AnnouncementController {
             return Result.fail("Announcement not found");
         }
 
-        var user = userService.getUserById(userId);
+        var user = userService.findById(userId);
         if (user == null) {
             return Result.fail("User not found");
         }
@@ -145,7 +146,7 @@ public class AnnouncementController {
         result.put("notifyMode", announcement.getNotifyMode());
         result.put("createdAt", announcement.getCreatedAt());
 
-        return Result.success(result);
+        return Result.ok(result);
     }
 
     /**
@@ -163,7 +164,7 @@ public class AnnouncementController {
             return Result.fail("Announcement not found");
         }
 
-        var user = userService.getUserById(userId);
+        var user = userService.findById(userId);
         if (user == null) {
             return Result.fail("User not found");
         }
@@ -199,7 +200,7 @@ public class AnnouncementController {
             log.info("User {} read announcement {}", userId, id);
         }
 
-        return Result.success();
+        return Result.ok();
     }
 
     /**
@@ -232,7 +233,7 @@ public class AnnouncementController {
     /**
      * 检查公告是否对用户可见
      */
-    private boolean isAnnouncementVisible(Announcement announcement, var user, List<Long> activeGroupIds) {
+    private boolean isAnnouncementVisible(Announcement announcement, User user, List<Long> activeGroupIds) {
         Map<String, Object> targeting = announcement.getTargeting();
         if (targeting == null || targeting.isEmpty()) {
             return true; // 无 targeting 条件，对所有用户可见
@@ -271,7 +272,7 @@ public class AnnouncementController {
     /**
      * 评估单个条件
      */
-    private boolean evaluateCondition(Map<String, Object> condition, var user, List<Long> activeGroupIds) {
+    private boolean evaluateCondition(Map<String, Object> condition, User user, List<Long> activeGroupIds) {
         String type = (String) condition.get("type");
         if (type == null) {
             return false;
@@ -306,7 +307,7 @@ public class AnnouncementController {
                     return false;
                 }
 
-                double balance = user.getBalance();
+                double balance = user.getBalance().doubleValue();
                 switch (operator) {
                     case "gt":
                         return balance > value;

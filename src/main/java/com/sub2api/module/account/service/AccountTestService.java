@@ -58,18 +58,6 @@ public class AccountTestService {
     }
 
     /**
-     * 测试结果
-     */
-    @Data
-    public static class TestResult {
-        private boolean success;
-        private String error;
-        private String model;
-        private String responseText;
-        private long latencyMs;
-    }
-
-    /**
      * 同步测试账号连接
      */
     public TestResult testAccount(Account account) {

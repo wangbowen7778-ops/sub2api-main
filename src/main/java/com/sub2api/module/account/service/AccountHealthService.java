@@ -87,11 +87,6 @@ public class AccountHealthService extends ServiceImpl<AccountMapper, Account> {
                 }
             }
 
-            // 检查配额是否用尽
-            if (isQuotaExhausted(account)) {
-                return;
-            }
-
             // 调用平台 API 进行实际健康检查
             HealthCheckResult result = testAccountConnectionInternal(account);
 
@@ -101,14 +96,11 @@ public class AccountHealthService extends ServiceImpl<AccountMapper, Account> {
                         AccountStatus.CREDENTIAL_EXPIRED.getValue().equals(account.getStatus())) {
                     updateAccountStatus(account, AccountStatus.ACTIVE, "Health check passed - recovered");
                 } else if (AccountStatus.EXHAUSTED.getValue().equals(account.getStatus())) {
-                    // 如果之前是 EXHAUSTED 状态，检查配额是否恢复
-                    if (!isQuotaExhausted(account)) {
-                        updateAccountStatus(account, AccountStatus.ACTIVE, "Quota available - recovered");
-                    }
+                    updateAccountStatus(account, AccountStatus.ACTIVE, "Recovered");
                 }
                 // 清除之前的错误信息
-                if (account.getLastError() != null && !account.getLastError().isEmpty()) {
-                    account.setLastError(null);
+                if (account.getErrorMessage() != null && !account.getErrorMessage().isEmpty()) {
+                    account.setErrorMessage(null);
                     account.setUpdatedAt(LocalDateTime.now());
                     accountMapper.updateById(account);
                 }
@@ -121,26 +113,6 @@ public class AccountHealthService extends ServiceImpl<AccountMapper, Account> {
             log.error("Account health check exception: accountId={}, error={}", account.getId(), e.getMessage());
             updateAccountStatus(account, AccountStatus.ERROR, e.getMessage());
         }
-    }
-
-    /**
-     * 检查配额是否用尽
-     */
-    private boolean isQuotaExhausted(Account account) {
-        if (account.getInputTokenLimit() != null && account.getInputTokenLimit() > 0) {
-            if (account.getUsedInputTokens() != null && account.getUsedInputTokens() >= account.getInputTokenLimit()) {
-                updateAccountStatus(account, AccountStatus.EXHAUSTED, "Input quota exhausted");
-                return true;
-            }
-        }
-
-        if (account.getOutputTokenLimit() != null && account.getOutputTokenLimit() > 0) {
-            if (account.getUsedOutputTokens() != null && account.getUsedOutputTokens() >= account.getOutputTokenLimit()) {
-                updateAccountStatus(account, AccountStatus.EXHAUSTED, "Output quota exhausted");
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
@@ -358,7 +330,7 @@ public class AccountHealthService extends ServiceImpl<AccountMapper, Account> {
      */
     private void updateAccountStatus(Account account, AccountStatus status, String reason) {
         account.setStatus(status.getValue());
-        account.setLastError(reason);
+        account.setErrorMessage(reason);
         account.setUpdatedAt(LocalDateTime.now());
         accountMapper.updateById(account);
 

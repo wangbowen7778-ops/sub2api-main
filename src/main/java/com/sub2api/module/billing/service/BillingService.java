@@ -10,6 +10,7 @@ import com.sub2api.module.channel.service.ChannelService;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -24,12 +25,19 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class BillingService {
 
     private final PricingService pricingService;
     private final BillingCalculator billingCalculator;
     private final ChannelService channelService;
+
+    @Autowired
+    public BillingService(PricingService pricingService, BillingCalculator billingCalculator, ChannelService channelService) {
+        this.pricingService = pricingService;
+        this.billingCalculator = billingCalculator;
+        this.channelService = channelService;
+        initFallbackPricing();
+    }
 
     // 默认费率倍率 (当配置中未指定时使用)
     private static final double DEFAULT_RATE_MULTIPLIER = 1.0;
@@ -84,14 +92,6 @@ public class BillingService {
         private BigDecimal cacheWritePrice;
         private BigDecimal cacheReadPrice;
         private BigDecimal perRequestPrice;
-    }
-
-    /**
-     * 初始化 fallback 定价
-     */
-    public BillingService(PricingService pricingService, BillingCalculator billingCalculator) {
-        this(pricingService, billingCalculator, null);
-        initFallbackPricing();
     }
 
     /**

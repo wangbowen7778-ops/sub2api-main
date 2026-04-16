@@ -10,8 +10,8 @@
         <result column="group_id" property="groupId"/>
         <result column="status" property="status"/>
         <result column="last_used_at" property="lastUsedAt"/>
-        <result column="ip_whitelist" property="ipWhitelist"/>
-        <result column="ip_blacklist" property="ipBlacklist"/>
+        <result column="ip_whitelist" property="ipWhitelist" typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler"/>
+        <result column="ip_blacklist" property="ipBlacklist" typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler"/>
         <result column="quota" property="quota"/>
         <result column="quota_used" property="quotaUsed"/>
         <result column="expires_at" property="expiresAt"/>

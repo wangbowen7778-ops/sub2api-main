@@ -94,10 +94,10 @@ public class AccountAdminController {
         return Result.ok();
     }
 
-    @Operation(summary = "Reset token usage")
-    @PatchMapping("/{id}/reset-usage")
-    public Result<Void> resetUsage(@PathVariable Long id) {
-        accountService.resetTokenUsage(id);
+    @Operation(summary = "Reset account")
+    @PatchMapping("/{id}/reset")
+    public Result<Void> resetAccount(@PathVariable Long id) {
+        accountService.resetAccount(id);
         return Result.ok();
     }
 

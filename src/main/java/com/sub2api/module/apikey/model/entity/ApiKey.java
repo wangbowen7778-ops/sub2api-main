@@ -1,6 +1,7 @@
 package com.sub2api.module.apikey.model.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import lombok.experimental.Accessors;
 
 import java.io.Serial;
@@ -61,11 +62,13 @@ public class ApiKey implements Serializable {
     /**
      * IP 白名单 (JSONB)
      */
+    @TableField(typeHandler = JacksonTypeHandler.class)
     private List<String> ipWhitelist;
 
     /**
      * IP 黑名单 (JSONB)
      */
+    @TableField(typeHandler = JacksonTypeHandler.class)
     private List<String> ipBlacklist;
 
     /**

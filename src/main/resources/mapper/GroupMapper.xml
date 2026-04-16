@@ -21,7 +21,7 @@
         <result column="claude_code_only" property="claudeCodeOnly"/>
         <result column="fallback_group_id" property="fallbackGroupId"/>
         <result column="fallback_group_id_on_invalid_request" property="fallbackGroupIdOnInvalidRequest"/>
-        <result column="model_routing" property="modelRouting"/>
+        <result column="model_routing" property="modelRouting" typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler"/>
         <result column="model_routing_enabled" property="modelRoutingEnabled"/>
         <result column="mcp_xml_inject" property="mcpXmlInject"/>
         <result column="supported_model_scopes" property="supportedModelScopes"/>
@@ -30,7 +30,7 @@
         <result column="require_oauth_only" property="requireOauthOnly"/>
         <result column="require_privacy_set" property="requirePrivacySet"/>
         <result column="default_mapped_model" property="defaultMappedModel"/>
-        <result column="messages_dispatch_model_config" property="messagesDispatchModelConfig"/>
+        <result column="messages_dispatch_model_config" property="messagesDispatchModelConfig" typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler"/>
         <result column="created_at" property="createdAt"/>
         <result column="updated_at" property="updatedAt"/>
         <result column="deleted_at" property="deletedAt"/>

@@ -262,8 +262,8 @@ public class AdminService {
         group.setName(input.getName());
         group.setDescription(input.getDescription());
         group.setPlatform(input.getPlatform());
-        group.setRateMultiplier(input.getRateMultiplier());
-        group.setIsExclusive(input.isExclusive());
+        group.setRateMultiplier(BigDecimal.valueOf(input.getRateMultiplier()));
+        group.setIsExclusive(input.getExclusive());
         group.setSubscriptionType(input.getSubscriptionType() != null ? input.getSubscriptionType() : "standard");
         group.setStatus("active");
         group.setCreatedAt(LocalDateTime.now());
@@ -291,10 +291,10 @@ public class AdminService {
             group.setPlatform(input.getPlatform());
         }
         if (input.getRateMultiplier() != null) {
-            group.setRateMultiplier(input.getRateMultiplier());
+            group.setRateMultiplier(BigDecimal.valueOf(input.getRateMultiplier()));
         }
-        if (input.getIsExclusive() != null) {
-            group.setIsExclusive(input.getIsExclusive());
+        if (input.getExclusive() != null) {
+            group.setIsExclusive(input.getExclusive());
         }
         if (input.getStatus() != null && !input.getStatus().isBlank()) {
             group.setStatus(input.getStatus());
@@ -372,7 +372,7 @@ public class AdminService {
         account.setConcurrency(input.getConcurrency());
         account.setPriority(input.getPriority());
         if (input.getRateMultiplier() != null) {
-            account.setRateMultiplier(input.getRateMultiplier());
+            account.setRateMultiplier(BigDecimal.valueOf(input.getRateMultiplier()));
         }
         account.setStatus("active");
         account.setSchedulable(true);
@@ -417,7 +417,7 @@ public class AdminService {
             account.setPriority(input.getPriority());
         }
         if (input.getRateMultiplier() != null) {
-            account.setRateMultiplier(input.getRateMultiplier());
+            account.setRateMultiplier(BigDecimal.valueOf(input.getRateMultiplier()));
         }
         if (input.getStatus() != null && !input.getStatus().isBlank()) {
             account.setStatus(input.getStatus());
@@ -457,7 +457,6 @@ public class AdminService {
     @Transactional(rollbackFor = Exception.class)
     public Account refreshAccountCredentials(Long accountId) {
         Account account = getAccount(accountId);
-        account.setLastRefreshAt(LocalDateTime.now());
         account.setUpdatedAt(LocalDateTime.now());
         accountService.updateById(account);
         return account;
@@ -470,7 +469,7 @@ public class AdminService {
     public Account clearAccountError(Long accountId) {
         Account account = getAccount(accountId);
         account.setStatus(AccountStatus.ACTIVE.getValue());
-        account.setLastError(null);
+        account.setErrorMessage(null);
         account.setUpdatedAt(LocalDateTime.now());
         accountService.updateById(account);
         log.info("Cleared account error: id={}", accountId);
@@ -484,7 +483,7 @@ public class AdminService {
     public void setAccountError(Long accountId, String errorMsg) {
         Account account = getAccount(accountId);
         account.setStatus(AccountStatus.ERROR.getValue());
-        account.setLastError(errorMsg);
+        account.setErrorMessage(errorMsg);
         account.setUpdatedAt(LocalDateTime.now());
         accountService.updateById(account);
         log.info("Set account error: id={}, error={}", accountId, errorMsg);
@@ -620,7 +619,7 @@ public class AdminService {
                 .orderByDesc(RedeemCode::getCreatedAt);
 
         if (codeType != null && !codeType.isBlank()) {
-            wrapper.eq(RedeemCode::getCodeType, codeType);
+            wrapper.eq(RedeemCode::getType, codeType);
         }
         if (status != null && !status.isBlank()) {
             wrapper.eq(RedeemCode::getStatus, status);
@@ -683,12 +682,16 @@ public class AdminService {
 
     /**
      * 重置账号配额
+     * Note: Go backend doesn't track per-account token usage in the accounts table
      */
     @Transactional(rollbackFor = Exception.class)
     public void resetAccountQuota(Long accountId) {
         Account account = getAccount(accountId);
-        account.setUsedInputTokens(0);
-        account.setUsedOutputTokens(0);
+        // Reset rate limits and overload status instead
+        account.setRateLimitedAt(null);
+        account.setRateLimitResetAt(null);
+        account.setOverloadUntil(null);
+        account.setErrorMessage(null);
         account.setUpdatedAt(LocalDateTime.now());
         accountService.updateById(account);
         log.info("Reset account quota: id={}", accountId);
@@ -732,7 +735,7 @@ public class AdminService {
         private String description;
         private String platform;
         private double rateMultiplier;
-        private boolean exclusive;
+        private Boolean exclusive;
         private String subscriptionType;
     }
 

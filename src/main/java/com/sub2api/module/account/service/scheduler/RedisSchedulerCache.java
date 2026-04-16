@@ -132,7 +132,8 @@ public class RedisSchedulerCache implements SchedulerCache {
             // 分块写入
             for (int start = 0; start < members.size(); start += WRITE_CHUNK_SIZE) {
                 int end = Math.min(start + WRITE_CHUNK_SIZE, members.size());
-                zSetOps.add(snapshotKey, members.subList(start, end).toArray(new org.springframework.data.redis.core.ZSetOperations.TypedTuple[0]));
+                Set<org.springframework.data.redis.core.ZSetOperations.TypedTuple<String>> chunk = new java.util.HashSet<>(members.subList(start, end));
+                zSetOps.add(snapshotKey, chunk);
             }
         } else {
             redisTemplate.delete(snapshotKey);
@@ -182,7 +183,10 @@ public class RedisSchedulerCache implements SchedulerCache {
             return;
         }
         String idStr = String.valueOf(accountId);
-        redisTemplate.delete(SCHEDULER_ACCOUNT_PREFIX + idStr, SCHEDULER_ACCOUNT_META_PREFIX + idStr);
+        redisTemplate.delete(Arrays.asList(
+                SCHEDULER_ACCOUNT_PREFIX + idStr,
+                SCHEDULER_ACCOUNT_META_PREFIX + idStr
+        ));
     }
 
     @Override

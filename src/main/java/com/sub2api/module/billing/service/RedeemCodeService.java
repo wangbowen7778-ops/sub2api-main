@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 兑换码服务
@@ -96,5 +97,36 @@ public class RedeemCodeService extends ServiceImpl<RedeemCodeMapper, RedeemCode>
         }
 
         return redeemCode;
+    }
+
+    /**
+     * 生成兑换码
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public List<RedeemCode> generateCodes(int count, double balance, String codeType) {
+        List<RedeemCode> codes = new java.util.ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            String code = generateRandomCode();
+            RedeemCode redeemCode = new RedeemCode();
+            redeemCode.setCode(code);
+            redeemCode.setType(codeType != null ? codeType : "balance");
+            redeemCode.setValue(java.math.BigDecimal.valueOf(balance));
+            redeemCode.setStatus("unused");
+            redeemCode.setValidityDays(30);
+            redeemCode.setCreatedAt(LocalDateTime.now());
+            save(redeemCode);
+            codes.add(redeemCode);
+        }
+        return codes;
+    }
+
+    private String generateRandomCode() {
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        StringBuilder sb = new StringBuilder();
+        java.util.Random random = new java.util.Random();
+        for (int i = 0; i < 16; i++) {
+            sb.append(chars.charAt(random.nextInt(chars.length())));
+        }
+        return sb.toString();
     }
 }

@@ -8,8 +8,8 @@
         <result column="notes" property="notes"/>
         <result column="platform" property="platform"/>
         <result column="type" property="type"/>
-        <result column="credentials" property="credentials"/>
-        <result column="extra" property="extra"/>
+        <result column="credentials" property="credentials" typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler"/>
+        <result column="extra" property="extra" typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler"/>
         <result column="proxy_id" property="proxyId"/>
         <result column="concurrency" property="concurrency"/>
         <result column="load_factor" property="loadFactor"/>

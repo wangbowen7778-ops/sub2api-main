@@ -190,8 +190,12 @@ public class GeminiMessagesCompatService {
             if (part.has("functionCall")) {
                 JsonNode functionCall = part.get("functionCall");
                 if (!functionCall.has("thoughtSignature")) {
-                    var mutableFunctionCall = objectMapper.convertTreeToValue(functionCall, com.fasterxml.jackson.databind.node.ObjectNode.class);
-                    mutableFunctionCall.put("thoughtSignature", DUMMY_THOUGHT_SIGNATURE);
+                    try {
+                        var mutableFunctionCall = objectMapper.treeToValue(functionCall, com.fasterxml.jackson.databind.node.ObjectNode.class);
+                        mutableFunctionCall.put("thoughtSignature", DUMMY_THOUGHT_SIGNATURE);
+                    } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+                        log.warn("Failed to process function call: {}", e.getMessage());
+                    }
                 }
             }
         }

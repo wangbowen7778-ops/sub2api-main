@@ -131,7 +131,6 @@ public class SystemOperationLockService {
             int reclaimed = idempotencyRecordMapper.tryReclaim(
                     existing.getId(),
                     existing.getStatus(),
-                    now,
                     lockedUntil,
                     expiresAt,
                     now

@@ -56,7 +56,7 @@ public class AntigravityQuotaService {
     @Data
     public static class UsageInfo {
         private LocalDateTime updatedAt;
-        private boolean isForbidden;
+        private boolean forbidden;
         private String forbiddenReason;
         private String forbiddenType;
         private String validationUrl;
@@ -347,7 +347,7 @@ public class AntigravityQuotaService {
 
         // 处理异常状态
         if (subscriptionInfo.isHasIneligibleTiers()) {
-            info.setIsForbidden(true);
+            info.setForbidden(true);
             info.setForbiddenType("abnormal");
             info.setForbiddenReason(subscriptionInfo.getIneligibleReason());
             info.setNeedsVerify(true);

@@ -1,6 +1,7 @@
 package com.sub2api.module.account.model.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import lombok.experimental.Accessors;
 
 import java.io.Serial;
@@ -51,11 +52,13 @@ public class Account implements Serializable {
     /**
      * 认证凭证 (JSONB 格式存储)
      */
+    @TableField(typeHandler = JacksonTypeHandler.class)
     private Map<String, Object> credentials;
 
     /**
      * 扩展数据 (JSONB)
      */
+    @TableField(typeHandler = JacksonTypeHandler.class)
     private Map<String, Object> extra;
 
     /**
@@ -154,51 +157,6 @@ public class Account implements Serializable {
     private String sessionWindowStatus;
 
     /**
-     * OAuth 刷新令牌
-     */
-    private String refreshToken;
-
-    /**
-     * 凭证过期时间
-     */
-    private LocalDateTime credentialExpiredAt;
-
-    /**
-     * 最后刷新时间
-     */
-    private LocalDateTime lastRefreshAt;
-
-    /**
-     * 刷新错误计数
-     */
-    private Integer refreshErrorCount;
-
-    /**
-     * 已使用输入令牌数
-     */
-    private Long usedInputTokens;
-
-    /**
-     * 已使用输出令牌数
-     */
-    private Long usedOutputTokens;
-
-    /**
-     * 输入令牌限制
-     */
-    private Long inputTokenLimit;
-
-    /**
-     * 输出令牌限制
-     */
-    private Long outputTokenLimit;
-
-    /**
-     * 最后错误信息
-     */
-    private String lastError;
-
-    /**
      * 创建时间
      */
     @TableField(fill = FieldFill.INSERT)
@@ -293,33 +251,6 @@ public class Account implements Serializable {
 
     public String getSessionWindowStatus() { return sessionWindowStatus; }
     public Account setSessionWindowStatus(String sessionWindowStatus) { this.sessionWindowStatus = sessionWindowStatus; return this; }
-
-    public String getRefreshToken() { return refreshToken; }
-    public Account setRefreshToken(String refreshToken) { this.refreshToken = refreshToken; return this; }
-
-    public LocalDateTime getCredentialExpiredAt() { return credentialExpiredAt; }
-    public Account setCredentialExpiredAt(LocalDateTime credentialExpiredAt) { this.credentialExpiredAt = credentialExpiredAt; return this; }
-
-    public LocalDateTime getLastRefreshAt() { return lastRefreshAt; }
-    public Account setLastRefreshAt(LocalDateTime lastRefreshAt) { this.lastRefreshAt = lastRefreshAt; return this; }
-
-    public Integer getRefreshErrorCount() { return refreshErrorCount; }
-    public Account setRefreshErrorCount(Integer refreshErrorCount) { this.refreshErrorCount = refreshErrorCount; return this; }
-
-    public Long getUsedInputTokens() { return usedInputTokens; }
-    public Account setUsedInputTokens(Long usedInputTokens) { this.usedInputTokens = usedInputTokens; return this; }
-
-    public Long getUsedOutputTokens() { return usedOutputTokens; }
-    public Account setUsedOutputTokens(Long usedOutputTokens) { this.usedOutputTokens = usedOutputTokens; return this; }
-
-    public Long getInputTokenLimit() { return inputTokenLimit; }
-    public Account setInputTokenLimit(Long inputTokenLimit) { this.inputTokenLimit = inputTokenLimit; return this; }
-
-    public Long getOutputTokenLimit() { return outputTokenLimit; }
-    public Account setOutputTokenLimit(Long outputTokenLimit) { this.outputTokenLimit = outputTokenLimit; return this; }
-
-    public String getLastError() { return lastError; }
-    public Account setLastError(String lastError) { this.lastError = lastError; return this; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public Account setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; return this; }

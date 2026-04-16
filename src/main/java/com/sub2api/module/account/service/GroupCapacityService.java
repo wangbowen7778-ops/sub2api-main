@@ -124,7 +124,7 @@ public class GroupCapacityService {
 
         // 批量查询 RPM
         Map<Long, Integer> rpmMap = rpmCacheService.getRpmBatch(accountIds);
-        int rpmUsed = rpmMap.values().stream().mapToInt(Integer::intValue).stream().max().orElse(0);
+        int rpmUsed = rpmMap.values().stream().mapToInt(Integer::intValue).max().orElse(0);
 
         summary.setConcurrencyUsed(concurrencyUsed);
         summary.setConcurrencyMax(concurrencyMax);

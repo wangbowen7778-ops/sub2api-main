@@ -59,7 +59,6 @@ public class AnthropicOAuthHandler implements OAuthHandler {
         account.setName((String) userInfo.get("name"));
         account.setStatus("active");
         account.setSchedulable(true);
-        account.setCredentialExpiredAt(LocalDateTime.now().plusSeconds(tokenInfo.getExpiresIn()));
         // 设置凭证
         account.setCredentials(Map.of(
                 "access_token", tokenInfo.getAccessToken(),

@@ -56,7 +56,6 @@ public class GoogleOAuthHandler implements OAuthHandler {
         account.setName((String) userInfo.get("name"));
         account.setStatus("active");
         account.setSchedulable(true);
-        account.setCredentialExpiredAt(LocalDateTime.now().plusSeconds(tokenInfo.getExpiresIn()));
         account.setCredentials(Map.of(
                 "access_token", tokenInfo.getAccessToken(),
                 "refresh_token", tokenInfo.getRefreshToken() != null ? tokenInfo.getRefreshToken() : ""

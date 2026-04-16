@@ -431,8 +431,12 @@ public class SchedulerSnapshotService {
 
             if (!groupIds.isEmpty()) {
                 rebuildByAccount(account, groupIds, "account_change");
-            } else if (account.getGroupIds() != null && !account.getGroupIds().isEmpty()) {
-                rebuildByAccount(account, account.getGroupIds(), "account_change");
+            } else {
+                // 从数据库查询账号的分组 ID
+                List<Long> accountGroupIds = accountGroupMapper.selectGroupIdsByAccountId(account.getId());
+                if (!accountGroupIds.isEmpty()) {
+                    rebuildByAccount(account, accountGroupIds, "account_change");
+                }
             }
         } else {
             // 账号不存在，删除缓存
@@ -809,14 +813,13 @@ public class SchedulerSnapshotService {
 
         // 查询没有分组的账号
         LocalDateTime now = LocalDateTime.now();
+        List<Long> groupedAccountIds = accountGroupMapper.selectAllGroupedAccountIds();
         return accountMapper.selectList(new LambdaQueryWrapper<Account>()
                 .eq(Account::getPlatform, platform)
                 .eq(Account::getStatus, "active")
                 .eq(Account::getSchedulable, true)
                 .isNull(Account::getDeletedAt)
-                .notExists(new LambdaQueryWrapper<com.sub2api.module.account.model.entity.AccountGroup>()
-                        .eq(com.sub2api.module.account.model.entity.AccountGroup::getAccountId, com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper.class)
-                )
+                .notIn(groupedAccountIds != null && !groupedAccountIds.isEmpty(), Account::getId, groupedAccountIds)
                 .and(w -> w
                         .isNull(Account::getRateLimitResetAt)
                         .or()
@@ -884,20 +887,50 @@ public class SchedulerSnapshotService {
                 .orderByAsc(Account::getPriority));
     }
 
-    private List<Long> extractGroupIds(Map<String, Object> payload, Account account) {
-        if (payload == null) {
-            return account != null && account.getGroupIds() != null ? account.getGroupIds() : Collections.emptyList();
+    private List<Account> listSchedulableUngroupedByPlatforms(List<String> platforms) {
+        if (platforms == null || platforms.isEmpty()) {
+            return Collections.emptyList();
         }
 
-        Object groupIdsObj = payload.get("group_ids");
-        if (groupIdsObj instanceof List) {
-            @SuppressWarnings("unchecked")
-            List<Number> groupIdNums = (List<Number>) groupIdsObj;
-            return groupIdNums.stream()
-                    .filter(g -> g != null && g.longValue() > 0)
-                    .map(Number::longValue)
-                    .collect(Collectors.toList());
+        LocalDateTime now = LocalDateTime.now();
+        List<Long> groupedAccountIds = accountGroupMapper.selectAllGroupedAccountIds();
+        return accountMapper.selectList(new LambdaQueryWrapper<Account>()
+                .in(Account::getPlatform, platforms)
+                .eq(Account::getStatus, "active")
+                .eq(Account::getSchedulable, true)
+                .isNull(Account::getDeletedAt)
+                .notIn(groupedAccountIds != null && !groupedAccountIds.isEmpty(), Account::getId, groupedAccountIds)
+                .and(w -> w
+                        .isNull(Account::getRateLimitResetAt)
+                        .or()
+                        .le(Account::getRateLimitResetAt, now)
+                )
+                .and(w -> w
+                        .isNull(Account::getOverloadUntil)
+                        .or()
+                        .le(Account::getOverloadUntil, now)
+                )
+                .orderByAsc(Account::getPriority));
+    }
+
+    private List<Long> extractGroupIds(Map<String, Object> payload, Account account) {
+        // 首先尝试从 payload 中提取
+        if (payload != null) {
+            Object groupIdsObj = payload.get("group_ids");
+            if (groupIdsObj instanceof List) {
+                @SuppressWarnings("unchecked")
+                List<Number> groupIdNums = (List<Number>) groupIdsObj;
+                return groupIdNums.stream()
+                        .filter(g -> g != null && g.longValue() > 0)
+                        .map(Number::longValue)
+                        .collect(Collectors.toList());
+            }
         }
-        return account != null && account.getGroupIds() != null ? account.getGroupIds() : Collections.emptyList();
+
+        // 如果 payload 中没有，尝试从 account 获取
+        if (account != null) {
+            return accountGroupMapper.selectGroupIdsByAccountId(account.getId());
+        }
+        return Collections.emptyList();
     }
 }

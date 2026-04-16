@@ -145,6 +145,19 @@ public class EmailService {
     }
 
     /**
+     * 发送邮件 (使用配置的默认发件人作为收件人)
+     */
+    public void sendEmail(String subject, String body) {
+        SMTPConfig config = getSMTPConfig();
+        // 使用 from 地址作为收件人 (用于系统通知等场景)
+        String to = config.getFrom();
+        if (to == null || to.isBlank()) {
+            throw new ServiceUnavailableException("EMAIL_NOT_CONFIGURED", "default recipient not configured");
+        }
+        sendEmailWithConfig(config, to, subject, body);
+    }
+
+    /**
      * 使用指定配置发送邮件
      */
     public void sendEmailWithConfig(SMTPConfig config, String to, String subject, String body) {

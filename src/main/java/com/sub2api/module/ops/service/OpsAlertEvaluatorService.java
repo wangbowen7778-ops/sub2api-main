@@ -1,6 +1,7 @@
 package com.sub2api.module.ops.service;
 
 import com.sub2api.module.common.service.EmailService;
+import com.sub2api.module.ops.model.vo.OpsDashboardOverview;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -156,7 +157,7 @@ public class OpsAlertEvaluatorService {
     /**
      * 评估错误率告警
      */
-    private void evaluateErrorRateAlert(OpsService.OpsDashboardOverview overview) {
+    private void evaluateErrorRateAlert(OpsDashboardOverview overview) {
         if (overview.getErrorStats() == null) {
             return;
         }
@@ -181,7 +182,7 @@ public class OpsAlertEvaluatorService {
     /**
      * 评估健康分数告警
      */
-    private void evaluateHealthScoreAlert(OpsService.OpsDashboardOverview overview) {
+    private void evaluateHealthScoreAlert(OpsDashboardOverview overview) {
         int healthScore = overview.getHealthScore();
 
         // 健康分数 < 50 触发告警
@@ -194,7 +195,7 @@ public class OpsAlertEvaluatorService {
     /**
      * 评估系统指标告警
      */
-    private void evaluateSystemMetricsAlert(OpsService.OpsDashboardOverview overview) {
+    private void evaluateSystemMetricsAlert(OpsDashboardOverview overview) {
         if (overview.getSystemMetrics() == null) {
             return;
         }
@@ -295,7 +296,7 @@ public class OpsAlertEvaluatorService {
     private static class SlidingWindowLimiter {
         private final int maxCount;
         private final Duration window;
-        private final ConcurrentHashMap<String, ConcurrentLinkedDeque<Long>> timestamps = new ConcurrentLinkedHashMap<>();
+        private final ConcurrentHashMap<String, ConcurrentLinkedDeque<Long>> timestamps = new ConcurrentHashMap<>();
 
         SlidingWindowLimiter(int maxCount, Duration window) {
             this.maxCount = maxCount;

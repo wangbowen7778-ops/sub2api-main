@@ -83,12 +83,12 @@ public class AccountService extends ServiceImpl<AccountMapper, Account> {
     }
 
     /**
-     * Query all accounts that need refresh (OAuth accounts with refresh token)
+     * Query all OAuth accounts
+     * Note: Go backend uses 'type' field to identify OAuth vs API key accounts
      */
-    public List<Account> listAllWithRefreshToken() {
+    public List<Account> listAllOAuthAccounts() {
         return list(new LambdaQueryWrapper<Account>()
-                .isNotNull(Account::getRefreshToken)
-                .ne(Account::getRefreshToken, "")
+                .eq(Account::getType, "oauth")
                 .isNull(Account::getDeletedAt));
     }
 
@@ -103,17 +103,19 @@ public class AccountService extends ServiceImpl<AccountMapper, Account> {
     }
 
     /**
-     * Reset token usage
+     * Reset account - clears rate limits and overload status
      */
     @Transactional(rollbackFor = Exception.class)
-    public void resetTokenUsage(Long accountId) {
+    public void resetAccount(Long accountId) {
         Account updateAccount = new Account();
         updateAccount.setId(accountId);
-        updateAccount.setUsedInputTokens(0L);
-        updateAccount.setUsedOutputTokens(0L);
+        updateAccount.setRateLimitedAt(null);
+        updateAccount.setRateLimitResetAt(null);
+        updateAccount.setOverloadUntil(null);
+        updateAccount.setErrorMessage(null);
         updateAccount.setUpdatedAt(LocalDateTime.now());
         updateById(updateAccount);
-        log.info("Reset account token usage: accountId={}", accountId);
+        log.info("Reset account: accountId={}", accountId);
     }
 
     /**
