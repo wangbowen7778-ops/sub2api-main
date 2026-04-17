@@ -32,7 +32,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 /**
@@ -114,8 +114,8 @@ public class AdminService {
         user.setBalance(BigDecimal.valueOf(input.getBalance()));
         user.setConcurrency(input.getConcurrency());
         user.setStatus("active");
-        user.setCreatedAt(LocalDateTime.now());
-        user.setUpdatedAt(LocalDateTime.now());
+        user.setCreatedAt(OffsetDateTime.now());
+        user.setUpdatedAt(OffsetDateTime.now());
 
         userService.save(user);
         log.info("Created user: id={}, email={}", user.getId(), user.getEmail());
@@ -148,7 +148,7 @@ public class AdminService {
             user.setStatus(input.getStatus());
         }
 
-        user.setUpdatedAt(LocalDateTime.now());
+        user.setUpdatedAt(OffsetDateTime.now());
         userService.updateById(user);
 
         log.info("Updated user: id={}", userId);
@@ -161,8 +161,8 @@ public class AdminService {
     @Transactional(rollbackFor = Exception.class)
     public void deleteUser(Long userId) {
         User user = getUser(userId);
-        user.setDeletedAt(LocalDateTime.now());
-        user.setUpdatedAt(LocalDateTime.now());
+        user.setDeletedAt(OffsetDateTime.now());
+        user.setUpdatedAt(OffsetDateTime.now());
         userService.updateById(user);
         log.info("Deleted user: id={}", userId);
     }
@@ -192,7 +192,7 @@ public class AdminService {
         }
 
         user.setBalance(BigDecimal.valueOf(newBalance));
-        user.setUpdatedAt(LocalDateTime.now());
+        user.setUpdatedAt(OffsetDateTime.now());
         userService.updateById(user);
 
         log.info("Updated user balance: userId={}, oldBalance={}, newBalance={}, operation={}",
@@ -266,8 +266,8 @@ public class AdminService {
         group.setIsExclusive(input.getExclusive());
         group.setSubscriptionType(input.getSubscriptionType() != null ? input.getSubscriptionType() : "standard");
         group.setStatus("active");
-        group.setCreatedAt(LocalDateTime.now());
-        group.setUpdatedAt(LocalDateTime.now());
+        group.setCreatedAt(OffsetDateTime.now());
+        group.setUpdatedAt(OffsetDateTime.now());
 
         groupService.save(group);
         log.info("Created group: id={}, name={}", group.getId(), group.getName());
@@ -300,7 +300,7 @@ public class AdminService {
             group.setStatus(input.getStatus());
         }
 
-        group.setUpdatedAt(LocalDateTime.now());
+        group.setUpdatedAt(OffsetDateTime.now());
         groupService.updateById(group);
 
         log.info("Updated group: id={}", groupId);
@@ -313,8 +313,8 @@ public class AdminService {
     @Transactional(rollbackFor = Exception.class)
     public void deleteGroup(Long groupId) {
         Group group = getGroup(groupId);
-        group.setDeletedAt(LocalDateTime.now());
-        group.setUpdatedAt(LocalDateTime.now());
+        group.setDeletedAt(OffsetDateTime.now());
+        group.setUpdatedAt(OffsetDateTime.now());
         groupService.updateById(group);
         log.info("Deleted group: id={}", groupId);
     }
@@ -376,14 +376,14 @@ public class AdminService {
         }
         account.setStatus("active");
         account.setSchedulable(true);
-        account.setCreatedAt(LocalDateTime.now());
-        account.setUpdatedAt(LocalDateTime.now());
+        account.setCreatedAt(OffsetDateTime.now());
+        account.setUpdatedAt(OffsetDateTime.now());
 
         accountService.save(account);
 
         if (input.getGroupIds() != null && !input.getGroupIds().isEmpty()) {
             for (Long groupId : input.getGroupIds()) {
-                accountGroupMapper.insertAccountGroup(account.getId(), groupId);
+                accountGroupMapper.insertAccountGroupWithDefaultPriority(account.getId(), groupId);
             }
         }
 
@@ -423,14 +423,14 @@ public class AdminService {
             account.setStatus(input.getStatus());
         }
 
-        account.setUpdatedAt(LocalDateTime.now());
+        account.setUpdatedAt(OffsetDateTime.now());
         accountService.updateById(account);
 
         if (input.getGroupIds() != null) {
             accountGroupMapper.deleteByAccountId(accountId);
             if (!input.getGroupIds().isEmpty()) {
                 for (Long groupId : input.getGroupIds()) {
-                    accountGroupMapper.insertAccountGroup(accountId, groupId);
+                    accountGroupMapper.insertAccountGroupWithDefaultPriority(accountId, groupId);
                 }
             }
         }
@@ -445,8 +445,8 @@ public class AdminService {
     @Transactional(rollbackFor = Exception.class)
     public void deleteAccount(Long accountId) {
         Account account = getAccount(accountId);
-        account.setDeletedAt(LocalDateTime.now());
-        account.setUpdatedAt(LocalDateTime.now());
+        account.setDeletedAt(OffsetDateTime.now());
+        account.setUpdatedAt(OffsetDateTime.now());
         accountService.updateById(account);
         log.info("Deleted account: id={}", accountId);
     }
@@ -457,7 +457,7 @@ public class AdminService {
     @Transactional(rollbackFor = Exception.class)
     public Account refreshAccountCredentials(Long accountId) {
         Account account = getAccount(accountId);
-        account.setUpdatedAt(LocalDateTime.now());
+        account.setUpdatedAt(OffsetDateTime.now());
         accountService.updateById(account);
         return account;
     }
@@ -470,7 +470,7 @@ public class AdminService {
         Account account = getAccount(accountId);
         account.setStatus(AccountStatus.ACTIVE.getValue());
         account.setErrorMessage(null);
-        account.setUpdatedAt(LocalDateTime.now());
+        account.setUpdatedAt(OffsetDateTime.now());
         accountService.updateById(account);
         log.info("Cleared account error: id={}", accountId);
         return account;
@@ -484,7 +484,7 @@ public class AdminService {
         Account account = getAccount(accountId);
         account.setStatus(AccountStatus.ERROR.getValue());
         account.setErrorMessage(errorMsg);
-        account.setUpdatedAt(LocalDateTime.now());
+        account.setUpdatedAt(OffsetDateTime.now());
         accountService.updateById(account);
         log.info("Set account error: id={}, error={}", accountId, errorMsg);
     }
@@ -496,7 +496,7 @@ public class AdminService {
     public Account setAccountSchedulable(Long accountId, boolean schedulable) {
         Account account = getAccount(accountId);
         account.setSchedulable(schedulable);
-        account.setUpdatedAt(LocalDateTime.now());
+        account.setUpdatedAt(OffsetDateTime.now());
         accountService.updateById(account);
         log.info("Set account schedulable: id={}, schedulable={}", accountId, schedulable);
         return account;
@@ -558,8 +558,8 @@ public class AdminService {
         proxy.setUsername(input.getUsername());
         proxy.setPassword(input.getPassword());
         proxy.setStatus("active");
-        proxy.setCreatedAt(LocalDateTime.now());
-        proxy.setUpdatedAt(LocalDateTime.now());
+        proxy.setCreatedAt(OffsetDateTime.now());
+        proxy.setUpdatedAt(OffsetDateTime.now());
 
         proxyConfigService.save(proxy);
         log.info("Created proxy: id={}, name={}", proxy.getId(), proxy.getName());
@@ -592,7 +592,7 @@ public class AdminService {
             proxy.setPassword(input.getPassword());
         }
 
-        proxy.setUpdatedAt(LocalDateTime.now());
+        proxy.setUpdatedAt(OffsetDateTime.now());
         proxyConfigService.updateById(proxy);
 
         log.info("Updated proxy: id={}", proxyId);
@@ -692,7 +692,7 @@ public class AdminService {
         account.setRateLimitResetAt(null);
         account.setOverloadUntil(null);
         account.setErrorMessage(null);
-        account.setUpdatedAt(LocalDateTime.now());
+        account.setUpdatedAt(OffsetDateTime.now());
         accountService.updateById(account);
         log.info("Reset account quota: id={}", accountId);
     }

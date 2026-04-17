@@ -1,6 +1,6 @@
 # Refactoring Progress
 
-> Last updated: 2026-04-15
+> Last updated: 2026-04-17
 > This file replaces the previous REFACTOR_RECORD.md and REFACTORING_TASKS.md
 
 ## Overall Status
@@ -147,6 +147,10 @@ Beyond the pending services above, the following areas need attention:
 ---
 
 ## Git Commit History (Summary)
+
+### 2026-04-17
+- `fix: AdminService insertAccountGroup method signature mismatch`
+- `fix: SettingService wrong getter/setter names for Setting entity`
 
 ### 2026-04-13
 - `feat: BillingService unified billing with CostBreakdown`

@@ -62,9 +62,9 @@ public class SettingService extends ServiceImpl<SettingMapper, Setting> {
         }
 
         // 写入缓存
-        redisTemplate.opsForValue().set(cacheKey, setting.getSettingValue(), CACHE_TTL_SECONDS, TimeUnit.SECONDS);
+        redisTemplate.opsForValue().set(cacheKey, setting.getValue(), CACHE_TTL_SECONDS, TimeUnit.SECONDS);
 
-        return setting.getSettingValue();
+        return setting.getValue();
     }
 
     /**
@@ -139,18 +139,14 @@ public class SettingService extends ServiceImpl<SettingMapper, Setting> {
         if (setting == null) {
             // 创建新设置
             setting = new Setting();
-            setting.setSettingKey(key);
-            setting.setSettingValue(value);
-            setting.setSettingType(determineType(value));
-            setting.setEditable(true);
-            setting.setCreatedAt(java.time.LocalDateTime.now());
-            setting.setUpdatedAt(java.time.LocalDateTime.now());
+            setting.setKey(key);
+            setting.setValue(value);
+            setting.setUpdatedAt(java.time.OffsetDateTime.now());
             settingMapper.insert(setting);
         } else {
             // 更新现有设置
-            setting.setSettingValue(value);
-            setting.setSettingType(determineType(value));
-            setting.setUpdatedAt(java.time.LocalDateTime.now());
+            setting.setValue(value);
+            setting.setUpdatedAt(java.time.OffsetDateTime.now());
             settingMapper.updateById(setting);
         }
 
@@ -178,7 +174,7 @@ public class SettingService extends ServiceImpl<SettingMapper, Setting> {
         List<Setting> settings = settingMapper.selectAll();
         Map<String, String> result = new HashMap<>();
         for (Setting setting : settings) {
-            result.put(setting.getSettingKey(), setting.getSettingValue());
+            result.put(setting.getKey(), setting.getValue());
         }
         return result;
     }
@@ -190,7 +186,7 @@ public class SettingService extends ServiceImpl<SettingMapper, Setting> {
         List<Setting> settings = settingMapper.selectByCategory(category);
         Map<String, String> result = new HashMap<>();
         for (Setting setting : settings) {
-            result.put(setting.getSettingKey(), setting.getSettingValue());
+            result.put(setting.getKey(), setting.getValue());
         }
         return result;
     }
@@ -204,8 +200,7 @@ public class SettingService extends ServiceImpl<SettingMapper, Setting> {
         if (setting == null) {
             throw new BusinessException(ErrorCode.NOT_FOUND, "设置不存在");
         }
-        setting.setDeletedAt(java.time.LocalDateTime.now());
-        setting.setUpdatedAt(java.time.LocalDateTime.now());
+        setting.setUpdatedAt(java.time.OffsetDateTime.now());
         settingMapper.updateById(setting);
 
         // 清除缓存
