@@ -1,6 +1,6 @@
 # Refactoring Progress
 
-> Last updated: 2026-04-20
+> Last updated: 2026-04-20 11:00
 > This file replaces the previous REFACTOR_RECORD.md and REFACTORING_TASKS.md
 
 ## Overall Status
@@ -79,6 +79,7 @@
 | | SubscriptionService | Done | Subscription CRUD, expiry |
 | | SubscriptionExpiryService | Done | Scheduled expiry check (every minute) |
 | | UserController | Done | User profile/password API endpoints |
+| | SubscriptionController | Done | User subscription APIs (list, active, progress, summary) |
 | **apikey** | ApiKeyService | Done | API Key CRUD |
 | | ApiKeyCacheService | Done | In-memory L1 cache |
 | | RedisApiKeyAuthCache | Done | Redis L2 cache |
@@ -148,6 +149,13 @@ Beyond the pending services above, the following areas need attention:
 ---
 
 ## Git Commit History (Summary)
+
+### 2026-04-20
+- `feat(user): add SubscriptionController for user subscription APIs`
+- `feat(user): add GET /user/profile endpoint for frontend compatibility`
+- `fix: remove incomplete GeminiOAuthService and fix compilation errors`
+- `feat(user): add updateProfile and changePassword APIs`
+- `feat(auth): add validate-promo-code and validate-invitation-code APIs`
 
 ### 2026-04-17
 - `fix: AdminService insertAccountGroup method signature mismatch`
