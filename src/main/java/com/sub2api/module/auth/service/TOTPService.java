@@ -1,6 +1,10 @@
 package com.sub2api.module.auth.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.Mac;
@@ -9,7 +13,10 @@ import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.security.MessageDigest;
 import java.util.Base64;
+import java.util.HexFormat;
+import java.util.concurrent.TimeUnit;
 
 /**
  * TOTP 双因素认证服务
@@ -18,14 +25,20 @@ import java.util.Base64;
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class TOTPService {
 
     private static final String ALGORITHM = "HmacSHA1";
     private static final int CODE_DIGITS = 6;
     private static final int TIME_STEP_SECONDS = 30;
     private static final int SECRET_KEY_LENGTH = 20;
+    private static final String TOTP_SETUP_KEY_PREFIX = "totp:setup:";
+    private static final int TOTP_SETUP_TTL_MINUTES = 5;
+    private static final String TOTP_ISSUER = "Sub2API";
 
     private final SecureRandom secureRandom = new SecureRandom();
+    private final StringRedisTemplate redisTemplate;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
      * 生成 TOTP 密钥
@@ -109,10 +122,73 @@ public class TOTPService {
      */
     public String generateOtpauthUri(String secret, String accountName, String issuer) {
         String base32Secret = getBase32Secret(secret);
-        String encodedIssuer = issuer != null ? issuer : "Sub2API";
+        String encodedIssuer = issuer != null ? issuer : TOTP_ISSUER;
         return String.format(
                 "otpauth://totp/%s:%s?secret=%s&issuer=%s&digits=%d&period=%d",
                 encodedIssuer, accountName, base32Secret, encodedIssuer, CODE_DIGITS, TIME_STEP_SECONDS
         );
+    }
+
+    /**
+     * TOTP Setup Session
+     */
+    public static class TotpSetupSession {
+        public String secret;
+        public String setupToken;
+        public long createdAt;
+
+        public TotpSetupSession() {}
+
+        public TotpSetupSession(String secret, String setupToken) {
+            this.secret = secret;
+            this.setupToken = setupToken;
+            this.createdAt = System.currentTimeMillis();
+        }
+    }
+
+    /**
+     * 生成随机 token
+     */
+    public String generateRandomToken() {
+        byte[] bytes = new byte[32];
+        secureRandom.nextBytes(bytes);
+        return HexFormat.of().formatHex(bytes);
+    }
+
+    /**
+     * 存储 TOTP setup session 到 Redis
+     */
+    public void setSetupSession(Long userId, TotpSetupSession session) {
+        try {
+            String key = TOTP_SETUP_KEY_PREFIX + userId;
+            String value = objectMapper.writeValueAsString(session);
+            redisTemplate.opsForValue().set(key, value, TOTP_SETUP_TTL_MINUTES, TimeUnit.MINUTES);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to serialize TOTP session", e);
+        }
+    }
+
+    /**
+     * 获取 TOTP setup session
+     */
+    public TotpSetupSession getSetupSession(Long userId) {
+        String key = TOTP_SETUP_KEY_PREFIX + userId;
+        String value = redisTemplate.opsForValue().get(key);
+        if (value == null) {
+            return null;
+        }
+        try {
+            return objectMapper.readValue(value, TotpSetupSession.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to deserialize TOTP session", e);
+        }
+    }
+
+    /**
+     * 删除 TOTP setup session
+     */
+    public void deleteSetupSession(Long userId) {
+        String key = TOTP_SETUP_KEY_PREFIX + userId;
+        redisTemplate.delete(key);
     }
 }
