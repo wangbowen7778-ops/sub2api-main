@@ -14,8 +14,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 兑换码服务
@@ -55,8 +57,8 @@ public class RedeemCodeService extends ServiceImpl<RedeemCodeMapper, RedeemCode>
 
         // 检查有效期
         if (redeemCode.getValidityDays() != null && redeemCode.getValidityDays() > 0) {
-            LocalDateTime expiryDate = redeemCode.getCreatedAt().plusDays(redeemCode.getValidityDays());
-            if (LocalDateTime.now().isAfter(expiryDate)) {
+            OffsetDateTime expiryDate = redeemCode.getCreatedAt().plusDays(redeemCode.getValidityDays());
+            if (OffsetDateTime.now().isAfter(expiryDate)) {
                 throw new BusinessException(ErrorCode.REDEEM_CODE_EXPIRED);
             }
         }
@@ -71,7 +73,7 @@ public class RedeemCodeService extends ServiceImpl<RedeemCodeMapper, RedeemCode>
         updateCode.setId(redeemCode.getId());
         updateCode.setStatus("used");
         updateCode.setUsedBy(userId);
-        updateCode.setUsedAt(LocalDateTime.now());
+        updateCode.setUsedAt(OffsetDateTime.now());
         updateById(updateCode);
 
         log.info("用户 {} 使用兑换码 {}, 获得余额 {}", userId, code, redeemCode.getValue());
@@ -90,7 +92,7 @@ public class RedeemCodeService extends ServiceImpl<RedeemCodeMapper, RedeemCode>
         redeemCode.setValidityDays(validityDays != null ? validityDays : 30);
         redeemCode.setGroupId(groupId);
         redeemCode.setNotes(notes);
-        redeemCode.setCreatedAt(LocalDateTime.now());
+        redeemCode.setCreatedAt(OffsetDateTime.now());
 
         if (!save(redeemCode)) {
             throw new BusinessException(ErrorCode.FAIL, "创建兑换码失败");
@@ -113,7 +115,7 @@ public class RedeemCodeService extends ServiceImpl<RedeemCodeMapper, RedeemCode>
             redeemCode.setValue(java.math.BigDecimal.valueOf(balance));
             redeemCode.setStatus("unused");
             redeemCode.setValidityDays(30);
-            redeemCode.setCreatedAt(LocalDateTime.now());
+            redeemCode.setCreatedAt(OffsetDateTime.now());
             save(redeemCode);
             codes.add(redeemCode);
         }
@@ -128,5 +130,35 @@ public class RedeemCodeService extends ServiceImpl<RedeemCodeMapper, RedeemCode>
             sb.append(chars.charAt(random.nextInt(chars.length())));
         }
         return sb.toString();
+    }
+
+    /**
+     * 验证兑换码是否有效（不实际使用）
+     */
+    public Map<String, Object> validateInvitationCode(String code) {
+        Map<String, Object> result = new HashMap<>();
+        result.put("valid", false);
+
+        RedeemCode redeemCode = findByCode(code);
+        if (redeemCode == null) {
+            result.put("error_code", "INVALID");
+            return result;
+        }
+
+        if (!"unused".equals(redeemCode.getStatus())) {
+            result.put("error_code", "ALREADY_USED");
+            return result;
+        }
+
+        if (redeemCode.getValidityDays() != null && redeemCode.getValidityDays() > 0) {
+            OffsetDateTime expiryDate = redeemCode.getCreatedAt().plusDays(redeemCode.getValidityDays());
+            if (OffsetDateTime.now().isAfter(expiryDate)) {
+                result.put("error_code", "EXPIRED");
+                return result;
+            }
+        }
+
+        result.put("valid", true);
+        return result;
     }
 }

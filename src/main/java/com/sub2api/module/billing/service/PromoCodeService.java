@@ -16,7 +16,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 优惠码服务
@@ -56,7 +58,7 @@ public class PromoCodeService extends ServiceImpl<PromoCodeMapper, PromoCode> {
         }
 
         // 检查过期
-        if (promoCode.getExpiresAt() != null && LocalDateTime.now().isAfter(promoCode.getExpiresAt())) {
+        if (promoCode.getExpiresAt() != null && OffsetDateTime.now().isAfter(promoCode.getExpiresAt())) {
             throw new BusinessException(ErrorCode.PROMO_CODE_EXPIRED);
         }
 
@@ -82,7 +84,7 @@ public class PromoCodeService extends ServiceImpl<PromoCodeMapper, PromoCode> {
         usage.setUserId(userId);
         usage.setPromoCode(code);
         usage.setBonusAmount(promoCode.getBonusAmount());
-        usage.setCreatedAt(LocalDateTime.now());
+        usage.setCreatedAt(OffsetDateTime.now());
         promoCodeUsageMapper.insert(usage);
 
         log.info("用户 {} 使用优惠码 {}, 获得赠送 {}", userId, code, promoCode.getBonusAmount());
@@ -92,7 +94,7 @@ public class PromoCodeService extends ServiceImpl<PromoCodeMapper, PromoCode> {
      * 创建优惠码
      */
     @Transactional(rollbackFor = Exception.class)
-    public PromoCode createPromoCode(String code, BigDecimal bonusAmount, Integer maxUses, LocalDateTime expiresAt, String notes) {
+    public PromoCode createPromoCode(String code, BigDecimal bonusAmount, Integer maxUses, OffsetDateTime expiresAt, String notes) {
         PromoCode promoCode = new PromoCode();
         promoCode.setCode(code);
         promoCode.setBonusAmount(bonusAmount);
@@ -101,13 +103,50 @@ public class PromoCodeService extends ServiceImpl<PromoCodeMapper, PromoCode> {
         promoCode.setStatus("active");
         promoCode.setExpiresAt(expiresAt);
         promoCode.setNotes(notes);
-        promoCode.setCreatedAt(LocalDateTime.now());
-        promoCode.setUpdatedAt(LocalDateTime.now());
+        promoCode.setCreatedAt(OffsetDateTime.now());
+        promoCode.setUpdatedAt(OffsetDateTime.now());
 
         if (!save(promoCode)) {
             throw new BusinessException(ErrorCode.FAIL, "创建优惠码失败");
         }
 
         return promoCode;
+    }
+
+    /**
+     * 验证优惠码是否有效（不实际使用）
+     */
+    public Map<String, Object> validate(String code) {
+        Map<String, Object> result = new HashMap<>();
+        result.put("valid", false);
+
+        PromoCode promoCode = findByCode(code);
+        if (promoCode == null) {
+            result.put("error_code", "INVALID");
+            result.put("message", "优惠码不存在");
+            return result;
+        }
+
+        if (!"active".equals(promoCode.getStatus())) {
+            result.put("error_code", "DISABLED");
+            result.put("message", "优惠码已禁用");
+            return result;
+        }
+
+        if (promoCode.getExpiresAt() != null && OffsetDateTime.now().isAfter(promoCode.getExpiresAt())) {
+            result.put("error_code", "EXPIRED");
+            result.put("message", "优惠码已过期");
+            return result;
+        }
+
+        if (promoCode.getMaxUses() > 0 && promoCode.getUsedCount() >= promoCode.getMaxUses()) {
+            result.put("error_code", "QUOTA_EXCEEDED");
+            result.put("message", "优惠码已用完");
+            return result;
+        }
+
+        result.put("valid", true);
+        result.put("bonus_amount", promoCode.getBonusAmount());
+        return result;
     }
 }

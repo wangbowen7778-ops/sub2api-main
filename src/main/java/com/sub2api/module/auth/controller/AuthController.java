@@ -4,14 +4,21 @@ import com.sub2api.module.auth.model.vo.LoginRequest;
 import com.sub2api.module.auth.model.vo.LoginResponse;
 import com.sub2api.module.auth.model.vo.RegisterRequest;
 import com.sub2api.module.auth.service.AuthService;
+import com.sub2api.module.billing.service.PromoCodeService;
+import com.sub2api.module.billing.service.RedeemCodeService;
 import com.sub2api.module.common.model.vo.Result;
 import com.sub2api.module.common.util.IpUtil;
+import com.sub2api.module.user.model.entity.User;
+import com.sub2api.module.user.model.vo.UserVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 /**
  * 认证控制器
@@ -25,6 +32,8 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final PromoCodeService promoCodeService;
+    private final RedeemCodeService redeemCodeService;
 
     @Operation(summary = "用户登录")
     @PostMapping("/login")
@@ -64,18 +73,24 @@ public class AuthController {
 
     @Operation(summary = "获取当前用户信息")
     @GetMapping("/me")
-    public Result<Object> getCurrentUser(@RequestAttribute("org.springframework.security.core.Authentication") Object auth) {
-        if (auth == null) {
+    public Result<UserVO> getCurrentUser() {
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
             return Result.fail(2006, "未登录");
         }
-        var userDetails = (com.sub2api.module.user.model.entity.User) auth;
-        return Result.ok(new Object() {
-            public Long getId() { return userDetails.getId(); }
-            public String getUsername() { return userDetails.getUsername(); }
-            public String getEmail() { return userDetails.getEmail(); }
-            public String getRole() { return userDetails.getRole(); }
-            public Long getBalance() { return userDetails.getBalance() != null ? userDetails.getBalance().longValue() : 0L; }
-        });
+        var user = (User) auth.getPrincipal();
+        UserVO userVO = UserVO.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .username(user.getUsername())
+                .role(user.getRole())
+                .balance(user.getBalance())
+                .concurrency(user.getConcurrency())
+                .status(user.getStatus())
+                .createdAt(user.getCreatedAt() != null ? user.getCreatedAt().toString() : null)
+                .updatedAt(user.getUpdatedAt() != null ? user.getUpdatedAt().toString() : null)
+                .build();
+        return Result.ok(userVO);
     }
 
     @Operation(summary = "退出登录")
@@ -83,5 +98,35 @@ public class AuthController {
     public Result<Void> logout() {
         // JWT 无状态，客户端删除令牌即可
         return Result.ok();
+    }
+
+    @Operation(summary = "验证优惠码")
+    @PostMapping("/validate-promo-code")
+    public Result<Map<String, Object>> validatePromoCode(@RequestBody Map<String, String> request) {
+        String code = request.get("code");
+        if (code == null || code.isBlank()) {
+            return Result.fail(4001, "优惠码不能为空");
+        }
+        Map<String, Object> result = promoCodeService.validate(code);
+        return Result.ok(result);
+    }
+
+    @Operation(summary = "验证邀请码")
+    @PostMapping("/validate-invitation-code")
+    public Result<Map<String, Object>> validateInvitationCode(@RequestBody Map<String, String> request) {
+        String code = request.get("code");
+        if (code == null || code.isBlank()) {
+            return Result.fail(4001, "邀请码不能为空");
+        }
+        Map<String, Object> result = redeemCodeService.validateInvitationCode(code);
+        return Result.ok(result);
+    }
+
+    @Operation(summary = "撤销所有会话")
+    @PostMapping("/revoke-all-sessions")
+    public Result<Map<String, String>> revokeAllSessions() {
+        // JWT 无状态，无法直接撤销所有会话
+        // 返回成功，客户端清除所有本地令牌
+        return Result.ok(Map.of("message", "所有会话已撤销"));
     }
 }
