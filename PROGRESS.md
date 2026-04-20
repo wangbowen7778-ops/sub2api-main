@@ -1,6 +1,6 @@
 # Refactoring Progress
 
-> Last updated: 2026-04-17
+> Last updated: 2026-04-20
 > This file replaces the previous REFACTOR_RECORD.md and REFACTORING_TASKS.md
 
 ## Overall Status
@@ -75,9 +75,10 @@
 | | SettingService | Done | System settings with Redis cache |
 | | SystemOperationLockService | Done | Distributed lock via idempotency |
 | | TLSFingerprintProfileService | Done | TLS fingerprint management |
-| **user** | UserService | Done | User CRUD |
+| **user** | UserService | Done | User CRUD, profile update, password change |
 | | SubscriptionService | Done | Subscription CRUD, expiry |
 | | SubscriptionExpiryService | Done | Scheduled expiry check (every minute) |
+| | UserController | Done | User profile/password API endpoints |
 | **apikey** | ApiKeyService | Done | API Key CRUD |
 | | ApiKeyCacheService | Done | In-memory L1 cache |
 | | RedisApiKeyAuthCache | Done | Redis L2 cache |
