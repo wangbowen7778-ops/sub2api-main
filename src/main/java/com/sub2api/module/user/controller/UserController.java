@@ -64,6 +64,37 @@ public class UserController {
         return Result.ok(user);
     }
 
+    @Operation(summary = "获取用户资料")
+    @GetMapping("/profile")
+    public Result<User> getProfile(@RequestAttribute("org.springframework.security.core.Authentication") Object auth) {
+        // 与 /user/me 相同，返回当前用户信息
+        if (auth == null) {
+            return Result.fail(2006, "未登录");
+        }
+
+        Long userId = null;
+        if (auth instanceof User user) {
+            userId = user.getId();
+        } else if (auth instanceof com.sub2api.module.apikey.model.vo.ApiKeyInfo apiKeyInfo) {
+            userId = apiKeyInfo.getUserId();
+        }
+
+        if (userId == null) {
+            return Result.fail(2006, "无法获取用户信息");
+        }
+
+        User user = userService.findById(userId);
+        if (user == null) {
+            return Result.fail(3001, "用户不存在");
+        }
+
+        // 清除敏感信息
+        user.setPasswordHash(null);
+        user.setTotpSecretEncrypted(null);
+
+        return Result.ok(user);
+    }
+
     @Operation(summary = "获取我的 API Keys")
     @GetMapping("/api-keys")
     public Result<List<ApiKey>> getMyApiKeys(@RequestAttribute("org.springframework.security.core.Authentication") Object auth) {
