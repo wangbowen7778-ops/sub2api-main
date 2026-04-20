@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 /**
  * User service
@@ -104,8 +104,8 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         user.setBalance(balance != null ? balance : BigDecimal.ZERO);
         user.setConcurrency(5);
         user.setStatus("active");
-        user.setCreatedAt(LocalDateTime.now());
-        user.setUpdatedAt(LocalDateTime.now());
+        user.setCreatedAt(OffsetDateTime.now());
+        user.setUpdatedAt(OffsetDateTime.now());
 
         if (!save(user)) {
             throw new BusinessException(ErrorCode.FAIL, "Failed to create user");
@@ -124,7 +124,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         if (existing == null) {
             throw new BusinessException(ErrorCode.USER_NOT_FOUND);
         }
-        user.setUpdatedAt(LocalDateTime.now());
+        user.setUpdatedAt(OffsetDateTime.now());
         updateById(user);
     }
 
@@ -146,7 +146,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         User updateUser = new User();
         updateUser.setId(userId);
         updateUser.setBalance(newBalance);
-        updateUser.setUpdatedAt(LocalDateTime.now());
+        updateUser.setUpdatedAt(OffsetDateTime.now());
         updateById(updateUser);
 
         log.info("Updated user balance: userId={}, amount={}, newBalance={}", userId, amount, newBalance);
@@ -158,7 +158,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
     public void updateLoginInfo(Long userId, String loginIp) {
         User updateUser = new User();
         updateUser.setId(userId);
-        updateUser.setUpdatedAt(LocalDateTime.now());
+        updateUser.setUpdatedAt(OffsetDateTime.now());
         updateById(updateUser);
     }
 
@@ -190,8 +190,8 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         updateUser.setId(userId);
         updateUser.setTotpSecretEncrypted(encryptedSecret);
         updateUser.setTotpEnabled(true);
-        updateUser.setTotpEnabledAt(LocalDateTime.now());
-        updateUser.setUpdatedAt(LocalDateTime.now());
+        updateUser.setTotpEnabledAt(OffsetDateTime.now());
+        updateUser.setUpdatedAt(OffsetDateTime.now());
         updateById(updateUser);
     }
 
@@ -205,7 +205,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         updateUser.setTotpSecretEncrypted(null);
         updateUser.setTotpEnabled(false);
         updateUser.setTotpEnabledAt(null);
-        updateUser.setUpdatedAt(LocalDateTime.now());
+        updateUser.setUpdatedAt(OffsetDateTime.now());
         updateById(updateUser);
     }
 
@@ -216,9 +216,59 @@ public class UserService extends ServiceImpl<UserMapper, User> {
     public void deleteUser(Long userId) {
         User updateUser = new User();
         updateUser.setId(userId);
-        updateUser.setDeletedAt(LocalDateTime.now());
-        updateUser.setUpdatedAt(LocalDateTime.now());
+        updateUser.setDeletedAt(OffsetDateTime.now());
+        updateUser.setUpdatedAt(OffsetDateTime.now());
         updateById(updateUser);
         log.info("Deleted user: userId={}", userId);
+    }
+
+    /**
+     * Update user profile (username only for now)
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public User updateProfile(Long userId, String username) {
+        User user = findById(userId);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+        }
+
+        // Check if username is already taken by another user
+        if (username != null && !username.isBlank() && !username.equals(user.getUsername())) {
+            User existing = findByUsername(username);
+            if (existing != null && !existing.getId().equals(userId)) {
+                throw new BusinessException(ErrorCode.USERNAME_EXISTS);
+            }
+            user.setUsername(username);
+        }
+
+        user.setUpdatedAt(OffsetDateTime.now());
+        updateById(user);
+        log.info("Updated user profile: userId={}", userId);
+        return user;
+    }
+
+    /**
+     * Change user password
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void changePassword(Long userId, String oldPassword, String newPassword) {
+        User user = findById(userId);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+        }
+
+        // Verify old password
+        String oldHash = com.sub2api.module.common.util.EncryptionUtil.hashPassword(oldPassword, "");
+        if (!oldHash.equals(user.getPasswordHash())) {
+            throw new BusinessException(ErrorCode.AUTH_PASSWORD_MISMATCH);
+        }
+
+        // Hash new password and update
+        String newHash = com.sub2api.module.common.util.EncryptionUtil.hashPassword(newPassword, "");
+        user.setPasswordHash(newHash);
+        user.setUpdatedAt(OffsetDateTime.now());
+        updateById(user);
+
+        log.info("Changed password for user: userId={}", userId);
     }
 }

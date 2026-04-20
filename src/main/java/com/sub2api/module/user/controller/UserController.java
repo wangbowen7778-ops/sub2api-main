@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -119,8 +119,8 @@ public class UserController {
             @RequestParam(defaultValue = "20") Long size,
             @RequestParam(required = false) String platform,
             @RequestParam(required = false) String model,
-            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDateTime startTime,
-            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDateTime endTime,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") OffsetDateTime startTime,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") OffsetDateTime endTime,
             @RequestAttribute("org.springframework.security.core.Authentication") Object auth) {
 
         Long userId = getUserId(auth);
@@ -135,8 +135,8 @@ public class UserController {
     @Operation(summary = "获取用量统计")
     @GetMapping("/usage/statistics")
     public Result<Map<String, Object>> getUsageStatistics(
-            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDateTime startTime,
-            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDateTime endTime,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") OffsetDateTime startTime,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") OffsetDateTime endTime,
             @RequestAttribute("org.springframework.security.core.Authentication") Object auth) {
 
         Long userId = getUserId(auth);
@@ -155,6 +155,55 @@ public class UserController {
         result.put("endTime", endTime);
 
         return Result.ok(result);
+    }
+
+    @Operation(summary = "更新用户资料")
+    @PutMapping
+    public Result<User> updateProfile(
+            @RequestBody Map<String, Object> params,
+            @RequestAttribute("org.springframework.security.core.Authentication") Object auth) {
+
+        Long userId = getUserId(auth);
+        if (userId == null) {
+            return Result.fail(2006, "未登录");
+        }
+
+        String username = (String) params.get("username");
+        User user = userService.updateProfile(userId, username);
+
+        // 清除敏感信息
+        user.setPasswordHash(null);
+        user.setTotpSecretEncrypted(null);
+
+        return Result.ok(user);
+    }
+
+    @Operation(summary = "修改密码")
+    @PutMapping("/password")
+    public Result<Void> changePassword(
+            @RequestBody Map<String, String> params,
+            @RequestAttribute("org.springframework.security.core.Authentication") Object auth) {
+
+        Long userId = getUserId(auth);
+        if (userId == null) {
+            return Result.fail(2006, "未登录");
+        }
+
+        String oldPassword = params.get("old_password");
+        String newPassword = params.get("new_password");
+
+        if (oldPassword == null || oldPassword.isBlank()) {
+            return Result.fail(2031, "旧密码不能为空");
+        }
+        if (newPassword == null || newPassword.isBlank()) {
+            return Result.fail(2031, "新密码不能为空");
+        }
+        if (newPassword.length() < 8) {
+            return Result.fail(2031, "新密码长度必须不少于8位");
+        }
+
+        userService.changePassword(userId, oldPassword, newPassword);
+        return Result.ok();
     }
 
     private Long getUserId(Object auth) {

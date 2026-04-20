@@ -204,7 +204,7 @@ public class XxxService {
 **Controller class pattern:**
 ```java
 @RestController
-@RequestMapping("/admin/xxx")  // or "/api/v1/xxx" for user-facing
+@RequestMapping("/admin/xxx")  // or "/xxx" for user-facing
 @RequiredArgsConstructor
 public class XxxController {
     private final XxxService xxxService;
@@ -282,6 +282,16 @@ sub2api:pricing:models                # Model pricing cache
 2. Run related tests (when available)
 3. Update PROGRESS.md if completing a pending item
 4. Commit with proper format (see Git Conventions above)
+
+### Refactoring Rules (Important)
+
+**每次重构必须遵循以下规则：**
+
+1. **每次仅修改一个功能点** - 不要一次性修改多个功能，确保每个改动都可以独立验证
+2. **修改完编译整个项目确保项目能正常启动** - 每次修改后执行 `mvn compile` 验证编译通过
+3. **修改完提交git** - 每次完成一个功能点的重构后立即提交，遵循 commit 规范
+4. **参考原backend项目以及前端项目进行重构** - 对照 Go 源码和 Vue 前端确保 API 兼容性
+5. **每次重构都需要参考文档阅读文档按照文档要求** - 严格按照 CLAUDE.md 中的开发工作流和代码规范执行
 
 ### Adding a new service:
 
