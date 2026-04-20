@@ -260,7 +260,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         // Verify old password
         String oldHash = com.sub2api.module.common.util.EncryptionUtil.hashPassword(oldPassword, "");
         if (!oldHash.equals(user.getPasswordHash())) {
-            throw new BusinessException(ErrorCode.AUTH_PASSWORD_MISMATCH);
+            throw new BusinessException(ErrorCode.PASSWORD_WRONG);
         }
 
         // Hash new password and update
