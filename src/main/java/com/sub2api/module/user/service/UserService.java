@@ -78,6 +78,9 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         if (principal instanceof Long) {
             return (Long) principal;
         }
+        if (principal instanceof User) {
+            return ((User) principal).getId();
+        }
         if (principal instanceof org.springframework.security.core.userdetails.UserDetails) {
             // Try to find user by username
             String username = ((org.springframework.security.core.userdetails.UserDetails) principal).getUsername();
