@@ -36,7 +36,7 @@ import reactor.core.publisher.Mono;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -297,7 +297,7 @@ public class ProxyService {
         if (ErrorCode.GATEWAY_TIMEOUT.getCode().equals(e.getCode())) {
             // 超时错误，设置为临时不可调度
             accountService.setTempUnschedulable(account.getId(),
-                    LocalDateTime.now().plusMinutes(1), "请求超时");
+                    OffsetDateTime.now().plusMinutes(1), "请求超时");
         }
         // 其他可重试错误可以添加更多处理逻辑
     }
@@ -315,7 +315,7 @@ public class ProxyService {
 
         // 设置临时不可调度状态
         accountService.setTempUnschedulable(failedAccount.getId(),
-                LocalDateTime.now().plusMinutes(1), "故障转移: " + e.getMessage());
+                OffsetDateTime.now().plusMinutes(1), "故障转移: " + e.getMessage());
 
         // 尝试选择下一个可用账号
         try {
@@ -445,9 +445,9 @@ public class ProxyService {
 
         // 更新账号状态
         if (statusCode == 429) {
-            accountService.setRateLimited(account.getId(), LocalDateTime.now().plusSeconds(60));
+            accountService.setRateLimited(account.getId(), OffsetDateTime.now().plusSeconds(60));
         } else if (statusCode == 529) {
-            accountService.setOverload(account.getId(), LocalDateTime.now().plusMinutes(5));
+            accountService.setOverload(account.getId(), OffsetDateTime.now().plusMinutes(5));
         } else if (statusCode == 401 || statusCode == 403) {
             accountService.setError(account.getId(), "认证失败: " + e.getMessage());
         }
@@ -490,7 +490,7 @@ public class ProxyService {
             errorLog.setRequestPath(request.getPath());
             errorLog.setRequestMethod("POST");
             errorLog.setClientIp(request.getClientIp());
-            errorLog.setCreatedAt(LocalDateTime.now());
+            errorLog.setCreatedAt(OffsetDateTime.now());
 
             opsService.recordError(errorLog);
         } catch (Exception e) {
@@ -548,7 +548,7 @@ public class ProxyService {
             usageLog.setStream(request.isStream());
             usageLog.setDurationMs((int) (System.currentTimeMillis() - startTime));
             usageLog.setIpAddress(request.getClientIp());
-            usageLog.setCreatedAt(LocalDateTime.now());
+            usageLog.setCreatedAt(OffsetDateTime.now());
 
             usageLogService.recordUsage(usageLog);
 

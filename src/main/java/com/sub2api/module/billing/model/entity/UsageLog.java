@@ -7,7 +7,7 @@ import lombok.experimental.Accessors;
 import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 /**
  * 用量日志实体
@@ -213,5 +213,5 @@ public class UsageLog implements Serializable {
      * 创建时间
      */
     @TableField(fill = FieldFill.INSERT)
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 }

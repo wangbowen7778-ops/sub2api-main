@@ -11,7 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.LocalTime;
 import java.util.Calendar;
 import java.util.List;
@@ -35,7 +35,7 @@ public class ScheduledTestService {
     @Transactional(rollbackFor = Exception.class)
     public ScheduledTestPlan createPlan(ScheduledTestPlan plan) {
         // 验证 cron 表达式
-        LocalDateTime nextRun = computeNextRun(plan.getCronExpression());
+        OffsetDateTime nextRun = computeNextRun(plan.getCronExpression());
         if (nextRun == null) {
             throw new BusinessException(ErrorCode.BAD_REQUEST, "无效的 cron 表达式");
         }
@@ -47,8 +47,8 @@ public class ScheduledTestService {
         if (plan.getStatus() == null) {
             plan.setStatus("active");
         }
-        plan.setCreatedAt(LocalDateTime.now());
-        plan.setUpdatedAt(LocalDateTime.now());
+        plan.setCreatedAt(OffsetDateTime.now());
+        plan.setUpdatedAt(OffsetDateTime.now());
 
         planMapper.insert(plan);
         log.info("创建定时测试计划: id={}, name={}", plan.getId(), plan.getName());
@@ -81,7 +81,7 @@ public class ScheduledTestService {
         ScheduledTestPlan existing = getPlan(plan.getId());
 
         // 验证 cron 表达式
-        LocalDateTime nextRun = computeNextRun(plan.getCronExpression());
+        OffsetDateTime nextRun = computeNextRun(plan.getCronExpression());
         if (nextRun == null) {
             throw new BusinessException(ErrorCode.BAD_REQUEST, "无效的 cron 表达式");
         }
@@ -93,7 +93,7 @@ public class ScheduledTestService {
         existing.setMaxResults(plan.getMaxResults());
         existing.setStatus(plan.getStatus());
         existing.setNextRunAt(nextRun);
-        existing.setUpdatedAt(LocalDateTime.now());
+        existing.setUpdatedAt(OffsetDateTime.now());
 
         planMapper.updateById(existing);
         log.info("更新定时测试计划: id={}", existing.getId());
@@ -106,8 +106,8 @@ public class ScheduledTestService {
     @Transactional(rollbackFor = Exception.class)
     public void deletePlan(Long id) {
         ScheduledTestPlan plan = getPlan(id);
-        plan.setDeletedAt(LocalDateTime.now());
-        plan.setUpdatedAt(LocalDateTime.now());
+        plan.setDeletedAt(OffsetDateTime.now());
+        plan.setUpdatedAt(OffsetDateTime.now());
         planMapper.updateById(plan);
 
         // 删除关联的结果
@@ -139,16 +139,16 @@ public class ScheduledTestService {
     public void saveResult(Long planId, ScheduledTestResult result) {
         ScheduledTestPlan plan = getPlan(planId);
         result.setPlanId(planId);
-        result.setExecutedAt(LocalDateTime.now());
-        result.setCreatedAt(LocalDateTime.now());
+        result.setExecutedAt(OffsetDateTime.now());
+        result.setCreatedAt(OffsetDateTime.now());
 
         resultMapper.insert(result);
 
         // 更新计划的下次执行时间和最近执行时间
-        LocalDateTime nextRun = computeNextRun(plan.getCronExpression());
+        OffsetDateTime nextRun = computeNextRun(plan.getCronExpression());
         plan.setNextRunAt(nextRun);
-        plan.setLastRunAt(LocalDateTime.now());
-        plan.setUpdatedAt(LocalDateTime.now());
+        plan.setLastRunAt(OffsetDateTime.now());
+        plan.setUpdatedAt(OffsetDateTime.now());
         planMapper.updateById(plan);
 
         // 修剪旧结果
@@ -176,7 +176,7 @@ public class ScheduledTestService {
     public void pausePlan(Long id) {
         ScheduledTestPlan plan = getPlan(id);
         plan.setStatus("paused");
-        plan.setUpdatedAt(LocalDateTime.now());
+        plan.setUpdatedAt(OffsetDateTime.now());
         planMapper.updateById(plan);
         log.info("暂停定时测试计划: id={}", id);
     }
@@ -189,7 +189,7 @@ public class ScheduledTestService {
         ScheduledTestPlan plan = getPlan(id);
         plan.setStatus("active");
         plan.setNextRunAt(computeNextRun(plan.getCronExpression()));
-        plan.setUpdatedAt(LocalDateTime.now());
+        plan.setUpdatedAt(OffsetDateTime.now());
         planMapper.updateById(plan);
         log.info("恢复定时测试计划: id={}", id);
     }
@@ -197,7 +197,7 @@ public class ScheduledTestService {
     /**
      * 计算下次执行时间
      */
-    private LocalDateTime computeNextRun(String cronExpression) {
+    private OffsetDateTime computeNextRun(String cronExpression) {
         try {
             // 简化实现: 解析 cron 表达式
             // 格式: 秒 分 时 日 月 周
@@ -219,7 +219,7 @@ public class ScheduledTestService {
                 cal.set(Calendar.MINUTE, 0);
             }
 
-            return LocalDateTime.ofInstant(cal.toInstant(), java.time.ZoneId.systemDefault());
+            return OffsetDateTime.ofInstant(cal.toInstant(), java.time.ZoneId.systemDefault());
         } catch (Exception e) {
             log.warn("解析 cron 表达式失败: {}", cronExpression);
             return null;

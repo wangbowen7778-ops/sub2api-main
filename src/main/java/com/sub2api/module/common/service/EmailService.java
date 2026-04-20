@@ -18,7 +18,7 @@ import jakarta.mail.internet.MimeMessage;
 import java.security.SecureRandom;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
@@ -83,7 +83,7 @@ public class EmailService {
     public static class VerificationCodeData {
         private String code;
         private int attempts;
-        private LocalDateTime createdAt;
+        private OffsetDateTime createdAt;
     }
 
     /**
@@ -93,7 +93,7 @@ public class EmailService {
     @lombok.experimental.Accessors(chain = true)
     public static class PasswordResetTokenData {
         private String token;
-        private LocalDateTime createdAt;
+        private OffsetDateTime createdAt;
     }
 
     /**
@@ -214,7 +214,7 @@ public class EmailService {
         VerificationCodeData existing = getVerificationCodeFromCache(cacheKey);
 
         if (existing != null) {
-            long minutesSinceCreation = java.time.Duration.between(existing.getCreatedAt(), LocalDateTime.now()).toMinutes();
+            long minutesSinceCreation = java.time.Duration.between(existing.getCreatedAt(), OffsetDateTime.now()).toMinutes();
             if (minutesSinceCreation < VERIFY_CODE_COOLDOWN_MINUTES) {
                 throw new ServiceUnavailableException("VERIFY_CODE_TOO_FREQUENT", "please wait before requesting a new code");
             }
@@ -227,7 +227,7 @@ public class EmailService {
         VerificationCodeData data = new VerificationCodeData()
                 .setCode(code)
                 .setAttempts(0)
-                .setCreatedAt(LocalDateTime.now());
+                .setCreatedAt(OffsetDateTime.now());
         saveVerificationCodeToCache(cacheKey, data, VERIFY_CODE_TTL_MINUTES);
 
         // 构建邮件内容
@@ -305,7 +305,7 @@ public class EmailService {
         if (needSaveToken) {
             PasswordResetTokenData data = new PasswordResetTokenData()
                     .setToken(token)
-                    .setCreatedAt(LocalDateTime.now());
+                    .setCreatedAt(OffsetDateTime.now());
             savePasswordResetTokenToCache(cacheKey, data, PASSWORD_RESET_TOKEN_TTL_MINUTES);
         }
 

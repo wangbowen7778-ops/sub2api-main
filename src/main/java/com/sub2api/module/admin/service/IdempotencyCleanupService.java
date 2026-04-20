@@ -33,7 +33,7 @@ public class IdempotencyCleanupService {
     public void runOnce() {
         try {
             int deleted = idempotencyRecordMapper.deleteExpired(
-                    java.time.LocalDateTime.now(),
+                    java.time.OffsetDateTime.now(),
                     cleanupBatchSize);
 
             if (deleted > 0) {

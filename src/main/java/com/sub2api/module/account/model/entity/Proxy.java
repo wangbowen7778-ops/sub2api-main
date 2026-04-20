@@ -6,7 +6,7 @@ import lombok.experimental.Accessors;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 /**
  * 代理配置实体
@@ -67,16 +67,16 @@ public class Proxy implements Serializable {
      * 创建时间
      */
     @TableField(fill = FieldFill.INSERT)
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 
     /**
      * 更新时间
      */
     @TableField(fill = FieldFill.INSERT_UPDATE)
-    private LocalDateTime updatedAt;
+    private OffsetDateTime updatedAt;
 
     /**
      * 删除时间 (软删除)
      */
-    private LocalDateTime deletedAt;
+    private OffsetDateTime deletedAt;
 }

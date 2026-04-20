@@ -17,7 +17,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,8 +45,8 @@ public class StatisticsController {
             @RequestParam(required = false) String startTime,
             @RequestParam(required = false) String endTime) {
 
-        LocalDateTime start = startTime != null ? LocalDateTime.parse(startTime) : LocalDateTime.now().minusDays(7);
-        LocalDateTime end = endTime != null ? LocalDateTime.parse(endTime) : LocalDateTime.now();
+        OffsetDateTime start = startTime != null ? OffsetDateTime.parse(startTime) : OffsetDateTime.now().minusDays(7);
+        OffsetDateTime end = endTime != null ? OffsetDateTime.parse(endTime) : OffsetDateTime.now();
 
         UsageLogService.UsageStatistics stats = usageLogService.getUserStatistics(userId, start, end);
 

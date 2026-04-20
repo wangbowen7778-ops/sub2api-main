@@ -54,14 +54,15 @@ public class SecurityConfig {
                 .formLogin(AbstractHttpConfigurer::disable)
                 // 禁用 HTTP Basic
                 .httpBasic(AbstractHttpConfigurer::disable)
-                // 禁用匿名访问
-                .anonymous(AbstractHttpConfigurer::disable)
                 // 配置请求授权
                 .authorizeHttpRequests(auth -> auth
                         // 公开接口
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/health").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
+                        .requestMatchers("/setup/**").permitAll()
+                        .requestMatchers("/settings/public").permitAll()
+                        .requestMatchers("/auth/**").permitAll()
                         // API Key 可访问的接口
                         .requestMatchers("/v1/**").permitAll()
                         .requestMatchers("/v1beta/**").permitAll()

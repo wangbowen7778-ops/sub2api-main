@@ -9,9 +9,10 @@ import org.springframework.stereotype.Service;
 
 import jakarta.annotation.PostConstruct;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +42,7 @@ public class DashboardAggregationService {
     private String timezone;
 
     private final AtomicBoolean running = new AtomicBoolean(false);
-    private final AtomicReference<LocalDateTime> lastRetentionCleanup = new AtomicReference<>();
+    private final AtomicReference<OffsetDateTime> lastRetentionCleanup = new AtomicReference<>();
 
     private static final int USAGE_LOGS_CLEANUP_BATCH_SIZE = 10000;
     private static final long AGGREGATION_TIMEOUT_SECONDS = 120;
@@ -86,9 +87,9 @@ public class DashboardAggregationService {
         }
 
         try {
-            LocalDateTime now = LocalDateTime.now(zoneId);
-            LocalDateTime lastWatermark = getLastWatermark();
-            LocalDateTime start;
+            OffsetDateTime now = OffsetDateTime.now(ZoneOffset.systemDefault());
+            OffsetDateTime lastWatermark = getLastWatermark();
+            OffsetDateTime start;
 
             if (lastWatermark == null) {
                 // 首次运行，使用保留窗口作为起始点
@@ -121,7 +122,7 @@ public class DashboardAggregationService {
     /**
      * 触发回填（异步）
      */
-    public void triggerBackfill(LocalDateTime start, LocalDateTime end) {
+    public void triggerBackfill(OffsetDateTime start, OffsetDateTime end) {
         if (!config.isBackfillEnabled()) {
             log.warn("Backfill is disabled");
             return;
@@ -140,7 +141,7 @@ public class DashboardAggregationService {
             }
         }
 
-        final LocalDateTime startUTC = start, endUTC = end;
+        final OffsetDateTime startUTC = start, endUTC = end;
         new Thread(() -> {
             try {
                 backfillRange(startUTC, endUTC);
@@ -153,7 +154,7 @@ public class DashboardAggregationService {
     /**
      * 触发重新计算（异步）
      */
-    public void triggerRecomputeRange(LocalDateTime start, LocalDateTime end) {
+    public void triggerRecomputeRange(OffsetDateTime start, OffsetDateTime end) {
         if (!config.isEnabled()) {
             log.warn("Aggregation service is disabled");
             return;
@@ -164,7 +165,7 @@ public class DashboardAggregationService {
             return;
         }
 
-        final LocalDateTime startUTC = start, endUTC = end;
+        final OffsetDateTime startUTC = start, endUTC = end;
         new Thread(() -> {
             int maxRetries = 3;
             for (int i = 0; i < maxRetries; i++) {
@@ -192,7 +193,7 @@ public class DashboardAggregationService {
     /**
      * 执行回填
      */
-    private void backfillRange(LocalDateTime start, LocalDateTime end) {
+    private void backfillRange(OffsetDateTime start, OffsetDateTime end) {
         if (!running.compareAndSet(false, true)) {
             log.warn("Aggregation job is already running, backfill rejected");
             return;
@@ -200,10 +201,10 @@ public class DashboardAggregationService {
 
         try {
             log.info("Starting backfill: start={}, end={}", start, end);
-            LocalDateTime cursor = truncateToDay(start);
+            OffsetDateTime cursor = truncateToDay(start);
 
             while (cursor.isBefore(end)) {
-                LocalDateTime windowEnd = cursor.plusDays(1);
+                OffsetDateTime windowEnd = cursor.plusDays(1);
                 if (windowEnd.isAfter(end)) {
                     windowEnd = end;
                 }
@@ -225,7 +226,7 @@ public class DashboardAggregationService {
     /**
      * 执行重新计算（清空范围内数据后重建）
      */
-    public void recomputeRange(LocalDateTime start, LocalDateTime end) {
+    public void recomputeRange(OffsetDateTime start, OffsetDateTime end) {
         if (!running.compareAndSet(false, true)) {
             throw new RuntimeException("aggregation job is already running");
         }
@@ -252,7 +253,7 @@ public class DashboardAggregationService {
     /**
      * 执行聚合
      */
-    private boolean aggregateRange(LocalDateTime start, LocalDateTime end) {
+    private boolean aggregateRange(OffsetDateTime start, OffsetDateTime end) {
         if (!end.isAfter(start)) {
             return false;
         }
@@ -262,8 +263,8 @@ public class DashboardAggregationService {
             ensureUsageLogsPartitions(end);
 
             // 聚合到小时桶
-            LocalDateTime hourStart = truncateToHour(start, zoneId);
-            LocalDateTime hourEnd = truncateToHour(end, zoneId);
+            OffsetDateTime hourStart = truncateToHour(start, zoneId);
+            OffsetDateTime hourEnd = truncateToHour(end, zoneId);
             if (end.isAfter(hourEnd)) {
                 hourEnd = hourEnd.plusHours(1);
             }
@@ -302,7 +303,7 @@ public class DashboardAggregationService {
     /**
      * 获取上次水位
      */
-    private LocalDateTime getLastWatermark() {
+    private OffsetDateTime getLastWatermark() {
         try {
             return aggregationMapper.getAggregationWatermark();
         } catch (Exception e) {
@@ -314,7 +315,7 @@ public class DashboardAggregationService {
     /**
      * 更新水位
      */
-    private void updateWatermark(LocalDateTime aggregatedAt) {
+    private void updateWatermark(OffsetDateTime aggregatedAt) {
         try {
             aggregationMapper.updateAggregationWatermark(aggregatedAt);
             log.debug("Updated watermark to {}", aggregatedAt);
@@ -326,8 +327,8 @@ public class DashboardAggregationService {
     /**
      * 保留清理（定期执行）
      */
-    private void maybeCleanupRetention(LocalDateTime now) {
-        LocalDateTime last = lastRetentionCleanup.get();
+    private void maybeCleanupRetention(OffsetDateTime now) {
+        OffsetDateTime last = lastRetentionCleanup.get();
         if (last != null) {
             long hoursSince = java.time.Duration.between(last, now).toHours();
             if (hoursSince < RETENTION_CLEANUP_INTERVAL_HOURS) {
@@ -336,9 +337,9 @@ public class DashboardAggregationService {
         }
 
         try {
-            LocalDateTime hourlyCutoff = now.minusDays(config.getRetention().getHourlyDays());
+            OffsetDateTime hourlyCutoff = now.minusDays(config.getRetention().getHourlyDays());
             LocalDate dailyCutoff = now.minusDays(config.getRetention().getDailyDays()).toLocalDate();
-            LocalDateTime usageCutoff = now.minusDays(config.getRetention().getUsageLogsDays());
+            OffsetDateTime usageCutoff = now.minusDays(config.getRetention().getUsageLogsDays());
 
             // 清理聚合表
             aggregationMapper.cleanupHourlyAggregates(hourlyCutoff);
@@ -361,7 +362,7 @@ public class DashboardAggregationService {
     /**
      * 清理 usage_logs（分区表直接 DROP，分区表则分批 DELETE）
      */
-    private void cleanupUsageLogs(LocalDateTime cutoff) {
+    private void cleanupUsageLogs(OffsetDateTime cutoff) {
         try {
             if (aggregationMapper.isUsageLogsPartitioned()) {
                 cleanupUsageLogsPartitions(cutoff);
@@ -376,10 +377,10 @@ public class DashboardAggregationService {
     /**
      * 分区表：删除旧分区
      */
-    private void cleanupUsageLogsPartitions(LocalDateTime cutoff) {
+    private void cleanupUsageLogsPartitions(OffsetDateTime cutoff) {
         try {
             List<String> partitions = aggregationMapper.getUsageLogsPartitions();
-            LocalDate cutoffMonth = cutoff.atZone(zoneId).toLocalDate().withDayOfMonth(1);
+            LocalDate cutoffMonth = cutoff.toInstant().atZone(zoneId).toLocalDate().withDayOfMonth(1);
 
             for (String partition : partitions) {
                 if (!partition.startsWith("usage_logs_")) {
@@ -405,7 +406,7 @@ public class DashboardAggregationService {
     /**
      * 非分区表：分批 DELETE
      */
-    private void cleanupUsageLogsBatch(LocalDateTime cutoff) {
+    private void cleanupUsageLogsBatch(OffsetDateTime cutoff) {
         try {
             int deleted;
             do {
@@ -422,17 +423,17 @@ public class DashboardAggregationService {
     /**
      * 确保 usage_logs 分区存在
      */
-    private void ensureUsageLogsPartitions(LocalDateTime now) {
+    private void ensureUsageLogsPartitions(OffsetDateTime now) {
         try {
             if (!aggregationMapper.isUsageLogsPartitioned()) {
                 return;
             }
 
-            LocalDateTime monthStart = truncateToMonth(now);
-            LocalDateTime prevMonth = monthStart.minusMonths(1);
-            LocalDateTime nextMonth = monthStart.plusMonths(1);
+            OffsetDateTime monthStart = truncateToMonth(now);
+            OffsetDateTime prevMonth = monthStart.minusMonths(1);
+            OffsetDateTime nextMonth = monthStart.plusMonths(1);
 
-            for (LocalDateTime month : List.of(prevMonth, monthStart, nextMonth)) {
+            for (OffsetDateTime month : List.of(prevMonth, monthStart, nextMonth)) {
                 ensureUsageLogsPartition(month);
             }
         } catch (Exception e) {
@@ -443,7 +444,7 @@ public class DashboardAggregationService {
     /**
      * 确保指定月份的分区存在
      */
-    private void ensureUsageLogsPartition(LocalDateTime month) {
+    private void ensureUsageLogsPartition(OffsetDateTime month) {
         try {
             String partitionName = "usage_logs_" + month.format(DateTimeFormatter.ofPattern("yyyyMM"));
             // 分区由 DB 自动管理，这里仅做预防性检查
@@ -462,8 +463,8 @@ public class DashboardAggregationService {
             return;
         }
 
-        LocalDateTime now = LocalDateTime.now(zoneId);
-        LocalDateTime start = now.minusDays(days);
+        OffsetDateTime now = OffsetDateTime.now(ZoneOffset.systemDefault());
+        OffsetDateTime start = now.minusDays(days);
 
         log.info("Starting recompute for recent {} days: {} to {}", days, start, now);
 
@@ -476,15 +477,15 @@ public class DashboardAggregationService {
 
     // ========== 工具方法 ==========
 
-    private LocalDateTime truncateToDay(LocalDateTime t) {
-        return t.toLocalDate().atStartOfDay();
+    private OffsetDateTime truncateToDay(OffsetDateTime t) {
+        return t.toLocalDate().atStartOfDay().atOffset(ZoneOffset.UTC);
     }
 
-    private LocalDateTime truncateToHour(LocalDateTime t, ZoneId zone) {
+    private OffsetDateTime truncateToHour(OffsetDateTime t, ZoneId zone) {
         return t.withMinute(0).withSecond(0).withNano(0);
     }
 
-    private LocalDateTime truncateToMonth(LocalDateTime t) {
+    private OffsetDateTime truncateToMonth(OffsetDateTime t) {
         return t.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
     }
 

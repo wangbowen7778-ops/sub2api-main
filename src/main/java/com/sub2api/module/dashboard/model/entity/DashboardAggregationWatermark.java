@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 /**
  * Dashboard Aggregation Watermark Entity
@@ -21,10 +21,10 @@ public class DashboardAggregationWatermark {
     /**
      * 最后聚合时间
      */
-    private LocalDateTime lastAggregatedAt;
+    private OffsetDateTime lastAggregatedAt;
 
     /**
      * 更新时间
      */
-    private LocalDateTime updatedAt;
+    private OffsetDateTime updatedAt;
 }

@@ -32,7 +32,7 @@ public class OAuthTokenInfo {
     /**
      * 过期时间点
      */
-    private java.time.LocalDateTime expiresAt;
+    private java.time.OffsetDateTime expiresAt;
 
     /**
      * Token 类型

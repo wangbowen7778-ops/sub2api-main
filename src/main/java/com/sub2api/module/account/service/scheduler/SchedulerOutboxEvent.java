@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Map;
 
 /**
@@ -46,7 +46,7 @@ public class SchedulerOutboxEvent {
     /**
      * 创建时间
      */
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 
     /**
      * 事件类型常量

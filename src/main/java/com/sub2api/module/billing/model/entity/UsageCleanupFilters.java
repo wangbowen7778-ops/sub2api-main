@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 /**
  * 使用记录清理过滤器
@@ -25,13 +25,13 @@ public class UsageCleanupFilters implements Serializable {
      * 开始时间（必填）
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime startTime;
+    private OffsetDateTime startTime;
 
     /**
      * 结束时间（必填）
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime endTime;
+    private OffsetDateTime endTime;
 
     /**
      * 用户ID（可选）

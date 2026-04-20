@@ -6,6 +6,7 @@ import com.sub2api.module.auth.service.platform.OAuthHandler;
 import com.sub2api.module.common.exception.BusinessException;
 import com.sub2api.module.common.model.enums.ErrorCode;
 import com.sub2api.module.user.model.entity.User;
+import com.sub2api.module.user.model.vo.UserVO;
 import com.sub2api.module.user.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -132,14 +133,20 @@ public class OAuthService {
 
         log.info("OAuth 登录成功: platform={}, username={}", platform.getDisplayName(), user.getUsername());
 
+        UserVO userVO = UserVO.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .role(user.getRole())
+                .email(user.getEmail())
+                .status(user.getStatus())
+                .build();
+
         return LoginResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .tokenType("Bearer")
                 .expiresIn(86400L)
-                .userId(user.getId())
-                .username(user.getUsername())
-                .role(user.getRole())
+                .user(userVO)
                 .build();
     }
 

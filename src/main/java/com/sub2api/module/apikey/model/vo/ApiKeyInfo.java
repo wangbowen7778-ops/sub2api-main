@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 /**
  * API Key info (for authentication context)
@@ -59,7 +59,7 @@ public class ApiKeyInfo implements Serializable {
     /**
      * Expiration time
      */
-    private LocalDateTime expireAt;
+    private OffsetDateTime expireAt;
 
     /**
      * Rate limit
@@ -88,8 +88,8 @@ public class ApiKeyInfo implements Serializable {
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
 
-    public LocalDateTime getExpireAt() { return expireAt; }
-    public void setExpireAt(LocalDateTime expireAt) { this.expireAt = expireAt; }
+    public OffsetDateTime getExpireAt() { return expireAt; }
+    public void setExpireAt(OffsetDateTime expireAt) { this.expireAt = expireAt; }
 
     public Integer getRateLimit() { return rateLimit; }
     public void setRateLimit(Integer rateLimit) { this.rateLimit = rateLimit; }
@@ -98,6 +98,6 @@ public class ApiKeyInfo implements Serializable {
      * Is enabled
      */
     public boolean isEnabled() {
-        return "active".equals(status) && (expireAt == null || expireAt.isAfter(LocalDateTime.now()));
+        return "active".equals(status) && (expireAt == null || expireAt.isAfter(OffsetDateTime.now()));
     }
 }

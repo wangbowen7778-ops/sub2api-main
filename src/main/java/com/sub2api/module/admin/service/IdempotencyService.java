@@ -15,7 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Base64;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -163,8 +163,8 @@ public class IdempotencyService {
         String keyHash = hashKey(normalizedKey);
         String fingerprint = computeFingerprint(payload);
         Duration effectiveTtl = ttl != null ? ttl : DEFAULT_TTL;
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime expiresAt = now.plus(effectiveTtl);
+        OffsetDateTime now = OffsetDateTime.now();
+        OffsetDateTime expiresAt = now.plus(effectiveTtl);
 
         // 尝试创建处理中记录
         IdempotencyRecord newRecord = new IdempotencyRecord();
@@ -204,7 +204,7 @@ public class IdempotencyService {
             String keyHash,
             String fingerprint,
             String normalizedKey,
-            LocalDateTime expiresAt,
+            OffsetDateTime expiresAt,
             java.util.function.Supplier<Object> execute) {
 
         IdempotencyRecord existing = idempotencyRecordMapper.selectByScopeAndKeyHash(scope, keyHash);
@@ -216,7 +216,7 @@ public class IdempotencyService {
         // 检查是否过期
         if (existing.isExpired()) {
             // 记录已过期，尝试重新获取锁
-            LocalDateTime now = LocalDateTime.now();
+            OffsetDateTime now = OffsetDateTime.now();
             int updated = idempotencyRecordMapper.tryReclaim(
                     existing.getId(),
                     IdempotencyRecord.STATUS_PROCESSING,
@@ -251,9 +251,9 @@ public class IdempotencyService {
                 int updated = idempotencyRecordMapper.tryReclaim(
                         existing.getId(),
                         IdempotencyRecord.STATUS_PROCESSING,
-                        LocalDateTime.now().plus(PROCESSING_TIMEOUT),
+                        OffsetDateTime.now().plus(PROCESSING_TIMEOUT),
                         expiresAt,
-                        LocalDateTime.now());
+                        OffsetDateTime.now());
 
                 if (updated > 0) {
                     return processWithLock(scope, actorScope, method, route, keyHash, fingerprint,
@@ -269,16 +269,16 @@ public class IdempotencyService {
             case IdempotencyRecord.STATUS_FAILED_RETRYABLE:
                 // 可重试失败，检查退避窗口
                 if (existing.getLockedUntil() != null &&
-                        existing.getLockedUntil().isAfter(LocalDateTime.now())) {
+                        existing.getLockedUntil().isAfter(OffsetDateTime.now())) {
                     throw new BusinessException(ErrorCode.CONFLICT, "Idempotency request is in retry backoff window");
                 }
                 // 尝试重新获取锁
                 updated = idempotencyRecordMapper.tryReclaim(
                         existing.getId(),
                         IdempotencyRecord.STATUS_FAILED_RETRYABLE,
-                        LocalDateTime.now().plus(PROCESSING_TIMEOUT),
+                        OffsetDateTime.now().plus(PROCESSING_TIMEOUT),
                         expiresAt,
-                        LocalDateTime.now());
+                        OffsetDateTime.now());
 
                 if (updated > 0) {
                     return processWithLock(scope, actorScope, method, route, keyHash, fingerprint,
@@ -303,7 +303,7 @@ public class IdempotencyService {
             String fingerprint,
             String normalizedKey,
             Long recordId,
-            LocalDateTime expiresAt,
+            OffsetDateTime expiresAt,
             java.util.function.Supplier<Object> execute) {
 
         try {
@@ -329,7 +329,7 @@ public class IdempotencyService {
 
         } catch (BusinessException e) {
             // 业务异常，标记为可重试失败
-            LocalDateTime retryUntil = LocalDateTime.now().plus(FAILED_RETRY_BACKOFF);
+            OffsetDateTime retryUntil = OffsetDateTime.now().plus(FAILED_RETRY_BACKOFF);
             idempotencyRecordMapper.markFailedRetryable(
                     recordId,
                     e.getMessage(),
@@ -339,7 +339,7 @@ public class IdempotencyService {
 
         } catch (Exception e) {
             // 其他异常，标记为可重试失败
-            LocalDateTime retryUntil = LocalDateTime.now().plus(FAILED_RETRY_BACKOFF);
+            OffsetDateTime retryUntil = OffsetDateTime.now().plus(FAILED_RETRY_BACKOFF);
             idempotencyRecordMapper.markFailedRetryable(
                     recordId,
                     e.getMessage(),
@@ -395,7 +395,7 @@ public class IdempotencyService {
     @Scheduled(fixedDelay = 3600000) // 1 hour
     public void cleanupExpired() {
         try {
-            int deleted = idempotencyRecordMapper.deleteExpired(LocalDateTime.now(), 1000);
+            int deleted = idempotencyRecordMapper.deleteExpired(OffsetDateTime.now(), 1000);
             if (deleted > 0) {
                 log.info("Cleaned up {} expired idempotency records", deleted);
             }

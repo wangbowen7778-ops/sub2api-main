@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -88,9 +88,9 @@ public class DashboardService {
      */
     private DashboardStats calculateDashboardStats() {
         DashboardStats stats = new DashboardStats();
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime todayStart = LocalDateTime.of(now.toLocalDate(), LocalTime.MIN);
-        LocalDateTime hourStart = LocalDateTime.of(now.toLocalDate(), LocalTime.of(now.getHour(), 0));
+        OffsetDateTime now = OffsetDateTime.now();
+        OffsetDateTime todayStart = OffsetDateTime.of(now.toLocalDate(),  LocalTime.MIN, ZoneOffset.UTC);
+        OffsetDateTime hourStart = OffsetDateTime.of(now.toLocalDate(),  LocalTime.of(now.getHour(), 0), ZoneOffset.UTC);
 
         // 用户统计
         stats.setTotalUsers(dashboardMapper.countTotalUsers(todayStart));
@@ -143,7 +143,7 @@ public class DashboardService {
      * 计算成本
      * 优先使用数据库中的实际成本，必要时使用费率估算
      */
-    private void calculateCosts(DashboardStats stats, LocalDateTime todayStart) {
+    private void calculateCosts(DashboardStats stats, OffsetDateTime todayStart) {
         // 获取数据库中存储的实际成本
         double dbTotalCost = dashboardMapper.sumTotalCost();
         double dbTotalActualCost = dashboardMapper.sumTotalActualCost();
@@ -192,7 +192,7 @@ public class DashboardService {
     /**
      * 获取用量趋势
      */
-    public List<TrendDataPoint> getUsageTrend(LocalDateTime startTime, LocalDateTime endTime,
+    public List<TrendDataPoint> getUsageTrend(OffsetDateTime startTime, OffsetDateTime endTime,
                                               String granularity, Long userId, Long apiKeyId,
                                               Long accountId, Long groupId, String model) {
         List<UsageTrendRow> rows = dashboardMapper.selectUsageTrendByDay(startTime, endTime);
@@ -213,7 +213,7 @@ public class DashboardService {
     /**
      * 获取模型统计
      */
-    public List<ModelStat> getModelStats(LocalDateTime startTime, LocalDateTime endTime,
+    public List<ModelStat> getModelStats(OffsetDateTime startTime, OffsetDateTime endTime,
                                           Long userId, Long apiKeyId, Long accountId,
                                           Long groupId, String model) {
         List<ModelUsageRow> rows = dashboardMapper.selectModelUsageStats(startTime, endTime);
@@ -234,7 +234,7 @@ public class DashboardService {
     /**
      * 获取分组统计
      */
-    public List<GroupStat> getGroupStats(LocalDateTime startTime, LocalDateTime endTime,
+    public List<GroupStat> getGroupStats(OffsetDateTime startTime, OffsetDateTime endTime,
                                          Long userId, Long apiKeyId, Long accountId,
                                          Long groupId) {
         List<DashboardMapper.GroupUsageRow> rows = dashboardMapper.selectGroupUsageStats(startTime, endTime);
@@ -255,11 +255,11 @@ public class DashboardService {
     /**
      * 获取分组用量摘要
      */
-    public List<GroupUsageSummary> getGroupUsageSummary(LocalDateTime todayStart) {
-        LocalDateTime now = LocalDateTime.now();
+    public List<GroupUsageSummary> getGroupUsageSummary(OffsetDateTime todayStart) {
+        OffsetDateTime now = OffsetDateTime.now();
         List<DashboardMapper.GroupUsageRow> todayStats = dashboardMapper.selectGroupUsageStats(todayStart, now);
         List<DashboardMapper.GroupUsageRow> allStats = dashboardMapper.selectGroupUsageStats(
-                LocalDateTime.of(2020, 1, 1, 0, 0), now);
+                OffsetDateTime.of(2020, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC), now);
 
         return todayStats.stream()
                 .map(row -> {
@@ -283,7 +283,7 @@ public class DashboardService {
     /**
      * 获取用户用量趋势
      */
-    public List<UserUsageTrendPoint> getUserUsageTrend(LocalDateTime startTime, LocalDateTime endTime,
+    public List<UserUsageTrendPoint> getUserUsageTrend(OffsetDateTime startTime, OffsetDateTime endTime,
                                                        String granularity, int limit) {
         List<DashboardMapper.UserUsageTrendRow> rows = dashboardMapper.selectUserUsageTrend(
                 startTime, endTime, limit > 0 ? limit : 100);
@@ -306,8 +306,8 @@ public class DashboardService {
     /**
      * 获取用户消费排名
      */
-    public UserSpendingRankingResponse getUserSpendingRanking(LocalDateTime startTime,
-                                                              LocalDateTime endTime, int limit) {
+    public UserSpendingRankingResponse getUserSpendingRanking(OffsetDateTime startTime,
+                                                              OffsetDateTime endTime, int limit) {
         List<DashboardMapper.UserSpendingRow> rows = dashboardMapper.selectUserSpendingRanking(
                 startTime, endTime, limit > 0 ? limit : 50);
 

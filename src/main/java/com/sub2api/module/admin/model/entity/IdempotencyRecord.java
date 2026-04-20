@@ -5,7 +5,7 @@ import lombok.experimental.Accessors;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 /**
  * 幂等性记录实体
@@ -66,24 +66,24 @@ public class IdempotencyRecord implements Serializable {
     /**
      * 锁定直到 (用于防止并发处理)
      */
-    private LocalDateTime lockedUntil;
+    private OffsetDateTime lockedUntil;
 
     /**
      * 过期时间
      */
-    private LocalDateTime expiresAt;
+    private OffsetDateTime expiresAt;
 
     /**
      * 创建时间
      */
     @TableField(fill = FieldFill.INSERT)
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 
     /**
      * 更新时间
      */
     @TableField(fill = FieldFill.INSERT_UPDATE)
-    private LocalDateTime updatedAt;
+    private OffsetDateTime updatedAt;
 
     // Status constants
     public static final String STATUS_PROCESSING = "processing";
@@ -115,23 +115,23 @@ public class IdempotencyRecord implements Serializable {
     public String getErrorReason() { return errorReason; }
     public IdempotencyRecord setErrorReason(String errorReason) { this.errorReason = errorReason; return this; }
 
-    public LocalDateTime getLockedUntil() { return lockedUntil; }
-    public IdempotencyRecord setLockedUntil(LocalDateTime lockedUntil) { this.lockedUntil = lockedUntil; return this; }
+    public OffsetDateTime getLockedUntil() { return lockedUntil; }
+    public IdempotencyRecord setLockedUntil(OffsetDateTime lockedUntil) { this.lockedUntil = lockedUntil; return this; }
 
-    public LocalDateTime getExpiresAt() { return expiresAt; }
-    public IdempotencyRecord setExpiresAt(LocalDateTime expiresAt) { this.expiresAt = expiresAt; return this; }
+    public OffsetDateTime getExpiresAt() { return expiresAt; }
+    public IdempotencyRecord setExpiresAt(OffsetDateTime expiresAt) { this.expiresAt = expiresAt; return this; }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public IdempotencyRecord setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; return this; }
+    public OffsetDateTime getCreatedAt() { return createdAt; }
+    public IdempotencyRecord setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; return this; }
 
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public IdempotencyRecord setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; return this; }
+    public OffsetDateTime getUpdatedAt() { return updatedAt; }
+    public IdempotencyRecord setUpdatedAt(OffsetDateTime updatedAt) { this.updatedAt = updatedAt; return this; }
 
     /**
      * 检查记录是否已过期
      */
     public boolean isExpired() {
-        return expiresAt != null && expiresAt.isBefore(LocalDateTime.now());
+        return expiresAt != null && expiresAt.isBefore(java.time.OffsetDateTime.now());
     }
 
     /**
@@ -159,6 +159,6 @@ public class IdempotencyRecord implements Serializable {
      * 检查是否被锁定
      */
     public boolean isLocked() {
-        return lockedUntil != null && lockedUntil.isAfter(LocalDateTime.now());
+        return lockedUntil != null && lockedUntil.isAfter(java.time.OffsetDateTime.now());
     }
 }

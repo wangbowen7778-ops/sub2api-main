@@ -96,7 +96,7 @@ public class ApiKeyCacheService {
                     case "groupIds" -> info.setGroupIds(value.isEmpty() ? null : value);
                     case "scope" -> info.setScope(value);
                     case "status" -> info.setStatus(value);
-                    case "expireAt" -> info.setExpireAt(value.isEmpty() ? null : java.time.LocalDateTime.parse(value));
+                    case "expireAt" -> info.setExpireAt(value.isEmpty() ? null : java.time.OffsetDateTime.parse(value));
                     case "rateLimit" -> info.setRateLimit(Integer.parseInt(value));
                 }
             }

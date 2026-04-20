@@ -1,13 +1,12 @@
 package com.sub2api.module.gateway.service;
 
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +19,8 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class ProxyLatencyService {
+
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ProxyLatencyService.class);
 
     private final StringRedisTemplate redisTemplate;
 
@@ -36,7 +37,7 @@ public class ProxyLatencyService {
             info.setSuccess(success);
             info.setLatencyMs(latencyMs);
             info.setIpAddress(ipAddress);
-            info.setUpdatedAt(LocalDateTime.now());
+            info.setUpdatedAt(OffsetDateTime.now());
 
             redisTemplate.opsForValue().set(key, toJson(info), LATENCY_TTL);
         } catch (Exception e) {
@@ -128,7 +129,6 @@ public class ProxyLatencyService {
 
     // ========== 内部类 ==========
 
-    @Data
     public static class ProxyLatencyInfo implements java.io.Serializable {
         private boolean success;
         private Long latencyMs;
@@ -141,7 +141,32 @@ public class ProxyLatencyService {
         private String qualityStatus;
         private Integer qualityScore;
         private String qualityGrade;
-        private LocalDateTime updatedAt;
+        private OffsetDateTime updatedAt;
+
+        public boolean isSuccess() { return success; }
+        public void setSuccess(boolean success) { this.success = success; }
+        public Long getLatencyMs() { return latencyMs; }
+        public void setLatencyMs(Long latencyMs) { this.latencyMs = latencyMs; }
+        public String getMessage() { return message; }
+        public void setMessage(String message) { this.message = message; }
+        public String getIpAddress() { return ipAddress; }
+        public void setIpAddress(String ipAddress) { this.ipAddress = ipAddress; }
+        public String getCountry() { return country; }
+        public void setCountry(String country) { this.country = country; }
+        public String getCountryCode() { return countryCode; }
+        public void setCountryCode(String countryCode) { this.countryCode = countryCode; }
+        public String getRegion() { return region; }
+        public void setRegion(String region) { this.region = region; }
+        public String getCity() { return city; }
+        public void setCity(String city) { this.city = city; }
+        public String getQualityStatus() { return qualityStatus; }
+        public void setQualityStatus(String qualityStatus) { this.qualityStatus = qualityStatus; }
+        public Integer getQualityScore() { return qualityScore; }
+        public void setQualityScore(Integer qualityScore) { this.qualityScore = qualityScore; }
+        public String getQualityGrade() { return qualityGrade; }
+        public void setQualityGrade(String qualityGrade) { this.qualityGrade = qualityGrade; }
+        public OffsetDateTime getUpdatedAt() { return updatedAt; }
+        public void setUpdatedAt(OffsetDateTime updatedAt) { this.updatedAt = updatedAt; }
     }
 
     // ========== JSON 辅助 ==========

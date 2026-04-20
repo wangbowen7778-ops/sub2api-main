@@ -14,7 +14,9 @@ import org.springframework.stereotype.Service;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -335,7 +337,7 @@ public class SchedulerSnapshotService {
             return;
         }
 
-        Map<Long, LocalDateTime> updates = new HashMap<>();
+        Map<Long, OffsetDateTime> updates = new HashMap<>();
         for (Map.Entry<String, Object> entry : lastUsedMap.entrySet()) {
             try {
                 Long id = Long.parseLong(entry.getKey());
@@ -346,7 +348,7 @@ public class SchedulerSnapshotService {
                     continue;
                 }
                 if (seconds > 0) {
-                    updates.put(id, LocalDateTime.ofEpochSecond(seconds, 0, java.time.ZoneOffset.UTC));
+                    updates.put(id, Instant.ofEpochSecond(seconds, 0).atOffset(ZoneOffset.UTC));
                 }
             } catch (NumberFormatException ignored) {
             }
@@ -469,7 +471,7 @@ public class SchedulerSnapshotService {
             return;
         }
 
-        Duration lag = Duration.between(oldest.getCreatedAt(), LocalDateTime.now());
+        Duration lag = Duration.between(oldest.getCreatedAt(), OffsetDateTime.now());
 
         // 警告延迟
         if (outboxLagWarnSeconds > 0 && lag.getSeconds() >= outboxLagWarnSeconds) {
@@ -757,7 +759,7 @@ public class SchedulerSnapshotService {
             return Collections.emptyList();
         }
 
-        LocalDateTime now = LocalDateTime.now();
+        OffsetDateTime now = OffsetDateTime.now();
         return accountMapper.selectList(new LambdaQueryWrapper<Account>()
                 .in(Account::getId, accountIds)
                 .eq(Account::getPlatform, platform)
@@ -787,7 +789,7 @@ public class SchedulerSnapshotService {
             return Collections.emptyList();
         }
 
-        LocalDateTime now = LocalDateTime.now();
+        OffsetDateTime now = OffsetDateTime.now();
         return accountMapper.selectList(new LambdaQueryWrapper<Account>()
                 .eq(Account::getPlatform, platform)
                 .eq(Account::getStatus, "active")
@@ -812,7 +814,7 @@ public class SchedulerSnapshotService {
         }
 
         // 查询没有分组的账号
-        LocalDateTime now = LocalDateTime.now();
+        OffsetDateTime now = OffsetDateTime.now();
         List<Long> groupedAccountIds = accountGroupMapper.selectAllGroupedAccountIds();
         return accountMapper.selectList(new LambdaQueryWrapper<Account>()
                 .eq(Account::getPlatform, platform)
@@ -843,7 +845,7 @@ public class SchedulerSnapshotService {
             return Collections.emptyList();
         }
 
-        LocalDateTime now = LocalDateTime.now();
+        OffsetDateTime now = OffsetDateTime.now();
         return accountMapper.selectList(new LambdaQueryWrapper<Account>()
                 .in(Account::getId, accountIds)
                 .in(Account::getPlatform, platforms)
@@ -868,7 +870,7 @@ public class SchedulerSnapshotService {
             return Collections.emptyList();
         }
 
-        LocalDateTime now = LocalDateTime.now();
+        OffsetDateTime now = OffsetDateTime.now();
         return accountMapper.selectList(new LambdaQueryWrapper<Account>()
                 .in(Account::getPlatform, platforms)
                 .eq(Account::getStatus, "active")
@@ -892,7 +894,7 @@ public class SchedulerSnapshotService {
             return Collections.emptyList();
         }
 
-        LocalDateTime now = LocalDateTime.now();
+        OffsetDateTime now = OffsetDateTime.now();
         List<Long> groupedAccountIds = accountGroupMapper.selectAllGroupedAccountIds();
         return accountMapper.selectList(new LambdaQueryWrapper<Account>()
                 .in(Account::getPlatform, platforms)

@@ -5,7 +5,7 @@ import lombok.experimental.Accessors;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -22,8 +22,8 @@ public class OpsDashboardOverview implements Serializable {
     /**
      * 时间范围
      */
-    private LocalDateTime startTime;
-    private LocalDateTime endTime;
+    private OffsetDateTime startTime;
+    private OffsetDateTime endTime;
 
     /**
      * 请求统计
@@ -113,7 +113,7 @@ public class OpsDashboardOverview implements Serializable {
         private Integer redisActiveConns;
         private Double cpuUsage;
         private Double memoryUsage;
-        private LocalDateTime collectedAt;
+        private OffsetDateTime collectedAt;
     }
 
     /**
@@ -123,7 +123,7 @@ public class OpsDashboardOverview implements Serializable {
     public static class JobHeartbeat implements Serializable {
         private String jobName;
         private String status;
-        private LocalDateTime lastHeartbeat;
+        private OffsetDateTime lastHeartbeat;
         private String message;
     }
 }

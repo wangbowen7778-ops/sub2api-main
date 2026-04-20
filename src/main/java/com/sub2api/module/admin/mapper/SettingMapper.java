@@ -20,32 +20,32 @@ public interface SettingMapper extends BaseMapper<Setting> {
     /**
      * 根据键获取设置
      */
-    @Select("SELECT * FROM settings WHERE setting_key = #{key} AND deleted_at IS NULL LIMIT 1")
+    @Select("SELECT * FROM settings WHERE key = #{key} LIMIT 1")
     Setting selectByKey(@Param("key") String key);
 
     /**
      * 根据键获取值
      */
-    @Select("SELECT setting_value FROM settings WHERE setting_key = #{key} AND deleted_at IS NULL LIMIT 1")
+    @Select("SELECT value FROM settings WHERE key = #{key} LIMIT 1")
     String selectValueByKey(@Param("key") String key);
 
     /**
      * 根据键列表获取设置
      */
-    @Select("<script>SELECT * FROM settings WHERE setting_key IN " +
+    @Select("<script>SELECT * FROM settings WHERE key IN " +
             "<foreach item='item' collection='keys' open='(' separator=',' close=')'>" +
-            "#{item}</foreach> AND deleted_at IS NULL</script>")
+            "#{item}</foreach></script>")
     List<Setting> selectByKeys(@Param("keys") List<String> keys);
 
     /**
      * 获取所有设置
      */
-    @Select("SELECT * FROM settings WHERE deleted_at IS NULL")
+    @Select("SELECT * FROM settings")
     List<Setting> selectAll();
 
     /**
      * 根据分类获取设置
      */
-    @Select("SELECT * FROM settings WHERE category = #{category} AND deleted_at IS NULL")
+    @Select("SELECT * FROM settings WHERE category = #{category}")
     List<Setting> selectByCategory(@Param("category") String category);
 }

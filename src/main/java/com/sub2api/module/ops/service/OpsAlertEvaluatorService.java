@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.*;
@@ -136,8 +136,8 @@ public class OpsAlertEvaluatorService {
         try {
             // 获取仪表板概览
             var filter = new OpsService.OpsDashboardFilter();
-            filter.setStartTime(LocalDateTime.now().minusMinutes(5));
-            filter.setEndTime(LocalDateTime.now());
+            filter.setStartTime(OffsetDateTime.now().minusMinutes(5));
+            filter.setEndTime(OffsetDateTime.now());
 
             var overview = opsService.getDashboardOverview(filter);
             if (overview == null) {
@@ -286,7 +286,7 @@ public class OpsAlertEvaluatorService {
      */
     @Data
     private static class AlertRuleState {
-        private LocalDateTime lastEvaluatedAt;
+        private OffsetDateTime lastEvaluatedAt;
         private int consecutiveBreaches;
     }
 

@@ -2,7 +2,7 @@ package com.sub2api.module.account.service.scheduler;
 
 import com.sub2api.module.account.model.entity.Account;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -57,7 +57,7 @@ public interface SchedulerCache {
      *
      * @param updates 账号ID到最后使用时间的映射
      */
-    void updateLastUsed(Map<Long, LocalDateTime> updates);
+    void updateLastUsed(Map<Long, OffsetDateTime> updates);
 
     /**
      * 尝试获取分桶重建锁

@@ -6,7 +6,7 @@ import lombok.experimental.Accessors;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 /**
  * 公告已读记录实体
@@ -23,6 +23,12 @@ public class AnnouncementRead implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
+     * 主键ID
+     */
+    @TableId(type = IdType.AUTO)
+    private Long id;
+
+    /**
      * 用户ID
      */
     private Long userId;
@@ -36,5 +42,5 @@ public class AnnouncementRead implements Serializable {
      * 阅读时间
      */
     @TableField(fill = FieldFill.INSERT)
-    private LocalDateTime readAt;
+    private OffsetDateTime readAt;
 }

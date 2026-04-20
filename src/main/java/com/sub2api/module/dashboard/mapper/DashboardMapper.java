@@ -6,7 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 /**
@@ -19,25 +19,25 @@ public interface DashboardMapper extends BaseMapper<UsageLog> {
      * 获取今日用户总数
      */
     @Select("SELECT COUNT(*) FROM users WHERE created_at >= #{todayStart}")
-    long countTotalUsers(@Param("todayStart") LocalDateTime todayStart);
+    long countTotalUsers(@Param("todayStart") OffsetDateTime todayStart);
 
     /**
      * 获取今日新增用户数
      */
     @Select("SELECT COUNT(*) FROM users WHERE created_at >= #{todayStart}")
-    long countTodayNewUsers(@Param("todayStart") LocalDateTime todayStart);
+    long countTodayNewUsers(@Param("todayStart") OffsetDateTime todayStart);
 
     /**
      * 获取活跃用户数 (今日有请求的用户)
      */
     @Select("SELECT COUNT(DISTINCT user_id) FROM usage_logs WHERE created_at >= #{todayStart}")
-    long countActiveUsers(@Param("todayStart") LocalDateTime todayStart);
+    long countActiveUsers(@Param("todayStart") OffsetDateTime todayStart);
 
     /**
      * 获取当前小时活跃用户数
      */
     @Select("SELECT COUNT(DISTINCT user_id) FROM usage_logs WHERE created_at >= #{hourStart}")
-    long countHourlyActiveUsers(@Param("hourStart") LocalDateTime hourStart);
+    long countHourlyActiveUsers(@Param("hourStart") OffsetDateTime hourStart);
 
     /**
      * 获取 API Key 统计
@@ -61,10 +61,10 @@ public interface DashboardMapper extends BaseMapper<UsageLog> {
     long countErrorAccounts();
 
     @Select("SELECT COUNT(*) FROM accounts WHERE rate_limit_reset_at > #{now}")
-    long countRateLimitAccounts(@Param("now") LocalDateTime now);
+    long countRateLimitAccounts(@Param("now") OffsetDateTime now);
 
     @Select("SELECT COUNT(*) FROM accounts WHERE overload_until > #{now}")
-    long countOverloadAccounts(@Param("now") LocalDateTime now);
+    long countOverloadAccounts(@Param("now") OffsetDateTime now);
 
     /**
      * 获取累计用量统计
@@ -94,25 +94,25 @@ public interface DashboardMapper extends BaseMapper<UsageLog> {
      * 获取今日用量统计
      */
     @Select("SELECT COUNT(*) FROM usage_logs WHERE created_at >= #{todayStart}")
-    long countTodayRequests(@Param("todayStart") LocalDateTime todayStart);
+    long countTodayRequests(@Param("todayStart") OffsetDateTime todayStart);
 
     @Select("SELECT COALESCE(SUM(input_tokens), 0) FROM usage_logs WHERE created_at >= #{todayStart}")
-    long sumTodayInputTokens(@Param("todayStart") LocalDateTime todayStart);
+    long sumTodayInputTokens(@Param("todayStart") OffsetDateTime todayStart);
 
     @Select("SELECT COALESCE(SUM(output_tokens), 0) FROM usage_logs WHERE created_at >= #{todayStart}")
-    long sumTodayOutputTokens(@Param("todayStart") LocalDateTime todayStart);
+    long sumTodayOutputTokens(@Param("todayStart") OffsetDateTime todayStart);
 
     @Select("SELECT COALESCE(SUM(total_cost), 0) FROM usage_logs WHERE created_at >= #{todayStart}")
-    double sumTodayCost(@Param("todayStart") LocalDateTime todayStart);
+    double sumTodayCost(@Param("todayStart") OffsetDateTime todayStart);
 
     @Select("SELECT COALESCE(SUM(actual_cost), 0) FROM usage_logs WHERE created_at >= #{todayStart}")
-    double sumTodayActualCost(@Param("todayStart") LocalDateTime todayStart);
+    double sumTodayActualCost(@Param("todayStart") OffsetDateTime todayStart);
 
     @Select("SELECT COALESCE(SUM(cache_creation_tokens), 0) FROM usage_logs WHERE created_at >= #{todayStart}")
-    long sumTodayCacheCreationTokens(@Param("todayStart") LocalDateTime todayStart);
+    long sumTodayCacheCreationTokens(@Param("todayStart") OffsetDateTime todayStart);
 
     @Select("SELECT COALESCE(SUM(cache_read_tokens), 0) FROM usage_logs WHERE created_at >= #{todayStart}")
-    long sumTodayCacheReadTokens(@Param("todayStart") LocalDateTime todayStart);
+    long sumTodayCacheReadTokens(@Param("todayStart") OffsetDateTime todayStart);
 
     /**
      * 获取用量趋势 (按天)
@@ -129,8 +129,8 @@ public interface DashboardMapper extends BaseMapper<UsageLog> {
         GROUP BY DATE(created_at)
         ORDER BY date
         """)
-    List<UsageTrendRow> selectUsageTrendByDay(@Param("startTime") LocalDateTime startTime,
-                                              @Param("endTime") LocalDateTime endTime);
+    List<UsageTrendRow> selectUsageTrendByDay(@Param("startTime") OffsetDateTime startTime,
+                                              @Param("endTime") OffsetDateTime endTime);
 
     /**
      * 获取模型用量统计
@@ -147,8 +147,8 @@ public interface DashboardMapper extends BaseMapper<UsageLog> {
         GROUP BY model
         ORDER BY total_tokens DESC
         """)
-    List<ModelUsageRow> selectModelUsageStats(@Param("startTime") LocalDateTime startTime,
-                                              @Param("endTime") LocalDateTime endTime);
+    List<ModelUsageRow> selectModelUsageStats(@Param("startTime") OffsetDateTime startTime,
+                                              @Param("endTime") OffsetDateTime endTime);
 
     /**
      * 用量趋势行
@@ -226,8 +226,8 @@ public interface DashboardMapper extends BaseMapper<UsageLog> {
         GROUP BY g.id, g.name
         ORDER BY total_tokens DESC
         """)
-    List<GroupUsageRow> selectGroupUsageStats(@Param("startTime") LocalDateTime startTime,
-                                               @Param("endTime") LocalDateTime endTime);
+    List<GroupUsageRow> selectGroupUsageStats(@Param("startTime") OffsetDateTime startTime,
+                                               @Param("endTime") OffsetDateTime endTime);
 
     /**
      * 获取分组今日用量摘要
@@ -241,7 +241,7 @@ public interface DashboardMapper extends BaseMapper<UsageLog> {
         WHERE g.deleted_at IS NULL AND g.status = 'active'
         GROUP BY g.id
         """)
-    List<GroupTokenSumRow> selectGroupTodayUsageSummary(@Param("todayStart") LocalDateTime todayStart);
+    List<GroupTokenSumRow> selectGroupTodayUsageSummary(@Param("todayStart") OffsetDateTime todayStart);
 
     /**
      * 分组 Token 汇总行
@@ -270,8 +270,8 @@ public interface DashboardMapper extends BaseMapper<UsageLog> {
         ORDER BY date DESC, total_tokens DESC
         LIMIT #{limit}
         """)
-    List<UserUsageTrendRow> selectUserUsageTrend(@Param("startTime") LocalDateTime startTime,
-                                                 @Param("endTime") LocalDateTime endTime,
+    List<UserUsageTrendRow> selectUserUsageTrend(@Param("startTime") OffsetDateTime startTime,
+                                                 @Param("endTime") OffsetDateTime endTime,
                                                  @Param("limit") int limit);
 
     /**
@@ -291,7 +291,7 @@ public interface DashboardMapper extends BaseMapper<UsageLog> {
         ORDER BY total_tokens DESC
         LIMIT #{limit}
         """)
-    List<UserSpendingRow> selectUserSpendingRanking(@Param("startTime") LocalDateTime startTime,
-                                                    @Param("endTime") LocalDateTime endTime,
+    List<UserSpendingRow> selectUserSpendingRanking(@Param("startTime") OffsetDateTime startTime,
+                                                    @Param("endTime") OffsetDateTime endTime,
                                                     @Param("limit") int limit);
 }

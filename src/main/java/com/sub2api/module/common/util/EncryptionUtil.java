@@ -1,6 +1,7 @@
 package com.sub2api.module.common.util;
 
 import cn.hutool.core.codec.Base64;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -23,6 +24,8 @@ public class EncryptionUtil {
     private static final String TRANSFORMATION = "AES/GCM/NoPadding";
     private static final int GCM_TAG_LENGTH = 16;
     private static final int GCM_IV_LENGTH = 12;
+
+    private static final BCryptPasswordEncoder BCRYPT_ENCODER = new BCryptPasswordEncoder(10);
 
     private EncryptionUtil() {
     }
@@ -128,17 +131,17 @@ public class EncryptionUtil {
     }
 
     /**
-     * 密码加盐哈希
+     * 密码哈希 (使用BCrypt，与Go后端兼容)
      */
     public static String hashPassword(String password, String salt) {
-        return sha256(password + salt);
+        return BCRYPT_ENCODER.encode(password);
     }
 
     /**
-     * 验证密码
+     * 验证密码 (使用BCrypt，与Go后端兼容)
      */
     public static boolean verifyPassword(String password, String salt, String hashedPassword) {
-        return hashPassword(password, salt).equals(hashedPassword);
+        return BCRYPT_ENCODER.matches(password, hashedPassword);
     }
 
     /**

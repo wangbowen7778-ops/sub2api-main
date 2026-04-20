@@ -142,7 +142,7 @@ public class OpenAIWebSocketHandler extends TextWebSocketHandler {
         SessionContext ctx = new SessionContext();
         ctx.setSessionId(session.getId());
         ctx.setModel(model);
-        ctx.setCreatedAt(java.time.LocalDateTime.now());
+        ctx.setCreatedAt(java.time.OffsetDateTime.now());
         sessionContexts.put(session.getId(), ctx);
     }
 
@@ -260,7 +260,7 @@ public class OpenAIWebSocketHandler extends TextWebSocketHandler {
     public static class SessionContext {
         private String sessionId;
         private String model;
-        private java.time.LocalDateTime createdAt;
+        private java.time.OffsetDateTime createdAt;
         private Long userId;
         private Long apiKeyId;
         private Long groupId;

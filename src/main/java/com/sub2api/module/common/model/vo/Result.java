@@ -63,22 +63,22 @@ public class Result<T> implements Serializable {
 
     public static <T> Result<T> ok() {
         return new Result<T>()
-                .setCode(200)
-                .setMessage("Operation successful")
+                .setCode(0)
+                .setMessage("success")
                 .setSuccess(true);
     }
 
     public static <T> Result<T> ok(T data) {
         return new Result<T>()
-                .setCode(200)
-                .setMessage("Operation successful")
+                .setCode(0)
+                .setMessage("success")
                 .setSuccess(true)
                 .setData(data);
     }
 
     public static <T> Result<T> ok(String message, T data) {
         return new Result<T>()
-                .setCode(200)
+                .setCode(0)
                 .setMessage(message)
                 .setSuccess(true)
                 .setData(data);

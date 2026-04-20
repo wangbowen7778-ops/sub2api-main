@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
@@ -23,6 +23,8 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class UsagePrefetchService {
+
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(UsagePrefetchService.class);
 
     private final UsageLogMapper usageLogMapper;
     private final StringRedisTemplate redisTemplate;
@@ -42,9 +44,9 @@ public class UsagePrefetchService {
         Map<Long, Double> results = new HashMap<>();
 
         // 计算当前时间窗口
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime windowStart = now.truncatedTo(ChronoUnit.HOURS);
-        LocalDateTime windowEnd = windowStart.plusHours(1);
+        OffsetDateTime now = OffsetDateTime.now();
+        OffsetDateTime windowStart = now.truncatedTo(ChronoUnit.HOURS);
+        OffsetDateTime windowEnd = windowStart.plusHours(1);
 
         // 尝试从缓存获取
         int cacheHit = 0;
@@ -99,8 +101,8 @@ public class UsagePrefetchService {
             return 0;
         }
 
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime windowStart = now.truncatedTo(ChronoUnit.HOURS);
+        OffsetDateTime now = OffsetDateTime.now();
+        OffsetDateTime windowStart = now.truncatedTo(ChronoUnit.HOURS);
 
         String cacheKey = getCacheKey(accountId, windowStart);
         try {
@@ -113,7 +115,7 @@ public class UsagePrefetchService {
         }
 
         // 缓存未命中，从数据库获取
-        LocalDateTime windowEnd = windowStart.plusHours(1);
+        OffsetDateTime windowEnd = windowStart.plusHours(1);
         Map<Long, Double> costs = fetchWindowCostsFromDB(List.of(accountId), windowStart, windowEnd);
         Double cost = costs.get(accountId);
 
@@ -140,8 +142,8 @@ public class UsagePrefetchService {
      * 清除账号的用量缓存
      */
     public void invalidateCache(Long accountId) {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime windowStart = now.truncatedTo(ChronoUnit.HOURS);
+        OffsetDateTime now = OffsetDateTime.now();
+        OffsetDateTime windowStart = now.truncatedTo(ChronoUnit.HOURS);
 
         String cacheKey = getCacheKey(accountId, windowStart);
         try {
@@ -154,7 +156,7 @@ public class UsagePrefetchService {
     /**
      * 从数据库批量获取窗口用量
      */
-    private Map<Long, Double> fetchWindowCostsFromDB(List<Long> accountIds, LocalDateTime windowStart, LocalDateTime windowEnd) {
+    private Map<Long, Double> fetchWindowCostsFromDB(List<Long> accountIds, OffsetDateTime windowStart, OffsetDateTime windowEnd) {
         Map<Long, Double> results = new HashMap<>();
 
         if (accountIds == null || accountIds.isEmpty()) {
@@ -194,7 +196,7 @@ public class UsagePrefetchService {
     /**
      * 获取缓存键
      */
-    private String getCacheKey(Long accountId, LocalDateTime windowStart) {
+    private String getCacheKey(Long accountId, OffsetDateTime windowStart) {
         return USAGE_WINDOW_KEY_PREFIX + accountId + ":" + windowStart.toString();
     }
 }

@@ -12,10 +12,10 @@ import lombok.Data;
 public class LoginRequest {
 
     /**
-     * 用户名
+     * 邮箱
      */
-    @NotBlank(message = "用户名不能为空")
-    private String username;
+    @NotBlank(message = "邮箱不能为空")
+    private String email;
 
     /**
      * 密码

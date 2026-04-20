@@ -14,7 +14,7 @@ import org.springframework.web.client.RestTemplate;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -55,7 +55,7 @@ public class AntigravityQuotaService {
      */
     @Data
     public static class UsageInfo {
-        private LocalDateTime updatedAt;
+        private OffsetDateTime updatedAt;
         private boolean forbidden;
         private String forbiddenReason;
         private String forbiddenType;
@@ -326,7 +326,7 @@ public class AntigravityQuotaService {
 
     private UsageInfo buildUsageInfo(ModelsResponse modelsResp, SubscriptionInfo subscriptionInfo) {
         UsageInfo info = new UsageInfo();
-        info.setUpdatedAt(LocalDateTime.now());
+        info.setUpdatedAt(OffsetDateTime.now());
         info.setAntigravityQuota(modelsResp.getQuotaMap());
         info.setAntigravityQuotaDetails(modelsResp.getDetailMap());
 

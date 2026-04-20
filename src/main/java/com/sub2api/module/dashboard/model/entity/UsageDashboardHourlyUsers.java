@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 /**
  * Dashboard Hourly Active Users Entity
@@ -21,7 +21,7 @@ public class UsageDashboardHourlyUsers {
     /**
      * 桶开始时间（整点）
      */
-    private LocalDateTime bucketStart;
+    private OffsetDateTime bucketStart;
 
     /**
      * 用户 ID

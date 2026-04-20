@@ -102,8 +102,8 @@ public class OpsScheduledReportService {
 
     @PostConstruct
     public void init() {
-        // Initialize cron parser with UNIX definition
-        CronDefinition cronDefinition = CronDefinitionBuilder.instanceDefinitionFor(CronType.UNIX);
+        // Initialize cron parser with Quartz definition (supports 6-part cron expressions)
+        CronDefinition cronDefinition = CronDefinitionBuilder.instanceDefinitionFor(CronType.QUARTZ);
         this.cronParser = new CronParser(cronDefinition);
 
         try {
@@ -246,8 +246,8 @@ public class OpsScheduledReportService {
      */
     private String generateSummaryReport(String reportType, ZonedDateTime start, ZonedDateTime end) {
         OpsService.OpsDashboardFilter filter = new OpsService.OpsDashboardFilter();
-        filter.setStartTime(start.toLocalDateTime());
-        filter.setEndTime(end.toLocalDateTime());
+        filter.setStartTime(start.toOffsetDateTime());
+        filter.setEndTime(end.toOffsetDateTime());
         filter.setQueryMode("auto");
 
         OpsDashboardOverview overview = opsService.getDashboardOverview(filter);
@@ -289,8 +289,8 @@ public class OpsScheduledReportService {
      */
     private String generateErrorDigestReport(ZonedDateTime start, ZonedDateTime end) {
         OpsService.OpsErrorLogFilter filter = new OpsService.OpsErrorLogFilter();
-        filter.setStartTime(start.toLocalDateTime());
-        filter.setEndTime(end.toLocalDateTime());
+        filter.setStartTime(start.toOffsetDateTime());
+        filter.setEndTime(end.toOffsetDateTime());
         filter.setPage(1);
         filter.setPageSize(10);
 

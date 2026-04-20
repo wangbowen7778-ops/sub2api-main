@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sub2api.module.account.mapper.AccountGroupMapper">
+
+    <select id="selectAccountIdsByGroupId" resultType="java.lang.Long">
+        SELECT account_id FROM account_groups WHERE group_id = #{groupId}
+    </select>
+
+    <select id="selectGroupIdsByAccountId" resultType="java.lang.Long">
+        SELECT group_id FROM account_groups WHERE account_id = #{accountId}
+    </select>
+
+    <insert id="insertAccountGroup">
+        INSERT INTO account_groups (account_id, group_id, priority, created_at)
+        VALUES (#{accountId}, #{groupId}, #{priority}, NOW())
+    </insert>
+
+    <insert id="insertAccountGroupWithDefaultPriority">
+        INSERT INTO account_groups (account_id, group_id, priority, created_at)
+        VALUES (#{accountId}, #{groupId}, 0, NOW())
+    </insert>
+
+    <delete id="deleteByAccountId">
+        DELETE FROM account_groups WHERE account_id = #{accountId}
+    </delete>
+
+    <select id="selectAllGroupedAccountIds" resultType="java.lang.Long">
+        SELECT DISTINCT account_id FROM account_groups
+    </select>
+
+</mapper>

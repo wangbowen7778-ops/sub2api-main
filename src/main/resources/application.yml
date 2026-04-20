@@ -1,7 +1,7 @@
 server:
-  port: ${APP_PORT:8080}
+  port: ${APP_PORT:8098}
   servlet:
-    context-path: /
+    context-path: /api/v1
   tomcat:
     threads:
       max: 200
@@ -14,7 +14,7 @@ spring:
 
   # 数据库配置
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:sub2api}
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:sub2api}?stringtype=unspecified
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:admin@123}
     driver-class-name: org.postgresql.Driver
@@ -56,26 +56,26 @@ spring:
       client:
         registration:
           anthropic:
-            client-id: ${ANTHROPIC_CLIENT_ID:}
-            client-secret: ${ANTHROPIC_CLIENT_SECRET:}
+            client-id: ${ANTHROPIC_CLIENT_ID:test}
+            client-secret: ${ANTHROPIC_CLIENT_SECRET:test}
             scope: openid,profile,email
             authorization-grant-type: authorization_code
             redirect-uri: ${OAUTH_CALLBACK_BASE:{baseUrl}/auth/oauth/callback/{registrationId}}
           openai:
-            client-id: ${OPENAI_CLIENT_ID:}
-            client-secret: ${OPENAI_CLIENT_SECRET:}
+            client-id: ${OPENAI_CLIENT_ID:test}
+            client-secret: ${OPENAI_CLIENT_SECRET:test}
             scope: openid,profile,email
             authorization-grant-type: authorization_code
             redirect-uri: ${OAUTH_CALLBACK_BASE:{baseUrl}/auth/oauth/callback/{registrationId}}
           google:
-            client-id: ${GOOGLE_CLIENT_ID:}
-            client-secret: ${GOOGLE_CLIENT_SECRET:}
+            client-id: ${GOOGLE_CLIENT_ID:test}
+            client-secret: ${GOOGLE_CLIENT_SECRET:test}
             scope: openid,profile,email
             authorization-grant-type: authorization_code
             redirect-uri: ${OAUTH_CALLBACK_BASE:{baseUrl}/auth/oauth/callback/{registrationId}}
           linuxdo:
-            client-id: ${LINUXDO_CLIENT_ID:}
-            client-secret: ${LINUXDO_CLIENT_SECRET:}
+            client-id: ${LINUXDO_CLIENT_ID:test}
+            client-secret: ${LINUXDO_CLIENT_SECRET:test}
             scope: openid,profile,email
             authorization-grant-type: authorization_code
             redirect-uri: ${OAUTH_CALLBACK_BASE:{baseUrl}/auth/oauth/callback/{registrationId}}
@@ -103,7 +103,7 @@ spring:
 
 # MyBatis-Plus 配置
 mybatis-plus:
-  mapper-locations:
+  mapper-locations: classpath*:mapper/**/*.xml
   type-aliases-package: com.sub2api.module.**.model.entity
   global-config:
     enable-sql-runner: true
@@ -130,11 +130,17 @@ sub2api:
     port: 8080
     debug: false
 
+  # 初始管理员配置（首次启动时创建）
+  admin:
+    email: ${ADMIN_EMAIL:}
+    password: ${ADMIN_PASSWORD:}
+
   # 网关配置
   gateway:
     default-timeout: 120
     max-retries: 3
     stream-timeout: 300
+    max-request-body-size: 268435456  # 256MB in bytes
 
   # OAuth 配置
   oauth:

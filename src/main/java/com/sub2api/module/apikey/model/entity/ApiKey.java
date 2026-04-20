@@ -7,7 +7,7 @@ import lombok.experimental.Accessors;
 import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 /**
@@ -57,7 +57,7 @@ public class ApiKey implements Serializable {
     /**
      * 最后使用时间
      */
-    private LocalDateTime lastUsedAt;
+    private OffsetDateTime lastUsedAt;
 
     /**
      * IP 白名单 (JSONB)
@@ -84,7 +84,7 @@ public class ApiKey implements Serializable {
     /**
      * 过期时间
      */
-    private LocalDateTime expiresAt;
+    private OffsetDateTime expiresAt;
 
     /**
      * 5小时费率限制 (USD)
@@ -119,34 +119,34 @@ public class ApiKey implements Serializable {
     /**
      * 5h 窗口开始时间
      */
-    private LocalDateTime window5hStart;
+    private OffsetDateTime window5hStart;
 
     /**
      * 1d 窗口开始时间
      */
-    private LocalDateTime window1dStart;
+    private OffsetDateTime window1dStart;
 
     /**
      * 7d 窗口开始时间
      */
-    private LocalDateTime window7dStart;
+    private OffsetDateTime window7dStart;
 
     /**
      * 创建时间
      */
     @TableField(fill = FieldFill.INSERT)
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 
     /**
      * 更新时间
      */
     @TableField(fill = FieldFill.INSERT_UPDATE)
-    private LocalDateTime updatedAt;
+    private OffsetDateTime updatedAt;
 
     /**
      * 删除时间 (软删除)
      */
-    private LocalDateTime deletedAt;
+    private OffsetDateTime deletedAt;
 
     // Getters and Setters
     public Long getId() { return id; }
@@ -167,8 +167,8 @@ public class ApiKey implements Serializable {
     public String getStatus() { return status; }
     public ApiKey setStatus(String status) { this.status = status; return this; }
 
-    public LocalDateTime getLastUsedAt() { return lastUsedAt; }
-    public ApiKey setLastUsedAt(LocalDateTime lastUsedAt) { this.lastUsedAt = lastUsedAt; return this; }
+    public OffsetDateTime getLastUsedAt() { return lastUsedAt; }
+    public ApiKey setLastUsedAt(OffsetDateTime lastUsedAt) { this.lastUsedAt = lastUsedAt; return this; }
 
     public List<String> getIpWhitelist() { return ipWhitelist; }
     public ApiKey setIpWhitelist(List<String> ipWhitelist) { this.ipWhitelist = ipWhitelist; return this; }
@@ -182,8 +182,8 @@ public class ApiKey implements Serializable {
     public BigDecimal getQuotaUsed() { return quotaUsed; }
     public ApiKey setQuotaUsed(BigDecimal quotaUsed) { this.quotaUsed = quotaUsed; return this; }
 
-    public LocalDateTime getExpiresAt() { return expiresAt; }
-    public ApiKey setExpiresAt(LocalDateTime expiresAt) { this.expiresAt = expiresAt; return this; }
+    public OffsetDateTime getExpiresAt() { return expiresAt; }
+    public ApiKey setExpiresAt(OffsetDateTime expiresAt) { this.expiresAt = expiresAt; return this; }
 
     public BigDecimal getRateLimit5h() { return rateLimit5h; }
     public ApiKey setRateLimit5h(BigDecimal rateLimit5h) { this.rateLimit5h = rateLimit5h; return this; }
@@ -203,21 +203,21 @@ public class ApiKey implements Serializable {
     public BigDecimal getUsage7d() { return usage7d; }
     public ApiKey setUsage7d(BigDecimal usage7d) { this.usage7d = usage7d; return this; }
 
-    public LocalDateTime getWindow5hStart() { return window5hStart; }
-    public ApiKey setWindow5hStart(LocalDateTime window5hStart) { this.window5hStart = window5hStart; return this; }
+    public OffsetDateTime getWindow5hStart() { return window5hStart; }
+    public ApiKey setWindow5hStart(OffsetDateTime window5hStart) { this.window5hStart = window5hStart; return this; }
 
-    public LocalDateTime getWindow1dStart() { return window1dStart; }
-    public ApiKey setWindow1dStart(LocalDateTime window1dStart) { this.window1dStart = window1dStart; return this; }
+    public OffsetDateTime getWindow1dStart() { return window1dStart; }
+    public ApiKey setWindow1dStart(OffsetDateTime window1dStart) { this.window1dStart = window1dStart; return this; }
 
-    public LocalDateTime getWindow7dStart() { return window7dStart; }
-    public ApiKey setWindow7dStart(LocalDateTime window7dStart) { this.window7dStart = window7dStart; return this; }
+    public OffsetDateTime getWindow7dStart() { return window7dStart; }
+    public ApiKey setWindow7dStart(OffsetDateTime window7dStart) { this.window7dStart = window7dStart; return this; }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public ApiKey setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; return this; }
+    public OffsetDateTime getCreatedAt() { return createdAt; }
+    public ApiKey setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; return this; }
 
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public ApiKey setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; return this; }
+    public OffsetDateTime getUpdatedAt() { return updatedAt; }
+    public ApiKey setUpdatedAt(OffsetDateTime updatedAt) { this.updatedAt = updatedAt; return this; }
 
-    public LocalDateTime getDeletedAt() { return deletedAt; }
-    public ApiKey setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; return this; }
+    public OffsetDateTime getDeletedAt() { return deletedAt; }
+    public ApiKey setDeletedAt(OffsetDateTime deletedAt) { this.deletedAt = deletedAt; return this; }
 }

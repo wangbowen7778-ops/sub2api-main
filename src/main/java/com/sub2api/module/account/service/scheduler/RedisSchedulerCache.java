@@ -9,7 +9,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -190,7 +190,7 @@ public class RedisSchedulerCache implements SchedulerCache {
     }
 
     @Override
-    public void updateLastUsed(Map<Long, LocalDateTime> updates) {
+    public void updateLastUsed(Map<Long, OffsetDateTime> updates) {
         if (updates == null || updates.isEmpty()) {
             return;
         }

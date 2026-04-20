@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 /**
  * Dashboard Daily Aggregate Entity
@@ -72,5 +72,5 @@ public class UsageDashboardDaily {
     /**
      * 计算时间
      */
-    private LocalDateTime computedAt;
+    private OffsetDateTime computedAt;
 }

@@ -24,7 +24,7 @@
         <result column="model_routing" property="modelRouting" typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler"/>
         <result column="model_routing_enabled" property="modelRoutingEnabled"/>
         <result column="mcp_xml_inject" property="mcpXmlInject"/>
-        <result column="supported_model_scopes" property="supportedModelScopes"/>
+        <result column="supported_model_scopes" property="supportedModelScopes" typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler"/>
         <result column="sort_order" property="sortOrder"/>
         <result column="allow_messages_dispatch" property="allowMessagesDispatch"/>
         <result column="require_oauth_only" property="requireOauthOnly"/>

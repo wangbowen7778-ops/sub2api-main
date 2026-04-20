@@ -15,7 +15,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -33,6 +33,8 @@ import java.util.concurrent.TimeUnit;
 @Service
 @RequiredArgsConstructor
 public class AccountSelector {
+
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(AccountSelector.class);
 
     private final AccountMapper accountMapper;
     private final AccountGroupMapper accountGroupMapper;
@@ -171,25 +173,25 @@ public class AccountSelector {
                 .and(w -> w
                         .isNull(Account::getRateLimitResetAt)
                         .or()
-                        .le(Account::getRateLimitResetAt, LocalDateTime.now())
+                        .le(Account::getRateLimitResetAt, OffsetDateTime.now())
                 )
                 // 排除过载的账号
                 .and(w -> w
                         .isNull(Account::getOverloadUntil)
                         .or()
-                        .le(Account::getOverloadUntil, LocalDateTime.now())
+                        .le(Account::getOverloadUntil, OffsetDateTime.now())
                 )
                 // 排除临时不可调度的账号
                 .and(w -> w
                         .isNull(Account::getTempUnschedulableUntil)
                         .or()
-                        .le(Account::getTempUnschedulableUntil, LocalDateTime.now())
+                        .le(Account::getTempUnschedulableUntil, OffsetDateTime.now())
                 )
                 // 检查过期
                 .and(w -> w
                         .isNull(Account::getExpiresAt)
                         .or()
-                        .gt(Account::getExpiresAt, LocalDateTime.now())
+                        .gt(Account::getExpiresAt, OffsetDateTime.now())
                 )
                 .orderByAsc(Account::getPriority);
 
@@ -208,17 +210,17 @@ public class AccountSelector {
                 .and(w -> w
                         .isNull(Account::getRateLimitResetAt)
                         .or()
-                        .le(Account::getRateLimitResetAt, LocalDateTime.now())
+                        .le(Account::getRateLimitResetAt, OffsetDateTime.now())
                 )
                 .and(w -> w
                         .isNull(Account::getOverloadUntil)
                         .or()
-                        .le(Account::getOverloadUntil, LocalDateTime.now())
+                        .le(Account::getOverloadUntil, OffsetDateTime.now())
                 )
                 .and(w -> w
                         .isNull(Account::getTempUnschedulableUntil)
                         .or()
-                        .le(Account::getTempUnschedulableUntil, LocalDateTime.now())
+                        .le(Account::getTempUnschedulableUntil, OffsetDateTime.now())
                 )
                 .orderByAsc(Account::getPriority);
 
@@ -238,16 +240,16 @@ public class AccountSelector {
         if (account.getDeletedAt() != null) {
             return false;
         }
-        if (account.getRateLimitResetAt() != null && account.getRateLimitResetAt().isAfter(LocalDateTime.now())) {
+        if (account.getRateLimitResetAt() != null && account.getRateLimitResetAt().isAfter(java.time.OffsetDateTime.now())) {
             return false;
         }
-        if (account.getOverloadUntil() != null && account.getOverloadUntil().isAfter(LocalDateTime.now())) {
+        if (account.getOverloadUntil() != null && account.getOverloadUntil().isAfter(java.time.OffsetDateTime.now())) {
             return false;
         }
-        if (account.getTempUnschedulableUntil() != null && account.getTempUnschedulableUntil().isAfter(LocalDateTime.now())) {
+        if (account.getTempUnschedulableUntil() != null && account.getTempUnschedulableUntil().isAfter(java.time.OffsetDateTime.now())) {
             return false;
         }
-        if (account.getExpiresAt() != null && account.getExpiresAt().isBefore(LocalDateTime.now())) {
+        if (account.getExpiresAt() != null && account.getExpiresAt().isBefore(java.time.OffsetDateTime.now())) {
             return false;
         }
         return true;
@@ -274,7 +276,7 @@ public class AccountSelector {
         }
         // 临时不可调度状态未过期时，需要清理
         if (account.getTempUnschedulableUntil() != null &&
-                account.getTempUnschedulableUntil().isAfter(LocalDateTime.now())) {
+                account.getTempUnschedulableUntil().isAfter(java.time.OffsetDateTime.now())) {
             return true;
         }
         // 检查模型限流，有限流即清理
@@ -334,8 +336,8 @@ public class AccountSelector {
         }
 
         try {
-            LocalDateTime resetAt = LocalDateTime.parse(resetAtStr, DateTimeFormatter.ISO_DATE_TIME);
-            Duration remaining = Duration.between(LocalDateTime.now(), resetAt);
+            OffsetDateTime resetAt = OffsetDateTime.parse(resetAtStr, DateTimeFormatter.ISO_DATE_TIME);
+            Duration remaining = Duration.between(OffsetDateTime.now(), resetAt);
             return remaining.isNegative() ? 0 : remaining.getSeconds();
         } catch (DateTimeParseException e) {
             log.warn("解析模型限流时间失败: accountId={}, model={}, error={}",
@@ -403,8 +405,8 @@ public class AccountSelector {
             case LEAST_USED:
                 return accounts.stream()
                         .min((a, b) -> {
-                            long ua = a.getLastUsedAt() != null ? a.getLastUsedAt().toEpochSecond(java.time.ZoneOffset.UTC) : 0;
-                            long ub = b.getLastUsedAt() != null ? b.getLastUsedAt().toEpochSecond(java.time.ZoneOffset.UTC) : 0;
+                            long ua = a.getLastUsedAt() != null ? a.getLastUsedAt().toEpochSecond() : 0;
+                            long ub = b.getLastUsedAt() != null ? b.getLastUsedAt().toEpochSecond() : 0;
                             return Long.compare(ua, ub);
                         })
                         .orElse(accounts.get(0));

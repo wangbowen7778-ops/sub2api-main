@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 /**
@@ -55,8 +55,8 @@ public class ApiKeyService extends ServiceImpl<ApiKeyMapper, ApiKey> {
         apiKey.setUsage5h(BigDecimal.ZERO);
         apiKey.setUsage1d(BigDecimal.ZERO);
         apiKey.setUsage7d(BigDecimal.ZERO);
-        apiKey.setCreatedAt(LocalDateTime.now());
-        apiKey.setUpdatedAt(LocalDateTime.now());
+        apiKey.setCreatedAt(OffsetDateTime.now());
+        apiKey.setUpdatedAt(OffsetDateTime.now());
 
         if (!save(apiKey)) {
             throw new BusinessException(ErrorCode.FAIL, "Failed to create API Key");
@@ -132,7 +132,7 @@ public class ApiKeyService extends ServiceImpl<ApiKeyMapper, ApiKey> {
         ApiKey updateKey = new ApiKey();
         updateKey.setId(keyId);
         updateKey.setStatus(status);
-        updateKey.setUpdatedAt(LocalDateTime.now());
+        updateKey.setUpdatedAt(OffsetDateTime.now());
         updateById(updateKey);
         log.info("Updated API Key status: keyId={}, status={}", keyId, status);
     }
@@ -144,8 +144,8 @@ public class ApiKeyService extends ServiceImpl<ApiKeyMapper, ApiKey> {
     public void updateLastUsed(Long keyId) {
         ApiKey updateKey = new ApiKey();
         updateKey.setId(keyId);
-        updateKey.setLastUsedAt(LocalDateTime.now());
-        updateKey.setUpdatedAt(LocalDateTime.now());
+        updateKey.setLastUsedAt(OffsetDateTime.now());
+        updateKey.setUpdatedAt(OffsetDateTime.now());
         updateById(updateKey);
     }
 
@@ -162,7 +162,7 @@ public class ApiKeyService extends ServiceImpl<ApiKeyMapper, ApiKey> {
         ApiKey updateKey = new ApiKey();
         updateKey.setId(keyId);
         updateKey.setQuotaUsed(apiKey.getQuotaUsed().add(amount));
-        updateKey.setUpdatedAt(LocalDateTime.now());
+        updateKey.setUpdatedAt(OffsetDateTime.now());
         updateById(updateKey);
     }
 
@@ -173,8 +173,8 @@ public class ApiKeyService extends ServiceImpl<ApiKeyMapper, ApiKey> {
     public void deleteApiKey(Long keyId) {
         ApiKey updateKey = new ApiKey();
         updateKey.setId(keyId);
-        updateKey.setDeletedAt(LocalDateTime.now());
-        updateKey.setUpdatedAt(LocalDateTime.now());
+        updateKey.setDeletedAt(OffsetDateTime.now());
+        updateKey.setUpdatedAt(OffsetDateTime.now());
         updateById(updateKey);
         log.info("Deleted API Key: keyId={}", keyId);
     }

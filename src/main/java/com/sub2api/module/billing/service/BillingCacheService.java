@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -95,7 +95,7 @@ public class BillingCacheService {
         private String status;
         private Double quota;
         private Double quotaUsed;
-        private LocalDateTime expiresAt;
+        private OffsetDateTime expiresAt;
     }
 
     // ========== Balance Operations ==========

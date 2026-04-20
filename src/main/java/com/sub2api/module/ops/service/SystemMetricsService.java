@@ -9,7 +9,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
 import java.lang.management.ThreadMXBean;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 /**
  * 系统指标服务
@@ -35,7 +35,7 @@ public class SystemMetricsService {
         private MemoryMetrics memory;
         private JvmMetrics jvm;
         private ThreadMetrics threads;
-        private LocalDateTime timestamp;
+        private OffsetDateTime timestamp;
     }
 
     @Data
@@ -79,7 +79,7 @@ public class SystemMetricsService {
     public SystemMetrics getMetrics() {
         SystemMetrics metrics = new SystemMetrics();
         metrics.setApplicationName(applicationName);
-        metrics.setTimestamp(LocalDateTime.now());
+        metrics.setTimestamp(OffsetDateTime.now());
 
         // 运行时间
         metrics.setUptimeSeconds(getUptimeSeconds());

@@ -7,7 +7,7 @@ import lombok.experimental.Accessors;
 import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Map;
 
 /**
@@ -99,12 +99,12 @@ public class Account implements Serializable {
     /**
      * 最后使用时间
      */
-    private LocalDateTime lastUsedAt;
+    private OffsetDateTime lastUsedAt;
 
     /**
      * 账户过期时间
      */
-    private LocalDateTime expiresAt;
+    private OffsetDateTime expiresAt;
 
     /**
      * 过期后自动暂停调度
@@ -119,22 +119,22 @@ public class Account implements Serializable {
     /**
      * 触发速率限制的时间
      */
-    private LocalDateTime rateLimitedAt;
+    private OffsetDateTime rateLimitedAt;
 
     /**
      * 速率限制预计解除时间
      */
-    private LocalDateTime rateLimitResetAt;
+    private OffsetDateTime rateLimitResetAt;
 
     /**
      * 过载状态解除时间
      */
-    private LocalDateTime overloadUntil;
+    private OffsetDateTime overloadUntil;
 
     /**
      * 临时不可调度状态解除时间
      */
-    private LocalDateTime tempUnschedulableUntil;
+    private OffsetDateTime tempUnschedulableUntil;
 
     /**
      * 临时不可调度原因
@@ -144,12 +144,12 @@ public class Account implements Serializable {
     /**
      * 会话窗口开始时间
      */
-    private LocalDateTime sessionWindowStart;
+    private OffsetDateTime sessionWindowStart;
 
     /**
      * 会话窗口结束时间
      */
-    private LocalDateTime sessionWindowEnd;
+    private OffsetDateTime sessionWindowEnd;
 
     /**
      * 会话窗口状态
@@ -160,18 +160,18 @@ public class Account implements Serializable {
      * 创建时间
      */
     @TableField(fill = FieldFill.INSERT)
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 
     /**
      * 更新时间
      */
     @TableField(fill = FieldFill.INSERT_UPDATE)
-    private LocalDateTime updatedAt;
+    private OffsetDateTime updatedAt;
 
     /**
      * 删除时间 (软删除)
      */
-    private LocalDateTime deletedAt;
+    private OffsetDateTime deletedAt;
 
     // Getters and Setters
     public Long getId() { return id; }
@@ -216,11 +216,11 @@ public class Account implements Serializable {
     public String getErrorMessage() { return errorMessage; }
     public Account setErrorMessage(String errorMessage) { this.errorMessage = errorMessage; return this; }
 
-    public LocalDateTime getLastUsedAt() { return lastUsedAt; }
-    public Account setLastUsedAt(LocalDateTime lastUsedAt) { this.lastUsedAt = lastUsedAt; return this; }
+    public OffsetDateTime getLastUsedAt() { return lastUsedAt; }
+    public Account setLastUsedAt(OffsetDateTime lastUsedAt) { this.lastUsedAt = lastUsedAt; return this; }
 
-    public LocalDateTime getExpiresAt() { return expiresAt; }
-    public Account setExpiresAt(LocalDateTime expiresAt) { this.expiresAt = expiresAt; return this; }
+    public OffsetDateTime getExpiresAt() { return expiresAt; }
+    public Account setExpiresAt(OffsetDateTime expiresAt) { this.expiresAt = expiresAt; return this; }
 
     public Boolean getAutoPauseOnExpired() { return autoPauseOnExpired; }
     public Account setAutoPauseOnExpired(Boolean autoPauseOnExpired) { this.autoPauseOnExpired = autoPauseOnExpired; return this; }
@@ -228,36 +228,36 @@ public class Account implements Serializable {
     public Boolean getSchedulable() { return schedulable; }
     public Account setSchedulable(Boolean schedulable) { this.schedulable = schedulable; return this; }
 
-    public LocalDateTime getRateLimitedAt() { return rateLimitedAt; }
-    public Account setRateLimitedAt(LocalDateTime rateLimitedAt) { this.rateLimitedAt = rateLimitedAt; return this; }
+    public OffsetDateTime getRateLimitedAt() { return rateLimitedAt; }
+    public Account setRateLimitedAt(OffsetDateTime rateLimitedAt) { this.rateLimitedAt = rateLimitedAt; return this; }
 
-    public LocalDateTime getRateLimitResetAt() { return rateLimitResetAt; }
-    public Account setRateLimitResetAt(LocalDateTime rateLimitResetAt) { this.rateLimitResetAt = rateLimitResetAt; return this; }
+    public OffsetDateTime getRateLimitResetAt() { return rateLimitResetAt; }
+    public Account setRateLimitResetAt(OffsetDateTime rateLimitResetAt) { this.rateLimitResetAt = rateLimitResetAt; return this; }
 
-    public LocalDateTime getOverloadUntil() { return overloadUntil; }
-    public Account setOverloadUntil(LocalDateTime overloadUntil) { this.overloadUntil = overloadUntil; return this; }
+    public OffsetDateTime getOverloadUntil() { return overloadUntil; }
+    public Account setOverloadUntil(OffsetDateTime overloadUntil) { this.overloadUntil = overloadUntil; return this; }
 
-    public LocalDateTime getTempUnschedulableUntil() { return tempUnschedulableUntil; }
-    public Account setTempUnschedulableUntil(LocalDateTime tempUnschedulableUntil) { this.tempUnschedulableUntil = tempUnschedulableUntil; return this; }
+    public OffsetDateTime getTempUnschedulableUntil() { return tempUnschedulableUntil; }
+    public Account setTempUnschedulableUntil(OffsetDateTime tempUnschedulableUntil) { this.tempUnschedulableUntil = tempUnschedulableUntil; return this; }
 
     public String getTempUnschedulableReason() { return tempUnschedulableReason; }
     public Account setTempUnschedulableReason(String tempUnschedulableReason) { this.tempUnschedulableReason = tempUnschedulableReason; return this; }
 
-    public LocalDateTime getSessionWindowStart() { return sessionWindowStart; }
-    public Account setSessionWindowStart(LocalDateTime sessionWindowStart) { this.sessionWindowStart = sessionWindowStart; return this; }
+    public OffsetDateTime getSessionWindowStart() { return sessionWindowStart; }
+    public Account setSessionWindowStart(OffsetDateTime sessionWindowStart) { this.sessionWindowStart = sessionWindowStart; return this; }
 
-    public LocalDateTime getSessionWindowEnd() { return sessionWindowEnd; }
-    public Account setSessionWindowEnd(LocalDateTime sessionWindowEnd) { this.sessionWindowEnd = sessionWindowEnd; return this; }
+    public OffsetDateTime getSessionWindowEnd() { return sessionWindowEnd; }
+    public Account setSessionWindowEnd(OffsetDateTime sessionWindowEnd) { this.sessionWindowEnd = sessionWindowEnd; return this; }
 
     public String getSessionWindowStatus() { return sessionWindowStatus; }
     public Account setSessionWindowStatus(String sessionWindowStatus) { this.sessionWindowStatus = sessionWindowStatus; return this; }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public Account setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; return this; }
+    public OffsetDateTime getCreatedAt() { return createdAt; }
+    public Account setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; return this; }
 
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public Account setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; return this; }
+    public OffsetDateTime getUpdatedAt() { return updatedAt; }
+    public Account setUpdatedAt(OffsetDateTime updatedAt) { this.updatedAt = updatedAt; return this; }
 
-    public LocalDateTime getDeletedAt() { return deletedAt; }
-    public Account setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; return this; }
+    public OffsetDateTime getDeletedAt() { return deletedAt; }
+    public Account setDeletedAt(OffsetDateTime deletedAt) { this.deletedAt = deletedAt; return this; }
 }

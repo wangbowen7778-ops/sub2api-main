@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -183,13 +183,13 @@ public class UsageCleanupService {
 
         UsageCleanupFilters filters = deserializeFilters(task.getFilters());
         int deletedTotal = task.getDeletedRows() != null ? task.getDeletedRows().intValue() : 0;
-        LocalDateTime start = LocalDateTime.now();
+        OffsetDateTime start = OffsetDateTime.now();
         int batchNum = 0;
 
         try {
             while (true) {
                 // 检查是否超时
-                if (Duration.between(start, LocalDateTime.now()).toMinutes() >= taskTimeoutMinutes) {
+                if (Duration.between(start, OffsetDateTime.now()).toMinutes() >= taskTimeoutMinutes) {
                     log.info("[UsageCleanup] task timeout: task={}", task.getId());
                     break;
                 }
@@ -198,7 +198,7 @@ public class UsageCleanupService {
                 String status = usageCleanupRepository.getTaskStatus(task.getId());
                 if (UsageCleanupTaskStatus.CANCELED.equals(status)) {
                     log.info("[UsageCleanup] task canceled: task={} deleted_rows={} duration={}",
-                            task.getId(), deletedTotal, Duration.between(start, LocalDateTime.now()));
+                            task.getId(), deletedTotal, Duration.between(start, OffsetDateTime.now()));
                     return;
                 }
 
@@ -226,7 +226,7 @@ public class UsageCleanupService {
             // 标记任务成功
             usageCleanupRepository.markTaskSucceeded(task.getId(), deletedTotal);
             log.info("[UsageCleanup] task succeeded: task={} deleted_rows={} duration={}",
-                    task.getId(), deletedTotal, Duration.between(start, LocalDateTime.now()));
+                    task.getId(), deletedTotal, Duration.between(start, OffsetDateTime.now()));
 
             // 触发 Dashboard 重新聚合
             triggerDashboardRecompute(filters);

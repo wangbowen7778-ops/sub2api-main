@@ -6,7 +6,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,13 +33,13 @@ public class RpmCacheService {
      * 获取当前分钟 Key
      */
     private String getMinuteKey() {
-        return LocalDateTime.now().format(MINUTE_FORMATTER);
+        return OffsetDateTime.now().format(MINUTE_FORMATTER);
     }
 
     /**
      * 获取指定分钟的 Key
      */
-    private String getMinuteKey(LocalDateTime time) {
+    private String getMinuteKey(OffsetDateTime time) {
         return time.format(MINUTE_FORMATTER);
     }
 
@@ -136,7 +136,7 @@ public class RpmCacheService {
      * @return 上一分钟的请求计数
      */
     public int getPreviousRpm(Long accountId) {
-        LocalDateTime previousMinute = LocalDateTime.now().minusMinutes(1);
+        OffsetDateTime previousMinute = OffsetDateTime.now().minusMinutes(1);
         String minuteKey = getMinuteKey(previousMinute);
         String key = getRpmKey(accountId, minuteKey);
 

@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -19,6 +19,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Service
 @RequiredArgsConstructor
 public class AccountExpiryService {
+
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(AccountExpiryService.class);
 
     private final AccountService accountService;
 
@@ -82,7 +84,7 @@ public class AccountExpiryService {
         }
 
         try {
-            int updated = accountService.autoPauseExpiredAccounts(LocalDateTime.now());
+            int updated = accountService.autoPauseExpiredAccounts(OffsetDateTime.now());
             if (updated > 0) {
                 log.info("Auto paused {} expired accounts", updated);
             }

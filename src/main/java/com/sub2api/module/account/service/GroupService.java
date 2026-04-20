@@ -11,7 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 /**
@@ -81,8 +81,8 @@ public class GroupService extends ServiceImpl<GroupMapper, Group> {
         if (group.getSortOrder() == null) {
             group.setSortOrder(0);
         }
-        group.setCreatedAt(LocalDateTime.now());
-        group.setUpdatedAt(LocalDateTime.now());
+        group.setCreatedAt(OffsetDateTime.now());
+        group.setUpdatedAt(OffsetDateTime.now());
 
         if (!save(group)) {
             throw new BusinessException(ErrorCode.FAIL, "创建分组失败");
@@ -101,7 +101,7 @@ public class GroupService extends ServiceImpl<GroupMapper, Group> {
         if (existing == null) {
             throw new BusinessException(ErrorCode.ACCOUNT_GROUP_NOT_FOUND);
         }
-        group.setUpdatedAt(LocalDateTime.now());
+        group.setUpdatedAt(OffsetDateTime.now());
         updateById(group);
         log.info("更新分组: groupId={}", group.getId());
     }
@@ -113,8 +113,8 @@ public class GroupService extends ServiceImpl<GroupMapper, Group> {
     public void deleteGroup(Long groupId) {
         Group updateGroup = new Group();
         updateGroup.setId(groupId);
-        updateGroup.setDeletedAt(LocalDateTime.now());
-        updateGroup.setUpdatedAt(LocalDateTime.now());
+        updateGroup.setDeletedAt(OffsetDateTime.now());
+        updateGroup.setUpdatedAt(OffsetDateTime.now());
         updateById(updateGroup);
         log.info("删除分组: groupId={}", groupId);
     }

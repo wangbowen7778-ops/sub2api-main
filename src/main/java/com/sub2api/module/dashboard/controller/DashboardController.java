@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 /**
@@ -33,8 +33,8 @@ public class DashboardController {
     @Operation(summary = "获取用量趋势")
     @GetMapping("/trend")
     public Result<List<TrendDataPoint>> getUsageTrend(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime startTime,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime endTime,
             @RequestParam(defaultValue = "day") String granularity,
             @RequestParam(required = false) Long userId,
             @RequestParam(required = false) Long apiKeyId,
@@ -50,8 +50,8 @@ public class DashboardController {
     @Operation(summary = "获取模型统计")
     @GetMapping("/models")
     public Result<List<ModelStat>> getModelStats(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime startTime,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime endTime,
             @RequestParam(required = false) Long userId,
             @RequestParam(required = false) Long apiKeyId,
             @RequestParam(required = false) Long accountId,
@@ -66,8 +66,8 @@ public class DashboardController {
     @Operation(summary = "获取分组统计")
     @GetMapping("/groups")
     public Result<List<GroupStat>> getGroupStats(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime startTime,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime endTime,
             @RequestParam(required = false) Long userId,
             @RequestParam(required = false) Long apiKeyId,
             @RequestParam(required = false) Long accountId,
@@ -81,15 +81,15 @@ public class DashboardController {
     @Operation(summary = "获取分组用量摘要")
     @GetMapping("/groups/summary")
     public Result<List<GroupUsageSummary>> getGroupUsageSummary() {
-        List<GroupUsageSummary> summary = dashboardService.getGroupUsageSummary(LocalDateTime.now());
+        List<GroupUsageSummary> summary = dashboardService.getGroupUsageSummary(OffsetDateTime.now());
         return Result.ok(summary);
     }
 
     @Operation(summary = "获取用户用量趋势")
     @GetMapping("/users/trend")
     public Result<List<UserUsageTrendPoint>> getUserUsageTrend(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime startTime,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime endTime,
             @RequestParam(defaultValue = "day") String granularity,
             @RequestParam(defaultValue = "10") int limit) {
 
@@ -101,8 +101,8 @@ public class DashboardController {
     @Operation(summary = "获取用户消费排名")
     @GetMapping("/users/ranking")
     public Result<UserSpendingRankingResponse> getUserSpendingRanking(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime startTime,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime endTime,
             @RequestParam(defaultValue = "10") int limit) {
 
         UserSpendingRankingResponse ranking = dashboardService.getUserSpendingRanking(

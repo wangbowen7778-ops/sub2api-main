@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -33,7 +33,6 @@ public class SubscriptionAdminController {
         UserSubscription subscription = subscriptionService.createSubscription(
                 request.getUserId(),
                 request.getGroupId(),
-                request.getSubscriptionType(),
                 request.getExpiresAt()
         );
         return Result.ok(subscription);
@@ -73,7 +72,7 @@ public class SubscriptionAdminController {
     @PostMapping("/{id}/renew")
     public Result<UserSubscription> renewSubscription(
             @PathVariable Long id,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime newExpiresAt) {
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime newExpiresAt) {
         UserSubscription subscription = subscriptionService.renewSubscription(id, newExpiresAt);
         return Result.ok(subscription);
     }
@@ -122,8 +121,7 @@ public class SubscriptionAdminController {
     public static class CreateSubscriptionRequest {
         private Long userId;
         private Long groupId;
-        private String subscriptionType;
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-        private LocalDateTime expiresAt;
+        private OffsetDateTime expiresAt;
     }
 }

@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 /**
  * 账号信息响应
@@ -49,8 +49,8 @@ public class ProxyRequestVo {
     private Integer currentConcurrency;
 
     @Schema(description = "最后使用时间")
-    private LocalDateTime lastUsedAt;
+    private OffsetDateTime lastUsedAt;
 
     @Schema(description = "过期时间")
-    private LocalDateTime expiresAt;
+    private OffsetDateTime expiresAt;
 }

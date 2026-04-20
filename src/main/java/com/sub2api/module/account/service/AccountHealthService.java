@@ -16,7 +16,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -32,6 +32,8 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class AccountHealthService extends ServiceImpl<AccountMapper, Account> {
+
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(AccountHealthService.class);
 
     private final AccountMapper accountMapper;
     private final WebClient webClient;
@@ -80,7 +82,7 @@ public class AccountHealthService extends ServiceImpl<AccountMapper, Account> {
     private void checkAccountHealth(Account account) {
         try {
             // 检查是否过期
-            if (account.getExpiresAt() != null && account.getExpiresAt().isBefore(LocalDateTime.now())) {
+            if (account.getExpiresAt() != null && account.getExpiresAt().isBefore(java.time.OffsetDateTime.now())) {
                 if (Boolean.TRUE.equals(account.getAutoPauseOnExpired())) {
                     updateAccountStatus(account, AccountStatus.DISABLED, "Account expired");
                     return;
@@ -101,7 +103,7 @@ public class AccountHealthService extends ServiceImpl<AccountMapper, Account> {
                 // 清除之前的错误信息
                 if (account.getErrorMessage() != null && !account.getErrorMessage().isEmpty()) {
                     account.setErrorMessage(null);
-                    account.setUpdatedAt(LocalDateTime.now());
+                    account.setUpdatedAt(java.time.OffsetDateTime.now());
                     accountMapper.updateById(account);
                 }
             } else {
@@ -331,7 +333,7 @@ public class AccountHealthService extends ServiceImpl<AccountMapper, Account> {
     private void updateAccountStatus(Account account, AccountStatus status, String reason) {
         account.setStatus(status.getValue());
         account.setErrorMessage(reason);
-        account.setUpdatedAt(LocalDateTime.now());
+        account.setUpdatedAt(java.time.OffsetDateTime.now());
         accountMapper.updateById(account);
 
         log.info("Account status changed: accountId={}, name={}, status={}, reason={}",
@@ -380,11 +382,14 @@ public class AccountHealthService extends ServiceImpl<AccountMapper, Account> {
     /**
      * 健康检查结果
      */
-    @lombok.Data
-    @lombok.AllArgsConstructor
     public static class HealthCheckResult {
         private boolean healthy;
         private String errorMessage;
+
+        public HealthCheckResult(boolean healthy, String errorMessage) {
+            this.healthy = healthy;
+            this.errorMessage = errorMessage;
+        }
 
         public static HealthCheckResult healthy() {
             return new HealthCheckResult(true, null);

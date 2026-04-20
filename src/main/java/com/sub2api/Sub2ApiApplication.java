@@ -3,6 +3,7 @@ package com.sub2api;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
@@ -10,7 +11,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  *
  * @author Sub2API Team
  */
-@SpringBootApplication
+@SpringBootApplication(exclude = {OAuth2ClientAutoConfiguration.class})
 @EnableScheduling
 @MapperScan("com.sub2api.module.*.mapper")
 public class Sub2ApiApplication {

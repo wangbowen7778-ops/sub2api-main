@@ -5,7 +5,7 @@ import lombok.experimental.Accessors;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Map;
 
 /**
@@ -55,12 +55,12 @@ public class Announcement implements Serializable {
     /**
      * 开始展示时间
      */
-    private LocalDateTime startsAt;
+    private OffsetDateTime startsAt;
 
     /**
      * 结束展示时间
      */
-    private LocalDateTime endsAt;
+    private OffsetDateTime endsAt;
 
     /**
      * 创建人用户ID
@@ -76,13 +76,13 @@ public class Announcement implements Serializable {
      * 创建时间
      */
     @TableField(fill = FieldFill.INSERT)
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 
     /**
      * 更新时间
      */
     @TableField(fill = FieldFill.INSERT_UPDATE)
-    private LocalDateTime updatedAt;
+    private OffsetDateTime updatedAt;
 
     // Getters and Setters
     public Long getId() { return id; }
@@ -103,11 +103,11 @@ public class Announcement implements Serializable {
     public Map<String, Object> getTargeting() { return targeting; }
     public Announcement setTargeting(Map<String, Object> targeting) { this.targeting = targeting; return this; }
 
-    public LocalDateTime getStartsAt() { return startsAt; }
-    public Announcement setStartsAt(LocalDateTime startsAt) { this.startsAt = startsAt; return this; }
+    public OffsetDateTime getStartsAt() { return startsAt; }
+    public Announcement setStartsAt(OffsetDateTime startsAt) { this.startsAt = startsAt; return this; }
 
-    public LocalDateTime getEndsAt() { return endsAt; }
-    public Announcement setEndsAt(LocalDateTime endsAt) { this.endsAt = endsAt; return this; }
+    public OffsetDateTime getEndsAt() { return endsAt; }
+    public Announcement setEndsAt(OffsetDateTime endsAt) { this.endsAt = endsAt; return this; }
 
     public Long getCreatedBy() { return createdBy; }
     public Announcement setCreatedBy(Long createdBy) { this.createdBy = createdBy; return this; }
@@ -115,9 +115,9 @@ public class Announcement implements Serializable {
     public Long getUpdatedBy() { return updatedBy; }
     public Announcement setUpdatedBy(Long updatedBy) { this.updatedBy = updatedBy; return this; }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public Announcement setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; return this; }
+    public OffsetDateTime getCreatedAt() { return createdAt; }
+    public Announcement setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; return this; }
 
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public Announcement setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; return this; }
+    public OffsetDateTime getUpdatedAt() { return updatedAt; }
+    public Announcement setUpdatedAt(OffsetDateTime updatedAt) { this.updatedAt = updatedAt; return this; }
 }

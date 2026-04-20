@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 /**
@@ -31,8 +31,8 @@ public class OpsController {
     @Operation(summary = "获取仪表板概览")
     @GetMapping("/dashboard")
     public Result<OpsDashboardOverview> getDashboard(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime startTime,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime endTime,
             @RequestParam(required = false) String platform,
             @RequestParam(required = false) Long groupId) {
 
@@ -49,8 +49,8 @@ public class OpsController {
     @Operation(summary = "获取错误日志列表")
     @GetMapping("/errors")
     public Result<List<OpsErrorLog>> getErrorLogs(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime startTime,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime endTime,
             @RequestParam(required = false) String platform,
             @RequestParam(required = false, defaultValue = "100") int limit) {
 

@@ -15,7 +15,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 /**
  * 使用记录清理仓储实现
@@ -43,8 +43,8 @@ public class UsageCleanupRepositoryImpl implements UsageCleanupRepository {
         }
         task.setStatus("pending");
         task.setDeletedRows(0L);
-        task.setCreatedAt(LocalDateTime.now());
-        task.setUpdatedAt(LocalDateTime.now());
+        task.setCreatedAt(OffsetDateTime.now());
+        task.setUpdatedAt(OffsetDateTime.now());
         usageCleanupTaskMapper.insert(task);
     }
 
@@ -82,7 +82,7 @@ public class UsageCleanupRepositoryImpl implements UsageCleanupRepository {
         }
 
         // 没有 pending 任务，查找过期的 running 任务
-        LocalDateTime staleTime = LocalDateTime.now().minusSeconds(staleRunningAfterSeconds);
+        OffsetDateTime staleTime = OffsetDateTime.now().minusSeconds(staleRunningAfterSeconds);
         task = usageCleanupTaskMapper.selectOne(
                 new LambdaQueryWrapper<UsageCleanupTask>()
                         .eq(UsageCleanupTask::getStatus, "running")
@@ -103,8 +103,8 @@ public class UsageCleanupRepositoryImpl implements UsageCleanupRepository {
         UsageCleanupTask update = new UsageCleanupTask();
         update.setId(taskId);
         update.setStatus("running");
-        update.setStartedAt(LocalDateTime.now());
-        update.setUpdatedAt(LocalDateTime.now());
+        update.setStartedAt(OffsetDateTime.now());
+        update.setUpdatedAt(OffsetDateTime.now());
         usageCleanupTaskMapper.updateById(update);
     }
 
@@ -120,7 +120,7 @@ public class UsageCleanupRepositoryImpl implements UsageCleanupRepository {
         UsageCleanupTask update = new UsageCleanupTask();
         update.setId(taskId);
         update.setDeletedRows(deletedRows);
-        update.setUpdatedAt(LocalDateTime.now());
+        update.setUpdatedAt(OffsetDateTime.now());
         usageCleanupTaskMapper.updateById(update);
     }
 
@@ -131,8 +131,8 @@ public class UsageCleanupRepositoryImpl implements UsageCleanupRepository {
         update.setId(taskId);
         update.setStatus("canceled");
         update.setCanceledBy(canceledBy);
-        update.setCanceledAt(LocalDateTime.now());
-        update.setUpdatedAt(LocalDateTime.now());
+        update.setCanceledAt(OffsetDateTime.now());
+        update.setUpdatedAt(OffsetDateTime.now());
         return usageCleanupTaskMapper.updateById(update) > 0;
     }
 
@@ -143,8 +143,8 @@ public class UsageCleanupRepositoryImpl implements UsageCleanupRepository {
         update.setId(taskId);
         update.setStatus("succeeded");
         update.setDeletedRows(deletedRows);
-        update.setFinishedAt(LocalDateTime.now());
-        update.setUpdatedAt(LocalDateTime.now());
+        update.setFinishedAt(OffsetDateTime.now());
+        update.setUpdatedAt(OffsetDateTime.now());
         usageCleanupTaskMapper.updateById(update);
     }
 
@@ -156,8 +156,8 @@ public class UsageCleanupRepositoryImpl implements UsageCleanupRepository {
         update.setStatus("failed");
         update.setDeletedRows(deletedRows);
         update.setErrorMessage(errorMessage);
-        update.setFinishedAt(LocalDateTime.now());
-        update.setUpdatedAt(LocalDateTime.now());
+        update.setFinishedAt(OffsetDateTime.now());
+        update.setUpdatedAt(OffsetDateTime.now());
         usageCleanupTaskMapper.updateById(update);
     }
 

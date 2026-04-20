@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/announcements")
+@RequestMapping("/announcements")
 @RequiredArgsConstructor
 public class AnnouncementController {
 
@@ -54,7 +54,7 @@ public class AnnouncementController {
             return Result.fail("User not found");
         }
 
-        LocalDateTime now = LocalDateTime.now();
+        OffsetDateTime now = OffsetDateTime.now();
 
         // 查询活跃公告
         LambdaQueryWrapper<Announcement> wrapper = new LambdaQueryWrapper<>();
@@ -74,7 +74,7 @@ public class AnnouncementController {
         List<Announcement> announcements = announcementMapper.selectList(wrapper);
 
         // 获取用户已读记录
-        Map<Long, LocalDateTime> readMap = getReadMap(userId);
+        Map<Long, OffsetDateTime> readMap = getReadMap(userId);
 
         // 获取用户活跃订阅
         List<Long> activeGroupIds = getActiveSubscriptionGroupIds(userId);
@@ -123,7 +123,7 @@ public class AnnouncementController {
             return Result.fail("User not found");
         }
 
-        LocalDateTime now = LocalDateTime.now();
+        OffsetDateTime now = OffsetDateTime.now();
         if (!"active".equals(announcement.getStatus())) {
             return Result.fail("Announcement not active");
         }
@@ -169,7 +169,7 @@ public class AnnouncementController {
             return Result.fail("User not found");
         }
 
-        LocalDateTime now = LocalDateTime.now();
+        OffsetDateTime now = OffsetDateTime.now();
         if (!"active".equals(announcement.getStatus())) {
             return Result.fail("Announcement not active");
         }
@@ -195,7 +195,7 @@ public class AnnouncementController {
             AnnouncementRead read = new AnnouncementRead();
             read.setUserId(userId);
             read.setAnnouncementId(id);
-            read.setReadAt(LocalDateTime.now());
+            read.setReadAt(OffsetDateTime.now());
             announcementReadMapper.insert(read);
             log.info("User {} read announcement {}", userId, id);
         }
@@ -206,12 +206,12 @@ public class AnnouncementController {
     /**
      * 获取用户已读公告ID映射
      */
-    private Map<Long, LocalDateTime> getReadMap(Long userId) {
+    private Map<Long, OffsetDateTime> getReadMap(Long userId) {
         LambdaQueryWrapper<AnnouncementRead> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(AnnouncementRead::getUserId, userId);
         List<AnnouncementRead> reads = announcementReadMapper.selectList(wrapper);
 
-        Map<Long, LocalDateTime> readMap = new HashMap<>();
+        Map<Long, OffsetDateTime> readMap = new HashMap<>();
         for (AnnouncementRead read : reads) {
             readMap.put(read.getAnnouncementId(), read.getReadAt());
         }
@@ -225,7 +225,7 @@ public class AnnouncementController {
         var subscriptions = subscriptionService.getUserSubscriptions(userId);
         return subscriptions.stream()
                 .filter(s -> "active".equals(s.getStatus()))
-                .filter(s -> s.getExpiresAt() == null || s.getExpiresAt().isAfter(LocalDateTime.now()))
+                .filter(s -> s.getExpiresAt() == null || s.getExpiresAt().isAfter(OffsetDateTime.now()))
                 .map(s -> s.getGroupId())
                 .collect(Collectors.toList());
     }

@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -139,8 +139,8 @@ public class ErrorPassthroughRuleService extends ServiceImpl<ErrorPassthroughRul
             rule.setPlatforms(Collections.emptyList());
         }
 
-        rule.setCreatedAt(LocalDateTime.now());
-        rule.setUpdatedAt(LocalDateTime.now());
+        rule.setCreatedAt(OffsetDateTime.now());
+        rule.setUpdatedAt(OffsetDateTime.now());
 
         mapper.insert(rule);
         invalidateCache();
@@ -198,7 +198,7 @@ public class ErrorPassthroughRuleService extends ServiceImpl<ErrorPassthroughRul
         }
 
         validateRule(existing);
-        existing.setUpdatedAt(LocalDateTime.now());
+        existing.setUpdatedAt(OffsetDateTime.now());
 
         mapper.updateById(existing);
         invalidateCache();
@@ -213,8 +213,8 @@ public class ErrorPassthroughRuleService extends ServiceImpl<ErrorPassthroughRul
     @Transactional(rollbackFor = Exception.class)
     public void delete(Long id) {
         ErrorPassthroughRule existing = getById(id);
-        existing.setDeletedAt(LocalDateTime.now());
-        existing.setUpdatedAt(LocalDateTime.now());
+        existing.setDeletedAt(OffsetDateTime.now());
+        existing.setUpdatedAt(OffsetDateTime.now());
         mapper.updateById(existing);
         invalidateCache();
 

@@ -6,7 +6,7 @@ import lombok.experimental.Accessors;
 import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 /**
  * 用户实体
@@ -80,24 +80,24 @@ public class User implements Serializable {
     /**
      * TOTP 启用时间
      */
-    private LocalDateTime totpEnabledAt;
+    private OffsetDateTime totpEnabledAt;
 
     /**
      * 创建时间
      */
     @TableField(fill = FieldFill.INSERT)
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 
     /**
      * 更新时间
      */
     @TableField(fill = FieldFill.INSERT_UPDATE)
-    private LocalDateTime updatedAt;
+    private OffsetDateTime updatedAt;
 
     /**
      * 删除时间 (软删除)
      */
-    private LocalDateTime deletedAt;
+    private OffsetDateTime deletedAt;
 
     // Getters and Setters
     public Long getId() { return id; }
@@ -133,17 +133,17 @@ public class User implements Serializable {
     public Boolean getTotpEnabled() { return totpEnabled; }
     public User setTotpEnabled(Boolean totpEnabled) { this.totpEnabled = totpEnabled; return this; }
 
-    public LocalDateTime getTotpEnabledAt() { return totpEnabledAt; }
-    public User setTotpEnabledAt(LocalDateTime totpEnabledAt) { this.totpEnabledAt = totpEnabledAt; return this; }
+    public OffsetDateTime getTotpEnabledAt() { return totpEnabledAt; }
+    public User setTotpEnabledAt(OffsetDateTime totpEnabledAt) { this.totpEnabledAt = totpEnabledAt; return this; }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public User setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; return this; }
+    public OffsetDateTime getCreatedAt() { return createdAt; }
+    public User setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; return this; }
 
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public User setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; return this; }
+    public OffsetDateTime getUpdatedAt() { return updatedAt; }
+    public User setUpdatedAt(OffsetDateTime updatedAt) { this.updatedAt = updatedAt; return this; }
 
-    public LocalDateTime getDeletedAt() { return deletedAt; }
-    public User setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; return this; }
+    public OffsetDateTime getDeletedAt() { return deletedAt; }
+    public User setDeletedAt(OffsetDateTime deletedAt) { this.deletedAt = deletedAt; return this; }
 
     /**
      * Set password (hashes the plaintext password using BCrypt)

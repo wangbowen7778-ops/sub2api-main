@@ -20,7 +20,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -59,7 +59,7 @@ public class PricingService {
 
     // 内存缓存
     private final Map<String, ModelPricing> pricingData = new ConcurrentHashMap<>();
-    private final AtomicReference<LocalDateTime> lastUpdated = new AtomicReference<>();
+    private final AtomicReference<OffsetDateTime> lastUpdated = new AtomicReference<>();
     private final AtomicReference<String> localHash = new AtomicReference<>("");
 
     private volatile boolean running = true;
@@ -210,10 +210,10 @@ public class PricingService {
             Path pricingFile = Paths.get(dataDir, "model_pricing.json");
             try {
                 if (Files.exists(pricingFile)) {
-                    LocalDateTime modTime = LocalDateTime.ofInstant(
+                    OffsetDateTime modTime = OffsetDateTime.ofInstant(
                             Files.getLastModifiedTime(pricingFile).toInstant(),
                             java.time.ZoneId.systemDefault());
-                    long hoursSinceUpdate = Duration.between(modTime, LocalDateTime.now()).toHours();
+                    long hoursSinceUpdate = Duration.between(modTime, OffsetDateTime.now()).toHours();
 
                     if (hoursSinceUpdate >= updateIntervalHours) {
                         log.info("Local file is {} hours old, updating...", hoursSinceUpdate);
@@ -289,7 +289,7 @@ public class PricingService {
             // 更新内存数据
             pricingData.clear();
             pricingData.putAll(data);
-            lastUpdated.set(LocalDateTime.now());
+            lastUpdated.set(OffsetDateTime.now());
 
             log.info("Downloaded {} models successfully", data.size());
             return true;
@@ -366,7 +366,7 @@ public class PricingService {
         pricingData.clear();
         pricingData.putAll(data);
         localHash.set(dataHash);
-        lastUpdated.set(LocalDateTime.now());
+        lastUpdated.set(OffsetDateTime.now());
 
         log.info("Loaded {} models from {}", data.size(), filePath);
     }
@@ -420,7 +420,7 @@ public class PricingService {
         claude.setSupportsPromptCaching(true);
         pricingData.put("claude-3-5-sonnet-20241022", claude);
 
-        lastUpdated.set(LocalDateTime.now());
+        lastUpdated.set(OffsetDateTime.now());
     }
 
     /**

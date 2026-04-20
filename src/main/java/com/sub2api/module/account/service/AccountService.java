@@ -13,7 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 /**
@@ -75,7 +76,7 @@ public class AccountService extends ServiceImpl<AccountMapper, Account> {
                 .or(w -> w
                         .isNull(Account::getOverloadUntil)
                         .or()
-                        .le(Account::getOverloadUntil, LocalDateTime.now())
+                        .le(Account::getOverloadUntil, OffsetDateTime.now())
                 )
                 .orderByAsc(Account::getPriority);
 
@@ -113,7 +114,7 @@ public class AccountService extends ServiceImpl<AccountMapper, Account> {
         updateAccount.setRateLimitResetAt(null);
         updateAccount.setOverloadUntil(null);
         updateAccount.setErrorMessage(null);
-        updateAccount.setUpdatedAt(LocalDateTime.now());
+        updateAccount.setUpdatedAt(OffsetDateTime.now());
         updateById(updateAccount);
         log.info("Reset account: accountId={}", accountId);
     }
@@ -135,8 +136,8 @@ public class AccountService extends ServiceImpl<AccountMapper, Account> {
         if (account.getRateMultiplier() == null) {
             account.setRateMultiplier(BigDecimal.ONE);
         }
-        account.setCreatedAt(LocalDateTime.now());
-        account.setUpdatedAt(LocalDateTime.now());
+        account.setCreatedAt(OffsetDateTime.now());
+        account.setUpdatedAt(OffsetDateTime.now());
 
         if (!save(account)) {
             throw new BusinessException(ErrorCode.FAIL, "Failed to create account");
@@ -155,7 +156,7 @@ public class AccountService extends ServiceImpl<AccountMapper, Account> {
         if (existing == null) {
             throw new BusinessException(ErrorCode.ACCOUNT_NOT_FOUND);
         }
-        account.setUpdatedAt(LocalDateTime.now());
+        account.setUpdatedAt(OffsetDateTime.now());
         updateById(account);
         log.info("Updated account: accountId={}", account.getId());
     }
@@ -168,7 +169,7 @@ public class AccountService extends ServiceImpl<AccountMapper, Account> {
         Account updateAccount = new Account();
         updateAccount.setId(accountId);
         updateAccount.setStatus(status);
-        updateAccount.setUpdatedAt(LocalDateTime.now());
+        updateAccount.setUpdatedAt(OffsetDateTime.now());
         updateById(updateAccount);
         log.info("Updated account status: accountId={}, status={}", accountId, status);
     }
@@ -180,8 +181,8 @@ public class AccountService extends ServiceImpl<AccountMapper, Account> {
     public void updateLastUsed(Long accountId) {
         Account updateAccount = new Account();
         updateAccount.setId(accountId);
-        updateAccount.setLastUsedAt(LocalDateTime.now());
-        updateAccount.setUpdatedAt(LocalDateTime.now());
+        updateAccount.setLastUsedAt(OffsetDateTime.now());
+        updateAccount.setUpdatedAt(OffsetDateTime.now());
         updateById(updateAccount);
     }
 
@@ -189,12 +190,12 @@ public class AccountService extends ServiceImpl<AccountMapper, Account> {
      * Set rate limited
      */
     @Transactional(rollbackFor = Exception.class)
-    public void setRateLimited(Long accountId, LocalDateTime resetAt) {
+    public void setRateLimited(Long accountId, OffsetDateTime resetAt) {
         Account updateAccount = new Account();
         updateAccount.setId(accountId);
-        updateAccount.setRateLimitedAt(LocalDateTime.now());
-        updateAccount.setRateLimitResetAt(resetAt);
-        updateAccount.setUpdatedAt(LocalDateTime.now());
+        updateAccount.setRateLimitedAt(OffsetDateTime.now());
+        updateAccount.setRateLimitResetAt(resetAt != null ? resetAt : null);
+        updateAccount.setUpdatedAt(OffsetDateTime.now());
         updateById(updateAccount);
     }
 
@@ -207,7 +208,7 @@ public class AccountService extends ServiceImpl<AccountMapper, Account> {
         updateAccount.setId(accountId);
         updateAccount.setRateLimitedAt(null);
         updateAccount.setRateLimitResetAt(null);
-        updateAccount.setUpdatedAt(LocalDateTime.now());
+        updateAccount.setUpdatedAt(OffsetDateTime.now());
         updateById(updateAccount);
     }
 
@@ -215,11 +216,11 @@ public class AccountService extends ServiceImpl<AccountMapper, Account> {
      * Set overload
      */
     @Transactional(rollbackFor = Exception.class)
-    public void setOverload(Long accountId, LocalDateTime until) {
+    public void setOverload(Long accountId, OffsetDateTime until) {
         Account updateAccount = new Account();
         updateAccount.setId(accountId);
-        updateAccount.setOverloadUntil(until);
-        updateAccount.setUpdatedAt(LocalDateTime.now());
+        updateAccount.setOverloadUntil(until != null ? until : null);
+        updateAccount.setUpdatedAt(OffsetDateTime.now());
         updateById(updateAccount);
     }
 
@@ -227,12 +228,12 @@ public class AccountService extends ServiceImpl<AccountMapper, Account> {
      * Set temporary unschedulable
      */
     @Transactional(rollbackFor = Exception.class)
-    public void setTempUnschedulable(Long accountId, LocalDateTime until, String reason) {
+    public void setTempUnschedulable(Long accountId, OffsetDateTime until, String reason) {
         Account updateAccount = new Account();
         updateAccount.setId(accountId);
-        updateAccount.setTempUnschedulableUntil(until);
+        updateAccount.setTempUnschedulableUntil(until != null ? until : null);
         updateAccount.setTempUnschedulableReason(reason);
-        updateAccount.setUpdatedAt(LocalDateTime.now());
+        updateAccount.setUpdatedAt(OffsetDateTime.now());
         updateById(updateAccount);
     }
 
@@ -245,7 +246,7 @@ public class AccountService extends ServiceImpl<AccountMapper, Account> {
         updateAccount.setId(accountId);
         updateAccount.setStatus("error");
         updateAccount.setErrorMessage(errorMessage);
-        updateAccount.setUpdatedAt(LocalDateTime.now());
+        updateAccount.setUpdatedAt(OffsetDateTime.now());
         updateById(updateAccount);
     }
 
@@ -256,8 +257,8 @@ public class AccountService extends ServiceImpl<AccountMapper, Account> {
     public void deleteAccount(Long accountId) {
         Account updateAccount = new Account();
         updateAccount.setId(accountId);
-        updateAccount.setDeletedAt(LocalDateTime.now());
-        updateAccount.setUpdatedAt(LocalDateTime.now());
+        updateAccount.setDeletedAt(OffsetDateTime.now());
+        updateAccount.setUpdatedAt(OffsetDateTime.now());
         updateById(updateAccount);
         log.info("Deleted account: accountId={}", accountId);
     }
@@ -269,7 +270,7 @@ public class AccountService extends ServiceImpl<AccountMapper, Account> {
         if (account.getExpiresAt() == null) {
             return false;
         }
-        return LocalDateTime.now().isAfter(account.getExpiresAt());
+        return OffsetDateTime.now().isAfter(account.getExpiresAt());
     }
 
     /**
@@ -309,13 +310,13 @@ public class AccountService extends ServiceImpl<AccountMapper, Account> {
      * Update session window for sticky session management
      */
     @Transactional(rollbackFor = Exception.class)
-    public void updateSessionWindow(Long accountId, LocalDateTime start, LocalDateTime end, String status) {
+    public void updateSessionWindow(Long accountId, OffsetDateTime start, OffsetDateTime end, String status) {
         Account updateAccount = new Account();
         updateAccount.setId(accountId);
-        updateAccount.setSessionWindowStart(start);
-        updateAccount.setSessionWindowEnd(end);
+        updateAccount.setSessionWindowStart(start != null ? start : null);
+        updateAccount.setSessionWindowEnd(end != null ? end : null);
         updateAccount.setSessionWindowStatus(status);
-        updateAccount.setUpdatedAt(LocalDateTime.now());
+        updateAccount.setUpdatedAt(OffsetDateTime.now());
         updateById(updateAccount);
     }
 
@@ -329,7 +330,7 @@ public class AccountService extends ServiceImpl<AccountMapper, Account> {
         updateAccount.setSessionWindowStart(null);
         updateAccount.setSessionWindowEnd(null);
         updateAccount.setSessionWindowStatus(null);
-        updateAccount.setUpdatedAt(LocalDateTime.now());
+        updateAccount.setUpdatedAt(OffsetDateTime.now());
         updateById(updateAccount);
     }
 
@@ -342,7 +343,7 @@ public class AccountService extends ServiceImpl<AccountMapper, Account> {
         updateAccount.setId(accountId);
         updateAccount.setTempUnschedulableUntil(null);
         updateAccount.setTempUnschedulableReason(null);
-        updateAccount.setUpdatedAt(LocalDateTime.now());
+        updateAccount.setUpdatedAt(OffsetDateTime.now());
         updateById(updateAccount);
     }
 
@@ -357,12 +358,13 @@ public class AccountService extends ServiceImpl<AccountMapper, Account> {
      * @return number of accounts paused
      */
     @Transactional(rollbackFor = Exception.class)
-    public int autoPauseExpiredAccounts(LocalDateTime now) {
+    public int autoPauseExpiredAccounts(OffsetDateTime now) {
+        OffsetDateTime nowOffset = now != null ? now : OffsetDateTime.now();
         // Find accounts that are expired but not yet paused
         List<Account> expiredAccounts = list(new LambdaQueryWrapper<Account>()
                 .eq(Account::getAutoPauseOnExpired, true)
                 .isNotNull(Account::getExpiresAt)
-                .le(Account::getExpiresAt, now)
+                .le(Account::getExpiresAt, nowOffset)
                 .ne(Account::getStatus, "paused")
                 .isNull(Account::getDeletedAt));
 
@@ -375,7 +377,7 @@ public class AccountService extends ServiceImpl<AccountMapper, Account> {
             Account updateAccount = new Account();
             updateAccount.setId(account.getId());
             updateAccount.setStatus("paused");
-            updateAccount.setUpdatedAt(now);
+            updateAccount.setUpdatedAt(nowOffset);
             if (updateById(updateAccount)) {
                 count++;
                 log.info("Auto paused expired account: accountId={}, name={}, expiredAt={}",
@@ -394,18 +396,18 @@ public class AccountService extends ServiceImpl<AccountMapper, Account> {
      * @return number of accounts updated
      */
     @Transactional(rollbackFor = Exception.class)
-    public int batchUpdateLastUsed(java.util.Map<Long, LocalDateTime> accountIdToLastUsed) {
+    public int batchUpdateLastUsed(java.util.Map<Long, OffsetDateTime> accountIdToLastUsed) {
         if (accountIdToLastUsed == null || accountIdToLastUsed.isEmpty()) {
             return 0;
         }
 
         int count = 0;
-        LocalDateTime now = LocalDateTime.now();
+        OffsetDateTime now = OffsetDateTime.now();
 
-        for (java.util.Map.Entry<Long, LocalDateTime> entry : accountIdToLastUsed.entrySet()) {
+        for (java.util.Map.Entry<Long, OffsetDateTime> entry : accountIdToLastUsed.entrySet()) {
             Account updateAccount = new Account();
             updateAccount.setId(entry.getKey());
-            updateAccount.setLastUsedAt(entry.getValue());
+            updateAccount.setLastUsedAt(entry.getValue() != null ? entry.getValue() : null);
             updateAccount.setUpdatedAt(now);
             if (updateById(updateAccount)) {
                 count++;

@@ -15,7 +15,7 @@ public interface DashboardAggregationMapper extends BaseMapper<DashboardAggregat
      * 获取聚合水位
      */
     @Select("SELECT last_aggregated_at FROM usage_dashboard_aggregation_watermark WHERE id = 1")
-    java.time.LocalDateTime getAggregationWatermark();
+    java.time.OffsetDateTime getAggregationWatermark();
 
     /**
      * 更新聚合水位
@@ -25,7 +25,7 @@ public interface DashboardAggregationMapper extends BaseMapper<DashboardAggregat
         VALUES (1, #{aggregatedAt}, NOW())
         ON CONFLICT (id) DO UPDATE SET last_aggregated_at = EXCLUDED.last_aggregated_at, updated_at = EXCLUDED.updated_at
         """)
-    void updateAggregationWatermark(@Param("aggregatedAt") java.time.LocalDateTime aggregatedAt);
+    void updateAggregationWatermark(@Param("aggregatedAt") java.time.OffsetDateTime aggregatedAt);
 
     /**
      * 插入小时活跃用户
@@ -39,8 +39,8 @@ public interface DashboardAggregationMapper extends BaseMapper<DashboardAggregat
         WHERE created_at >= #{startTime} AND created_at < #{endTime}
         ON CONFLICT DO NOTHING
         """)
-    int insertHourlyActiveUsers(@Param("startTime") java.time.LocalDateTime startTime,
-                                 @Param("endTime") java.time.LocalDateTime endTime,
+    int insertHourlyActiveUsers(@Param("startTime") java.time.OffsetDateTime startTime,
+                                 @Param("endTime") java.time.OffsetDateTime endTime,
                                  @Param("timezone") String timezone);
 
     /**
@@ -55,8 +55,8 @@ public interface DashboardAggregationMapper extends BaseMapper<DashboardAggregat
         WHERE bucket_start >= #{startTime} AND bucket_start < #{endTime}
         ON CONFLICT DO NOTHING
         """)
-    int insertDailyActiveUsers(@Param("startTime") java.time.LocalDateTime startTime,
-                                @Param("endTime") java.time.LocalDateTime endTime,
+    int insertDailyActiveUsers(@Param("startTime") java.time.OffsetDateTime startTime,
+                                @Param("endTime") java.time.OffsetDateTime endTime,
                                 @Param("timezone") String timezone);
 
     /**
@@ -124,8 +124,8 @@ public interface DashboardAggregationMapper extends BaseMapper<DashboardAggregat
             active_users = EXCLUDED.active_users,
             computed_at = EXCLUDED.computed_at
         """)
-    int upsertHourlyAggregates(@Param("startTime") java.time.LocalDateTime startTime,
-                                @Param("endTime") java.time.LocalDateTime endTime,
+    int upsertHourlyAggregates(@Param("startTime") java.time.OffsetDateTime startTime,
+                                @Param("endTime") java.time.OffsetDateTime endTime,
                                 @Param("timezone") String timezone);
 
     /**
@@ -145,7 +145,7 @@ public interface DashboardAggregationMapper extends BaseMapper<DashboardAggregat
                 COALESCE(SUM(total_duration_ms), 0) AS total_duration_ms
             FROM usage_dashboard_hourly
             WHERE bucket_start >= #{startTime} AND bucket_start < #{endTime}
-            GROUP BY (bucket_start AT TIME ZONE #{timezone})::date
+            GROUP BY 1
         ),
         user_counts AS (
             SELECT bucket_date, COUNT(*) AS active_users
@@ -193,8 +193,8 @@ public interface DashboardAggregationMapper extends BaseMapper<DashboardAggregat
             active_users = EXCLUDED.active_users,
             computed_at = EXCLUDED.computed_at
         """)
-    int upsertDailyAggregates(@Param("startTime") java.time.LocalDateTime startTime,
-                               @Param("endTime") java.time.LocalDateTime endTime,
+    int upsertDailyAggregates(@Param("startTime") java.time.OffsetDateTime startTime,
+                               @Param("endTime") java.time.OffsetDateTime endTime,
                                @Param("startDate") java.time.LocalDate startDate,
                                @Param("endDate") java.time.LocalDate endDate,
                                @Param("timezone") String timezone);
@@ -203,13 +203,13 @@ public interface DashboardAggregationMapper extends BaseMapper<DashboardAggregat
      * 清理小时聚合（按截止时间）
      */
     @Delete("DELETE FROM usage_dashboard_hourly WHERE bucket_start < #{cutoff}")
-    int cleanupHourlyAggregates(@Param("cutoff") java.time.LocalDateTime cutoff);
+    int cleanupHourlyAggregates(@Param("cutoff") java.time.OffsetDateTime cutoff);
 
     /**
      * 清理小时活跃用户（按截止时间）
      */
     @Delete("DELETE FROM usage_dashboard_hourly_users WHERE bucket_start < #{cutoff}")
-    int cleanupHourlyUsers(@Param("cutoff") java.time.LocalDateTime cutoff);
+    int cleanupHourlyUsers(@Param("cutoff") java.time.OffsetDateTime cutoff);
 
     /**
      * 清理天聚合（按截止日期）
@@ -227,13 +227,13 @@ public interface DashboardAggregationMapper extends BaseMapper<DashboardAggregat
      * 删除小时范围内数据（用于重新计算）
      */
     @Delete("DELETE FROM usage_dashboard_hourly WHERE bucket_start >= #{start} AND bucket_start < #{end}")
-    int deleteHourlyRange(@Param("start") java.time.LocalDateTime start, @Param("end") java.time.LocalDateTime end);
+    int deleteHourlyRange(@Param("start") java.time.OffsetDateTime start, @Param("end") java.time.OffsetDateTime end);
 
     /**
      * 删除小时用户范围内数据（用于重新计算）
      */
     @Delete("DELETE FROM usage_dashboard_hourly_users WHERE bucket_start >= #{start} AND bucket_start < #{end}")
-    int deleteHourlyUsersRange(@Param("start") java.time.LocalDateTime start, @Param("end") java.time.LocalDateTime end);
+    int deleteHourlyUsersRange(@Param("start") java.time.OffsetDateTime start, @Param("end") java.time.OffsetDateTime end);
 
     /**
      * 删除天范围内数据（用于重新计算）
@@ -251,10 +251,10 @@ public interface DashboardAggregationMapper extends BaseMapper<DashboardAggregat
      * 清理 usage_logs（分批删除）
      */
     @Select("SELECT ctid FROM usage_logs WHERE created_at < #{cutoff} LIMIT #{batchSize}")
-    java.util.List<Object> selectUsageLogsCtids(@Param("cutoff") java.time.LocalDateTime cutoff, @Param("batchSize") int batchSize);
+    java.util.List<Object> selectUsageLogsCtids(@Param("cutoff") java.time.OffsetDateTime cutoff, @Param("batchSize") int batchSize);
 
     @Delete("DELETE FROM usage_logs WHERE ctid IN (SELECT ctid FROM usage_logs WHERE created_at < #{cutoff} LIMIT #{batchSize})")
-    int deleteUsageLogsBatch(@Param("cutoff") java.time.LocalDateTime cutoff, @Param("batchSize") int batchSize);
+    int deleteUsageLogsBatch(@Param("cutoff") java.time.OffsetDateTime cutoff, @Param("batchSize") int batchSize);
 
     /**
      * 检查 usage_logs 是否为分区表

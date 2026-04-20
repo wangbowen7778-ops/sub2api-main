@@ -9,7 +9,7 @@ import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Options;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 /**
  * 幂等性记录 Mapper
@@ -43,8 +43,8 @@ public interface IdempotencyRecordMapper extends BaseMapper<IdempotencyRecord> {
             "WHERE id = #{id} AND request_fingerprint = #{requestFingerprint} AND status = 'processing'")
     int extendProcessingLock(@Param("id") Long id,
                             @Param("requestFingerprint") String requestFingerprint,
-                            @Param("newLockedUntil") LocalDateTime newLockedUntil,
-                            @Param("newExpiresAt") LocalDateTime newExpiresAt);
+                            @Param("newLockedUntil") OffsetDateTime newLockedUntil,
+                            @Param("newExpiresAt") OffsetDateTime newExpiresAt);
 
     /**
      * 标记为成功
@@ -55,7 +55,7 @@ public interface IdempotencyRecordMapper extends BaseMapper<IdempotencyRecord> {
     int markSucceeded(@Param("id") Long id,
                       @Param("responseStatus") Integer responseStatus,
                       @Param("responseBody") String responseBody,
-                      @Param("expiresAt") LocalDateTime expiresAt);
+                      @Param("expiresAt") OffsetDateTime expiresAt);
 
     /**
      * 标记为可重试失败
@@ -65,14 +65,15 @@ public interface IdempotencyRecordMapper extends BaseMapper<IdempotencyRecord> {
             "WHERE id = #{id}")
     int markFailedRetryable(@Param("id") Long id,
                            @Param("errorReason") String errorReason,
-                           @Param("lockedUntil") LocalDateTime lockedUntil,
-                           @Param("expiresAt") LocalDateTime expiresAt);
+                           @Param("lockedUntil") OffsetDateTime lockedUntil,
+                           @Param("expiresAt") OffsetDateTime expiresAt);
 
     /**
-     * 删除过期记录
+     * 删除过期记录 (PostgreSQL版本，使用子查询)
      */
-    @Update("DELETE FROM idempotency_records WHERE expires_at < #{now} LIMIT #{limit}")
-    int deleteExpired(@Param("now") LocalDateTime now, @Param("limit") int limit);
+    @Update("DELETE FROM idempotency_records WHERE id IN (" +
+            "SELECT id FROM idempotency_records WHERE expires_at < #{now} LIMIT #{limit})")
+    int deleteExpired(@Param("now") OffsetDateTime now, @Param("limit") int limit);
 
     /**
      * 尝试重新获取锁 (用于竞争处理)
@@ -81,7 +82,7 @@ public interface IdempotencyRecordMapper extends BaseMapper<IdempotencyRecord> {
             "WHERE id = #{id} AND status = #{fromStatus} AND (locked_until IS NULL OR locked_until < #{now})")
     int tryReclaim(@Param("id") Long id,
                    @Param("fromStatus") String fromStatus,
-                   @Param("newLockedUntil") LocalDateTime newLockedUntil,
-                   @Param("newExpiresAt") LocalDateTime newExpiresAt,
-                   @Param("now") LocalDateTime now);
+                   @Param("newLockedUntil") OffsetDateTime newLockedUntil,
+                   @Param("newExpiresAt") OffsetDateTime newExpiresAt,
+                   @Param("now") OffsetDateTime now);
 }

@@ -7,7 +7,7 @@ import lombok.experimental.Accessors;
 import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 /**
  * 定时测试结果实体
@@ -36,7 +36,7 @@ public class ScheduledTestResult implements Serializable {
     /**
      * 执行时间
      */
-    private LocalDateTime executedAt;
+    private OffsetDateTime executedAt;
 
     /**
      * 延迟 (ms)
@@ -77,5 +77,5 @@ public class ScheduledTestResult implements Serializable {
      * 创建时间
      */
     @TableField(fill = FieldFill.INSERT)
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 }

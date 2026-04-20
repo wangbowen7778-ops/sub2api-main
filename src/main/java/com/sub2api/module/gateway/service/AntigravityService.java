@@ -20,7 +20,7 @@ import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -69,7 +69,7 @@ public class AntigravityService {
     private final SecureRandom secureRandom = new SecureRandom();
 
     // 模型容量耗尽全局去重
-    private final Map<String, LocalDateTime> modelCapacityCooldowns = new ConcurrentHashMap<>();
+    private final Map<String, OffsetDateTime> modelCapacityCooldowns = new ConcurrentHashMap<>();
 
     /**
      * OAuth 会话
@@ -79,7 +79,7 @@ public class AntigravityService {
         private String state;
         private String codeVerifier;
         private String proxyURL;
-        private LocalDateTime createdAt;
+        private OffsetDateTime createdAt;
     }
 
     /**
@@ -178,7 +178,7 @@ public class AntigravityService {
         session.setState(state);
         session.setCodeVerifier(codeVerifier);
         session.setProxyURL(proxyURL);
-        session.setCreatedAt(LocalDateTime.now());
+        session.setCreatedAt(OffsetDateTime.now());
 
         sessionStore.put(sessionId, session);
 

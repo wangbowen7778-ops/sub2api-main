@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 /**
@@ -45,7 +45,7 @@ public class UsageLogService extends ServiceImpl<UsageLogMapper, UsageLog> {
         usageLog.setInputCost(BigDecimal.valueOf(cost).divide(BigDecimal.valueOf(100)));
         usageLog.setOutputCost(BigDecimal.ZERO);
 
-        usageLog.setCreatedAt(LocalDateTime.now());
+        usageLog.setCreatedAt(OffsetDateTime.now());
 
         if (!save(usageLog)) {
             log.error("记录用量失败: userId={}", usageLog.getUserId());
@@ -59,7 +59,7 @@ public class UsageLogService extends ServiceImpl<UsageLogMapper, UsageLog> {
      * 分页查询用户用量
      */
     public PageResult<UsageLog> pageByUserId(Long userId, Long current, Long size,
-                                              String platform, String model, LocalDateTime startTime, LocalDateTime endTime) {
+                                              String platform, String model, OffsetDateTime startTime, OffsetDateTime endTime) {
         Page<UsageLog> page = new Page<>(current, size);
         LambdaQueryWrapper<UsageLog> wrapper = new LambdaQueryWrapper<UsageLog>()
                 .eq(UsageLog::getUserId, userId)
@@ -83,7 +83,7 @@ public class UsageLogService extends ServiceImpl<UsageLogMapper, UsageLog> {
     /**
      * 统计用户总用量
      */
-    public UsageStatistics getUserStatistics(Long userId, LocalDateTime startTime, LocalDateTime endTime) {
+    public UsageStatistics getUserStatistics(Long userId, OffsetDateTime startTime, OffsetDateTime endTime) {
         LambdaQueryWrapper<UsageLog> wrapper = new LambdaQueryWrapper<UsageLog>()
                 .eq(UsageLog::getUserId, userId);
 
@@ -113,7 +113,7 @@ public class UsageLogService extends ServiceImpl<UsageLogMapper, UsageLog> {
     /**
      * 统计 API Key 总用量
      */
-    public UsageStatistics getApiKeyStatistics(Long apiKeyId, LocalDateTime startTime, LocalDateTime endTime) {
+    public UsageStatistics getApiKeyStatistics(Long apiKeyId, OffsetDateTime startTime, OffsetDateTime endTime) {
         LambdaQueryWrapper<UsageLog> wrapper = new LambdaQueryWrapper<UsageLog>()
                 .eq(UsageLog::getApiKeyId, apiKeyId);
 

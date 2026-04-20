@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 /**
@@ -31,7 +31,7 @@ public class SubscriptionService extends ServiceImpl<UserSubscriptionMapper, Use
      * 创建订阅
      */
     @Transactional(rollbackFor = Exception.class)
-    public UserSubscription createSubscription(Long userId, Long groupId, String subscriptionType, LocalDateTime expiresAt) {
+    public UserSubscription createSubscription(Long userId, Long groupId, OffsetDateTime expiresAt) {
         // 检查是否已有活跃订阅
         UserSubscription existing = getActiveSubscription(userId, groupId);
         if (existing != null) {
@@ -41,19 +41,18 @@ public class SubscriptionService extends ServiceImpl<UserSubscriptionMapper, Use
         UserSubscription subscription = new UserSubscription();
         subscription.setUserId(userId);
         subscription.setGroupId(groupId);
-        subscription.setSubscriptionType(subscriptionType);
         subscription.setStatus("active");
-        subscription.setStartedAt(LocalDateTime.now());
+        subscription.setStartsAt(OffsetDateTime.now());
         subscription.setExpiresAt(expiresAt);
-        subscription.setCreatedAt(LocalDateTime.now());
-        subscription.setUpdatedAt(LocalDateTime.now());
+        subscription.setCreatedAt(OffsetDateTime.now());
+        subscription.setUpdatedAt(OffsetDateTime.now());
 
         if (!save(subscription)) {
             throw new BusinessException(ErrorCode.FAIL, "创建订阅失败");
         }
 
-        log.info("创建订阅: userId={}, groupId={}, type={}, expiresAt={}",
-                userId, groupId, subscriptionType, expiresAt);
+        log.info("创建订阅: userId={}, groupId={}, expiresAt={}",
+                userId, groupId, expiresAt);
         return subscription;
     }
 
@@ -65,7 +64,7 @@ public class SubscriptionService extends ServiceImpl<UserSubscriptionMapper, Use
         wrapper.eq(UserSubscription::getUserId, userId)
                 .eq(groupId != null, UserSubscription::getGroupId, groupId)
                 .eq(UserSubscription::getStatus, "active")
-                .gt(UserSubscription::getExpiresAt, LocalDateTime.now())
+                .gt(UserSubscription::getExpiresAt, OffsetDateTime.now())
                 .isNull(UserSubscription::getDeletedAt)
                 .orderByDesc(UserSubscription::getCreatedAt)
                 .last("LIMIT 1");
@@ -100,9 +99,8 @@ public class SubscriptionService extends ServiceImpl<UserSubscriptionMapper, Use
     @Transactional(rollbackFor = Exception.class)
     public void cancelSubscription(Long subscriptionId) {
         UserSubscription subscription = getSubscription(subscriptionId);
-        subscription.setStatus("cancelled");
-        subscription.setCancelledAt(LocalDateTime.now());
-        subscription.setUpdatedAt(LocalDateTime.now());
+        subscription.setStatus("suspended");
+        subscription.setUpdatedAt(OffsetDateTime.now());
         updateById(subscription);
         log.info("取消订阅: subscriptionId={}", subscriptionId);
     }
@@ -111,11 +109,11 @@ public class SubscriptionService extends ServiceImpl<UserSubscriptionMapper, Use
      * 续期订阅
      */
     @Transactional(rollbackFor = Exception.class)
-    public UserSubscription renewSubscription(Long subscriptionId, LocalDateTime newExpiresAt) {
+    public UserSubscription renewSubscription(Long subscriptionId, OffsetDateTime newExpiresAt) {
         UserSubscription subscription = getSubscription(subscriptionId);
         subscription.setExpiresAt(newExpiresAt);
         subscription.setStatus("active");
-        subscription.setUpdatedAt(LocalDateTime.now());
+        subscription.setUpdatedAt(OffsetDateTime.now());
         updateById(subscription);
         log.info("续期订阅: subscriptionId={}, newExpiresAt={}", subscriptionId, newExpiresAt);
         return subscription;
@@ -128,7 +126,7 @@ public class SubscriptionService extends ServiceImpl<UserSubscriptionMapper, Use
     public void updateSubscriptionStatus(Long subscriptionId, String status) {
         UserSubscription subscription = getSubscription(subscriptionId);
         subscription.setStatus(status);
-        subscription.setUpdatedAt(LocalDateTime.now());
+        subscription.setUpdatedAt(OffsetDateTime.now());
         updateById(subscription);
         log.info("更新订阅状态: subscriptionId={}, status={}", subscriptionId, status);
     }
@@ -139,8 +137,8 @@ public class SubscriptionService extends ServiceImpl<UserSubscriptionMapper, Use
     @Transactional(rollbackFor = Exception.class)
     public void deleteSubscription(Long subscriptionId) {
         UserSubscription subscription = getSubscription(subscriptionId);
-        subscription.setDeletedAt(LocalDateTime.now());
-        subscription.setUpdatedAt(LocalDateTime.now());
+        subscription.setDeletedAt(OffsetDateTime.now());
+        subscription.setUpdatedAt(OffsetDateTime.now());
         updateById(subscription);
         log.info("删除订阅: subscriptionId={}", subscriptionId);
     }
@@ -161,7 +159,7 @@ public class SubscriptionService extends ServiceImpl<UserSubscriptionMapper, Use
         if (subscription == null || subscription.getExpiresAt() == null) {
             return 0;
         }
-        return java.time.temporal.ChronoUnit.DAYS.between(LocalDateTime.now(), subscription.getExpiresAt());
+        return java.time.temporal.ChronoUnit.DAYS.between(OffsetDateTime.now(), subscription.getExpiresAt());
     }
 
     /**
@@ -172,13 +170,13 @@ public class SubscriptionService extends ServiceImpl<UserSubscriptionMapper, Use
     public int expireSubscriptions() {
         LambdaQueryWrapper<UserSubscription> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(UserSubscription::getStatus, "active")
-                .lt(UserSubscription::getExpiresAt, LocalDateTime.now())
+                .lt(UserSubscription::getExpiresAt, OffsetDateTime.now())
                 .isNull(UserSubscription::getDeletedAt);
 
         List<UserSubscription> expiredSubscriptions = list(wrapper);
         for (UserSubscription subscription : expiredSubscriptions) {
             subscription.setStatus("expired");
-            subscription.setUpdatedAt(LocalDateTime.now());
+            subscription.setUpdatedAt(OffsetDateTime.now());
             updateById(subscription);
             log.info("订阅已过期: subscriptionId={}", subscription.getId());
         }

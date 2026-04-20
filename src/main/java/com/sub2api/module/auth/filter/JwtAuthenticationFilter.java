@@ -71,7 +71,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                     user,
                     null,
-                    Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role))
+                    Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()))
             );
             authentication.setDetails(request);
 
@@ -106,6 +106,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 path.startsWith("/v1/") ||
                 path.startsWith("/v1beta/") ||
                 path.startsWith("/antigravity/") ||
+                path.startsWith("/setup/") ||
                 path.equals("/health") ||
                 path.startsWith("/swagger-ui") ||
                 path.startsWith("/api-docs");

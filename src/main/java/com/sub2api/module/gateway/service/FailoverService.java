@@ -160,13 +160,13 @@ public class FailoverService {
             case 400:
                 // Google 间歇性 400，封禁 30 秒
                 accountService.setTempUnschedulable(accountId,
-                        java.time.LocalDateTime.now().plusSeconds(30),
+                        java.time.OffsetDateTime.now().plusSeconds(30),
                         "Retryable 400 error");
                 break;
             case 429:
                 // Rate limit，封禁 1 分钟
                 accountService.setTempUnschedulable(accountId,
-                        java.time.LocalDateTime.now().plusMinutes(1),
+                        java.time.OffsetDateTime.now().plusMinutes(1),
                         "Rate limit");
                 break;
             case 500:
@@ -175,13 +175,13 @@ public class FailoverService {
             case 504:
                 // 服务器错误，封禁 30 秒
                 accountService.setTempUnschedulable(accountId,
-                        java.time.LocalDateTime.now().plusSeconds(30),
+                        java.time.OffsetDateTime.now().plusSeconds(30),
                         "Upstream error: " + failoverErr.getStatusCode());
                 break;
             default:
                 // 其他错误，封禁 1 分钟
                 accountService.setTempUnschedulable(accountId,
-                        java.time.LocalDateTime.now().plusMinutes(1),
+                        java.time.OffsetDateTime.now().plusMinutes(1),
                         "Retryable error: " + failoverErr.getStatusCode());
         }
     }

@@ -7,7 +7,7 @@ import lombok.experimental.Accessors;
 import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 /**
  * 兑换码实体
@@ -56,7 +56,7 @@ public class RedeemCode implements Serializable {
     /**
      * 使用时间
      */
-    private LocalDateTime usedAt;
+    private OffsetDateTime usedAt;
 
     /**
      * 备注
@@ -67,7 +67,7 @@ public class RedeemCode implements Serializable {
      * 创建时间
      */
     @TableField(fill = FieldFill.INSERT)
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 
     /**
      * 关联的分组ID
@@ -98,14 +98,14 @@ public class RedeemCode implements Serializable {
     public Long getUsedBy() { return usedBy; }
     public RedeemCode setUsedBy(Long usedBy) { this.usedBy = usedBy; return this; }
 
-    public LocalDateTime getUsedAt() { return usedAt; }
-    public RedeemCode setUsedAt(LocalDateTime usedAt) { this.usedAt = usedAt; return this; }
+    public OffsetDateTime getUsedAt() { return usedAt; }
+    public RedeemCode setUsedAt(OffsetDateTime usedAt) { this.usedAt = usedAt; return this; }
 
     public String getNotes() { return notes; }
     public RedeemCode setNotes(String notes) { this.notes = notes; return this; }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public RedeemCode setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; return this; }
+    public OffsetDateTime getCreatedAt() { return createdAt; }
+    public RedeemCode setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; return this; }
 
     public Long getGroupId() { return groupId; }
     public RedeemCode setGroupId(Long groupId) { this.groupId = groupId; return this; }

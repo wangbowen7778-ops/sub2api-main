@@ -7,7 +7,7 @@ import lombok.experimental.Accessors;
 import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 /**
  * 优惠码实体
@@ -57,7 +57,7 @@ public class PromoCode implements Serializable {
     /**
      * 过期时间
      */
-    private LocalDateTime expiresAt;
+    private OffsetDateTime expiresAt;
 
     /**
      * 备注
@@ -68,11 +68,11 @@ public class PromoCode implements Serializable {
      * 创建时间
      */
     @TableField(fill = FieldFill.INSERT)
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 
     /**
      * 更新时间
      */
     @TableField(fill = FieldFill.INSERT_UPDATE)
-    private LocalDateTime updatedAt;
+    private OffsetDateTime updatedAt;
 }

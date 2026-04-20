@@ -6,6 +6,7 @@ import com.sub2api.module.common.exception.BusinessException;
 import com.sub2api.module.common.model.enums.ErrorCode;
 import com.sub2api.module.common.util.EncryptionUtil;
 import com.sub2api.module.user.model.entity.User;
+import com.sub2api.module.user.model.vo.UserVO;
 import com.sub2api.module.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,20 +29,43 @@ public class AuthService {
     private final JwtService jwtService;
     private final TOTPService totpService;
 
+    public static void main(String[] args) {
+        String passwordHash = EncryptionUtil.hashPassword("admin@123", "");
+        System.out.println(passwordHash);
+        boolean b = EncryptionUtil.verifyPassword("admin@123", "", passwordHash);
+        System.out.println(String.valueOf(b));
+    }
+
+    /**
+     * 将User实体转换为UserVO
+     */
+    private UserVO convertToUserVO(User user) {
+        return UserVO.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .username(user.getUsername())
+                .role(user.getRole())
+                .balance(user.getBalance())
+                .concurrency(user.getConcurrency())
+                .status(user.getStatus())
+                .createdAt(user.getCreatedAt() != null ? user.getCreatedAt().toString() : null)
+                .updatedAt(user.getUpdatedAt() != null ? user.getUpdatedAt().toString() : null)
+                .build();
+    }
+
     /**
      * 用户名密码登录
      */
     public LoginResponse login(LoginRequest request, String clientIp) {
         // 查找用户
-        User user = userService.findByUsername(request.getUsername());
+        User user = userService.findByEmail(request.getEmail());
         if (user == null) {
             throw new BusinessException(ErrorCode.AUTH_FAIL, "用户名或密码错误");
         }
 
         // 验证密码
-        String passwordHash = EncryptionUtil.hashPassword(request.getPassword(), "");
-        if (!passwordHash.equals(user.getPasswordHash())) {
-            log.warn("密码错误: username={}, ip={}", request.getUsername(), clientIp);
+        if (!EncryptionUtil.verifyPassword(request.getPassword(), "", user.getPasswordHash())) {
+            log.warn("密码错误: email={}, ip={}", request.getEmail(), clientIp);
             throw new BusinessException(ErrorCode.PASSWORD_WRONG);
         }
 
@@ -52,7 +76,7 @@ public class AuthService {
         if (Boolean.TRUE.equals(user.getTotpEnabled()) && request.getTotpCode() == null) {
             return LoginResponse.builder()
                     .requireMfa(true)
-                    .userId(user.getId())
+                    .user(convertToUserVO(user))
                     .build();
         }
 
@@ -76,9 +100,7 @@ public class AuthService {
                 .refreshToken(refreshToken)
                 .tokenType("Bearer")
                 .expiresIn(86400L)
-                .userId(user.getId())
-                .username(user.getUsername())
-                .role(user.getRole())
+                .user(convertToUserVO(user))
                 .build();
     }
 
@@ -105,9 +127,7 @@ public class AuthService {
                     .refreshToken(newRefreshToken)
                     .tokenType("Bearer")
                     .expiresIn(86400L)
-                    .userId(user.getId())
-                    .username(user.getUsername())
-                    .role(user.getRole())
+                    .user(convertToUserVO(user))
                     .build();
         } catch (Exception e) {
             log.warn("刷新令牌失败: {}", e.getMessage());
@@ -138,9 +158,7 @@ public class AuthService {
                 .refreshToken(refreshToken)
                 .tokenType("Bearer")
                 .expiresIn(86400L)
-                .userId(user.getId())
-                .username(user.getUsername())
-                .role(user.getRole())
+                .user(convertToUserVO(user))
                 .build();
     }
 

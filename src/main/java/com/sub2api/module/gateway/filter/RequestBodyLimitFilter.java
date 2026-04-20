@@ -30,7 +30,7 @@ public class RequestBodyLimitFilter implements Filter {
     /**
      * 最大请求体大小配置
      */
-    @Value("${gateway.max-request-body-size:256}")
+    @Value("${sub2api.gateway.max-request-body-size:268435456}")
     private long maxRequestBodySize;
 
     @Override

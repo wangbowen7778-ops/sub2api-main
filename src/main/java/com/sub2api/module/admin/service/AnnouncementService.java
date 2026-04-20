@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 /**
@@ -32,7 +32,7 @@ public class AnnouncementService extends ServiceImpl<AnnouncementMapper, Announc
      * Get active announcement list
      */
     public List<Announcement> listActive() {
-        LocalDateTime now = LocalDateTime.now();
+        OffsetDateTime now = OffsetDateTime.now();
         return list(new LambdaQueryWrapper<Announcement>()
                 .eq(Announcement::getStatus, "active")
                 .and(w -> w
@@ -59,8 +59,8 @@ public class AnnouncementService extends ServiceImpl<AnnouncementMapper, Announc
         if (announcement.getNotifyMode() == null) {
             announcement.setNotifyMode("silent");
         }
-        announcement.setCreatedAt(LocalDateTime.now());
-        announcement.setUpdatedAt(LocalDateTime.now());
+        announcement.setCreatedAt(OffsetDateTime.now());
+        announcement.setUpdatedAt(OffsetDateTime.now());
 
         if (!save(announcement)) {
             throw new BusinessException(ErrorCode.FAIL, "Failed to create announcement");
@@ -75,7 +75,7 @@ public class AnnouncementService extends ServiceImpl<AnnouncementMapper, Announc
      */
     @Transactional(rollbackFor = Exception.class)
     public void updateAnnouncement(Announcement announcement) {
-        announcement.setUpdatedAt(LocalDateTime.now());
+        announcement.setUpdatedAt(OffsetDateTime.now());
         updateById(announcement);
         log.info("Updated announcement: id={}", announcement.getId());
     }
@@ -89,7 +89,7 @@ public class AnnouncementService extends ServiceImpl<AnnouncementMapper, Announc
         announcement.setId(announcementId);
         announcement.setStatus("active");
         announcement.setUpdatedBy(operatorId);
-        announcement.setUpdatedAt(LocalDateTime.now());
+        announcement.setUpdatedAt(OffsetDateTime.now());
         updateById(announcement);
         log.info("Published announcement: id={}", announcementId);
     }
@@ -102,7 +102,7 @@ public class AnnouncementService extends ServiceImpl<AnnouncementMapper, Announc
         Announcement announcement = new Announcement();
         announcement.setId(announcementId);
         announcement.setStatus("archived");
-        announcement.setUpdatedAt(LocalDateTime.now());
+        announcement.setUpdatedAt(OffsetDateTime.now());
         updateById(announcement);
         log.info("Archived announcement: id={}", announcementId);
     }

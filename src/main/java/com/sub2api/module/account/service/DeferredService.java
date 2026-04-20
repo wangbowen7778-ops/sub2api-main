@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -37,7 +37,7 @@ public class DeferredService {
     /**
      * 延迟更新的最后使用时间映射
      */
-    private final Map<Long, LocalDateTime> lastUsedUpdates = new ConcurrentHashMap<>();
+    private final Map<Long, OffsetDateTime> lastUsedUpdates = new ConcurrentHashMap<>();
 
     /**
      * 刷新间隔（毫秒）
@@ -80,7 +80,7 @@ public class DeferredService {
      * 调度最后使用时间更新
      */
     public void scheduleLastUsedUpdate(Long accountId) {
-        lastUsedUpdates.put(accountId, LocalDateTime.now());
+        lastUsedUpdates.put(accountId, OffsetDateTime.now());
     }
 
     /**
@@ -97,7 +97,7 @@ public class DeferredService {
         }
 
         // 提取所有待更新项
-        Map<Long, LocalDateTime> updates = new ConcurrentHashMap<>();
+        Map<Long, OffsetDateTime> updates = new ConcurrentHashMap<>();
         lastUsedUpdates.forEach((id, time) -> {
             updates.put(id, time);
             lastUsedUpdates.remove(id);

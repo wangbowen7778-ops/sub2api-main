@@ -10,7 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -45,7 +45,7 @@ public class OpsService {
 
         try {
             if (entry.getCreatedAt() == null) {
-                entry.setCreatedAt(LocalDateTime.now());
+                entry.setCreatedAt(OffsetDateTime.now());
             }
             errorLogMapper.insert(entry);
         } catch (Exception e) {
@@ -65,7 +65,7 @@ public class OpsService {
         try {
             for (OpsErrorLog entry : entries) {
                 if (entry.getCreatedAt() == null) {
-                    entry.setCreatedAt(LocalDateTime.now());
+                    entry.setCreatedAt(OffsetDateTime.now());
                 }
                 errorLogMapper.insert(entry);
             }
@@ -255,7 +255,7 @@ public class OpsService {
 
             // 转换为 OpsDashboardOverview.SystemMetrics
             SystemMetrics metrics = new SystemMetrics();
-            metrics.setCollectedAt(LocalDateTime.now());
+            metrics.setCollectedAt(OffsetDateTime.now());
 
             // 设置 CPU 和内存使用率
             if (jvmMetrics.getCpu() != null) {
@@ -269,7 +269,7 @@ public class OpsService {
         } catch (Exception e) {
             log.warn("Failed to get system metrics: {}", e.getMessage());
             SystemMetrics metrics = new SystemMetrics();
-            metrics.setCollectedAt(LocalDateTime.now());
+            metrics.setCollectedAt(OffsetDateTime.now());
             return metrics;
         }
     }
@@ -282,7 +282,7 @@ public class OpsService {
             return List.of();
         }
         // 清理过期的任务心跳（超过5分钟未更新的）
-        LocalDateTime cutoff = LocalDateTime.now().minusMinutes(5);
+        OffsetDateTime cutoff = OffsetDateTime.now().minusMinutes(5);
         jobHeartbeats.entrySet().removeIf(entry -> {
             JobHeartbeat hb = entry.getValue();
             return hb.getLastHeartbeat() != null && hb.getLastHeartbeat().isBefore(cutoff);
@@ -298,7 +298,7 @@ public class OpsService {
         heartbeat.setJobName(jobName);
         heartbeat.setStatus(status);
         heartbeat.setMessage(message);
-        heartbeat.setLastHeartbeat(LocalDateTime.now());
+        heartbeat.setLastHeartbeat(OffsetDateTime.now());
         log.debug("Updated job heartbeat: job={}, status={}", jobName, status);
     }
 
@@ -314,8 +314,8 @@ public class OpsService {
      */
     @lombok.Data
     public static class OpsDashboardFilter {
-        private LocalDateTime startTime;
-        private LocalDateTime endTime;
+        private OffsetDateTime startTime;
+        private OffsetDateTime endTime;
         private String platform;
         private Long groupId;
         private String queryMode; // raw, preagg, auto
@@ -326,8 +326,8 @@ public class OpsService {
      */
     @lombok.Data
     public static class OpsErrorLogFilter {
-        private LocalDateTime startTime;
-        private LocalDateTime endTime;
+        private OffsetDateTime startTime;
+        private OffsetDateTime endTime;
         private String platform;
         private Long groupId;
         private Integer page;

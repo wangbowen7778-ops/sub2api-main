@@ -9,7 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -76,9 +76,9 @@ public class SystemOperationLockService {
     private static class ActiveLock {
         final SystemOperationLock lock;
         final Thread renewThread;
-        final LocalDateTime renewUntil;
+        final OffsetDateTime renewUntil;
 
-        ActiveLock(SystemOperationLock lock, Thread renewThread, LocalDateTime renewUntil) {
+        ActiveLock(SystemOperationLock lock, Thread renewThread, OffsetDateTime renewUntil) {
             this.lock = lock;
             this.renewThread = renewThread;
             this.renewUntil = renewUntil;
@@ -97,9 +97,9 @@ public class SystemOperationLockService {
             throw new BusinessException(ErrorCode.SYSTEM_OPERATION_ID_REQUIRED, "operation id is required");
         }
 
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime expiresAt = now.plusHours(ttlHours);
-        LocalDateTime lockedUntil = now.plusSeconds(leaseSeconds);
+        OffsetDateTime now = OffsetDateTime.now();
+        OffsetDateTime expiresAt = now.plusHours(ttlHours);
+        OffsetDateTime lockedUntil = now.plusSeconds(leaseSeconds);
         String keyHash = hashKey(SYSTEM_OPERATION_KEY);
 
         // Try to create processing record
@@ -184,7 +184,7 @@ public class SystemOperationLockService {
             activeLocks.remove(lock.getOperationId());
         }
 
-        LocalDateTime expiresAt = LocalDateTime.now().plusHours(ttlHours);
+        OffsetDateTime expiresAt = OffsetDateTime.now().plusHours(ttlHours);
 
         if (succeeded) {
             String responseBody = String.format("{\"operation_id\":\"%s\",\"released\":true}", lock.getOperationId());
@@ -192,7 +192,7 @@ public class SystemOperationLockService {
             log.info("System operation lock released (success): operationId={}", lock.getOperationId());
         } else {
             String reason = failureReason != null && !failureReason.isEmpty() ? failureReason : "SYSTEM_OPERATION_FAILED";
-            idempotencyRecordMapper.markFailedRetryable(lock.getRecordId(), reason, LocalDateTime.now(), expiresAt);
+            idempotencyRecordMapper.markFailedRetryable(lock.getRecordId(), reason, OffsetDateTime.now(), expiresAt);
             log.info("System operation lock released (failed): operationId={}, reason={}", lock.getOperationId(), reason);
         }
     }
@@ -223,9 +223,9 @@ public class SystemOperationLockService {
                 try {
                     Thread.sleep(renewIntervalMillis);
 
-                    LocalDateTime now = LocalDateTime.now();
-                    LocalDateTime newLockedUntil = now.plusSeconds(leaseSeconds);
-                    LocalDateTime newExpiresAt = now.plusHours(ttlHours);
+                    OffsetDateTime now = OffsetDateTime.now();
+                    OffsetDateTime newLockedUntil = now.plusSeconds(leaseSeconds);
+                    OffsetDateTime newExpiresAt = now.plusHours(ttlHours);
 
                     int updated = idempotencyRecordMapper.extendProcessingLock(
                             lock.getRecordId(),
@@ -254,7 +254,7 @@ public class SystemOperationLockService {
     /**
      * Create busy exception with retry-after metadata
      */
-    private BusinessException createBusyException(String operationId, LocalDateTime lockedUntil, LocalDateTime now) {
+    private BusinessException createBusyException(String operationId, OffsetDateTime lockedUntil, OffsetDateTime now) {
         int retryAfterSeconds = (int) java.time.Duration.between(now, lockedUntil).getSeconds();
         if (retryAfterSeconds <= 0) {
             retryAfterSeconds = 1;

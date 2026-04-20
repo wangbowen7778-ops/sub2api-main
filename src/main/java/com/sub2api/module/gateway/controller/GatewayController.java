@@ -21,7 +21,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -330,8 +331,8 @@ public class GatewayController {
             entry.put("remaining", remaining5h.max(BigDecimal.ZERO));
             if (apiKey.getWindow5hStart() != null) {
                 entry.put("window_start", apiKey.getWindow5hStart());
-                LocalDateTime resetAt = apiKey.getWindow5hStart().plusHours(5);
-                if (resetAt.isAfter(LocalDateTime.now())) {
+                OffsetDateTime resetAt = apiKey.getWindow5hStart().plusHours(5);
+                if (resetAt.isAfter(OffsetDateTime.now())) {
                     entry.put("reset_at", resetAt);
                 }
             }
@@ -346,8 +347,8 @@ public class GatewayController {
             entry.put("remaining", remaining1d.max(BigDecimal.ZERO));
             if (apiKey.getWindow1dStart() != null) {
                 entry.put("window_start", apiKey.getWindow1dStart());
-                LocalDateTime resetAt = apiKey.getWindow1dStart().plusDays(1);
-                if (resetAt.isAfter(LocalDateTime.now())) {
+                OffsetDateTime resetAt = apiKey.getWindow1dStart().plusDays(1);
+                if (resetAt.isAfter(OffsetDateTime.now())) {
                     entry.put("reset_at", resetAt);
                 }
             }
@@ -362,8 +363,8 @@ public class GatewayController {
             entry.put("remaining", remaining7d.max(BigDecimal.ZERO));
             if (apiKey.getWindow7dStart() != null) {
                 entry.put("window_start", apiKey.getWindow7dStart());
-                LocalDateTime resetAt = apiKey.getWindow7dStart().plusDays(7);
-                if (resetAt.isAfter(LocalDateTime.now())) {
+                OffsetDateTime resetAt = apiKey.getWindow7dStart().plusDays(7);
+                if (resetAt.isAfter(OffsetDateTime.now())) {
                     entry.put("reset_at", resetAt);
                 }
             }
@@ -376,7 +377,7 @@ public class GatewayController {
         // 过期时间
         if (apiKey.getExpiresAt() != null) {
             resp.put("expires_at", apiKey.getExpiresAt());
-            long daysUntilExpiry = ChronoUnit.DAYS.between(LocalDateTime.now(), apiKey.getExpiresAt());
+            long daysUntilExpiry = ChronoUnit.DAYS.between(OffsetDateTime.now(), apiKey.getExpiresAt());
             resp.put("days_until_expiry", daysUntilExpiry);
         }
 
@@ -423,8 +424,8 @@ public class GatewayController {
     private Map<String, Object> buildUsageData(Long apiKeyId) {
         try {
             // 今日用量
-            LocalDateTime todayStart = LocalDateTime.now().toLocalDate().atStartOfDay();
-            var todayStats = usageLogService.getApiKeyStatistics(apiKeyId, todayStart, LocalDateTime.now());
+            OffsetDateTime todayStart = OffsetDateTime.now().toLocalDate().atStartOfDay().atOffset(ZoneOffset.UTC);
+            var todayStats = usageLogService.getApiKeyStatistics(apiKeyId, todayStart, OffsetDateTime.now());
 
             // 总用量
             var totalStats = usageLogService.getApiKeyStatistics(apiKeyId, null, null);

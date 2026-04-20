@@ -11,7 +11,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -82,8 +82,8 @@ public class TLSFingerprintProfileService extends ServiceImpl<TLSFingerprintProf
         if (profile.getPriority() == null) {
             profile.setPriority(50);
         }
-        profile.setCreatedAt(LocalDateTime.now());
-        profile.setUpdatedAt(LocalDateTime.now());
+        profile.setCreatedAt(OffsetDateTime.now());
+        profile.setUpdatedAt(OffsetDateTime.now());
 
         mapper.insert(profile);
         invalidateCache();
@@ -109,7 +109,7 @@ public class TLSFingerprintProfileService extends ServiceImpl<TLSFingerprintProf
         existing.setEnabled(update.getEnabled());
         existing.setNotes(update.getNotes());
         existing.setPriority(update.getPriority());
-        existing.setUpdatedAt(LocalDateTime.now());
+        existing.setUpdatedAt(OffsetDateTime.now());
 
         mapper.updateById(existing);
         invalidateCache();
@@ -124,8 +124,8 @@ public class TLSFingerprintProfileService extends ServiceImpl<TLSFingerprintProf
     @Transactional(rollbackFor = Exception.class)
     public void delete(Long id) {
         TLSFingerprintProfile existing = getById(id);
-        existing.setDeletedAt(LocalDateTime.now());
-        existing.setUpdatedAt(LocalDateTime.now());
+        existing.setDeletedAt(OffsetDateTime.now());
+        existing.setUpdatedAt(OffsetDateTime.now());
         mapper.updateById(existing);
         invalidateCache();
 

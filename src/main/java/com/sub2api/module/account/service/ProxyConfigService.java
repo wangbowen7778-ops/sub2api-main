@@ -11,7 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 /**
  * 代理配置服务
@@ -53,8 +53,8 @@ public class ProxyConfigService extends ServiceImpl<ProxyMapper, Proxy> {
         if (proxy.getStatus() == null) {
             proxy.setStatus("active");
         }
-        proxy.setCreatedAt(LocalDateTime.now());
-        proxy.setUpdatedAt(LocalDateTime.now());
+        proxy.setCreatedAt(OffsetDateTime.now());
+        proxy.setUpdatedAt(OffsetDateTime.now());
 
         if (!save(proxy)) {
             throw new BusinessException(ErrorCode.FAIL, "创建代理配置失败");
@@ -73,7 +73,7 @@ public class ProxyConfigService extends ServiceImpl<ProxyMapper, Proxy> {
         if (existing == null) {
             throw new BusinessException(ErrorCode.PROXY_NOT_FOUND);
         }
-        proxy.setUpdatedAt(LocalDateTime.now());
+        proxy.setUpdatedAt(OffsetDateTime.now());
         updateById(proxy);
         log.info("更新代理配置: id={}", proxy.getId());
     }
@@ -85,8 +85,8 @@ public class ProxyConfigService extends ServiceImpl<ProxyMapper, Proxy> {
     public void deleteProxy(Long proxyId) {
         Proxy updateProxy = new Proxy();
         updateProxy.setId(proxyId);
-        updateProxy.setDeletedAt(LocalDateTime.now());
-        updateProxy.setUpdatedAt(LocalDateTime.now());
+        updateProxy.setDeletedAt(OffsetDateTime.now());
+        updateProxy.setUpdatedAt(OffsetDateTime.now());
         updateById(updateProxy);
         log.info("删除代理配置: id={}", proxyId);
     }

@@ -5,7 +5,9 @@ import cn.hutool.core.date.LocalDateTimeUtil;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
@@ -163,9 +165,29 @@ public class DateTimeUtil {
     }
 
     /**
+     * 判断是否过期 (OffsetDateTime)
+     */
+    public static boolean isExpired(OffsetDateTime expireTime) {
+        if (expireTime == null) {
+            return true;
+        }
+        return OffsetDateTime.now().isAfter(expireTime);
+    }
+
+    /**
      * 判断是否在时间范围内
      */
     public static boolean isBetween(LocalDateTime target, LocalDateTime start, LocalDateTime end) {
+        if (target == null || start == null || end == null) {
+            return false;
+        }
+        return !target.isBefore(start) && !target.isAfter(end);
+    }
+
+    /**
+     * 判断是否在时间范围内 (OffsetDateTime)
+     */
+    public static boolean isBetween(OffsetDateTime target, OffsetDateTime start, OffsetDateTime end) {
         if (target == null || start == null || end == null) {
             return false;
         }

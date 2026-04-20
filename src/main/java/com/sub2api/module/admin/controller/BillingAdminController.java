@@ -12,7 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Map;
 
 /**
@@ -61,8 +61,8 @@ public class BillingAdminController {
         BigDecimal bonusAmount = new BigDecimal(params.get("bonusAmount").toString());
         Integer maxUses = params.get("maxUses") != null ?
                 Integer.parseInt(params.get("maxUses").toString()) : 0;
-        LocalDateTime expiresAt = params.get("expiresAt") != null ?
-                LocalDateTime.parse(params.get("expiresAt").toString()) : null;
+        OffsetDateTime expiresAt = params.get("expiresAt") != null ?
+                OffsetDateTime.parse(params.get("expiresAt").toString()) : null;
         String notes = (String) params.get("notes");
 
         PromoCode promoCode = promoCodeService.createPromoCode(code, bonusAmount, maxUses, expiresAt, notes);
