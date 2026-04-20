@@ -108,7 +108,7 @@ public class SecurityConfig {
             response.setCharacterEncoding("UTF-8");
             Result<Void> result = new Result<>();
             result.setSuccess(false);
-            result.setCode(ErrorCode.UNAUTHORIZED.getCode());
+            result.setCode(ErrorCode.AUTH_UNAUTHORIZED.getCode());
             result.setMessage("未登录或登录已过期");
             response.getWriter().write(new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(result));
         };
@@ -125,7 +125,7 @@ public class SecurityConfig {
             response.setCharacterEncoding("UTF-8");
             Result<Void> result = new Result<>();
             result.setSuccess(false);
-            result.setCode(ErrorCode.FORBIDDEN.getCode());
+            result.setCode(ErrorCode.AUTH_FORBIDDEN.getCode());
             result.setMessage("权限不足");
             response.getWriter().write(new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(result));
         };

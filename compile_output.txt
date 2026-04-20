@@ -1,0 +1,253 @@
+﻿[INFO] Scanning for projects...
+[INFO] 
+[INFO] --------------------< com.sub2api:sub2api-backend >---------------------
+[INFO] Building Sub2API Backend 1.0.0
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:3.4.0:clean (default-clean) @ sub2api-backend ---
+[INFO] Deleting D:\code\go\sub2api-main\sub2api-main\backend-java\target
+[INFO] 
+[INFO] --- maven-resources-plugin:3.3.1:resources (default-resources) @ sub2api-backend ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 6 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.13.0:compile (default-compile) @ sub2api-backend ---
+[INFO] Compiling 209 source files with javac [debug parameters release 17] to target\classes
+[INFO] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/gateway/websocket/OpenAIWebSocketHandler.java: 某些输入文件使用了未经检查或不安全的操作。
+[INFO] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/gateway/websocket/OpenAIWebSocketHandler.java: 有关详细信息, 请使用 -Xlint:unchecked 重新编译。
+[INFO] 某些消息已经过简化; 请使用 -Xdiags:verbose 重新编译以获得完整输出
+[INFO] -------------------------------------------------------------
+[WARNING] COMPILATION WARNING : 
+[INFO] -------------------------------------------------------------
+[WARNING] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/gateway/service/UsagePrefetchService.java:[22,1] Field 'log' already exists.
+[WARNING] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/gateway/service/UpstreamFailoverError.java:[13,1] Generating equals/hashCode implementation but without a call to superclass, even though this class does not extend java.lang.Object. If this is intentional, add '@EqualsAndHashCode(callSuper=false)' to your type.
+[WARNING] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/account/service/AccountExpiryService.java:[18,1] Field 'log' already exists.
+[WARNING] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/account/service/AccountRefreshService.java:[25,1] Field 'log' already exists.
+[WARNING] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/account/service/AccountHealthService.java:[31,1] Field 'log' already exists.
+[WARNING] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/account/service/AccountSelector.java:[32,1] Field 'log' already exists.
+[WARNING] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/gateway/service/ProxyLatencyService.java:[18,1] Field 'log' already exists.
+[INFO] 7 warnings 
+[INFO] -------------------------------------------------------------
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/account/service/GroupService.java:[84,45] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/account/service/GroupService.java:[85,45] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/account/service/GroupService.java:[104,45] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/account/service/GroupService.java:[116,51] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/account/service/GroupService.java:[117,51] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/account/service/ProxyConfigService.java:[56,45] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/account/service/ProxyConfigService.java:[57,45] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/account/service/ProxyConfigService.java:[76,45] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/account/service/ProxyConfigService.java:[88,51] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/account/service/ProxyConfigService.java:[89,51] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/account/service/scheduler/RedisSchedulerCache.java:[220,50] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AnnouncementService.java:[62,52] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AnnouncementService.java:[63,52] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AnnouncementService.java:[78,52] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AnnouncementService.java:[92,52] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AnnouncementService.java:[105,52] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/apikey/service/ApiKeyService.java:[58,46] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/apikey/service/ApiKeyService.java:[59,46] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/apikey/service/ApiKeyService.java:[96,88] 不兼容的类型: java.time.OffsetDateTime无法转换为java.time.LocalDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/apikey/service/ApiKeyService.java:[107,46] 不兼容的类型: java.time.OffsetDateTime无法转换为java.time.LocalDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/apikey/service/ApiKeyService.java:[135,49] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/apikey/service/ApiKeyService.java:[147,50] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/apikey/service/ApiKeyService.java:[148,49] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/apikey/service/ApiKeyService.java:[165,49] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/apikey/service/ApiKeyService.java:[176,49] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/apikey/service/ApiKeyService.java:[177,49] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/user/service/UserService.java:[107,44] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/user/service/UserService.java:[108,44] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/user/service/UserService.java:[127,44] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/user/service/UserService.java:[149,50] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/user/service/UserService.java:[161,50] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/user/service/UserService.java:[193,54] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/user/service/UserService.java:[194,50] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/user/service/UserService.java:[208,50] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/user/service/UserService.java:[219,50] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/user/service/UserService.java:[220,50] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/billing/service/RedeemCodeService.java:[58,74] 不兼容的类型: java.time.OffsetDateTime无法转换为java.time.LocalDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/billing/service/RedeemCodeService.java:[74,47] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/billing/service/RedeemCodeService.java:[93,50] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/billing/service/RedeemCodeService.java:[116,54] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/billing/service/PromoCodeService.java:[59,99] 不兼容的类型: java.time.OffsetDateTime无法转换为java.time.chrono.ChronoLocalDateTime<?>
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/billing/service/PromoCodeService.java:[85,45] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/billing/service/PromoCodeService.java:[102,32] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/billing/service/PromoCodeService.java:[104,49] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/billing/service/PromoCodeService.java:[105,49] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/ErrorPassthroughRuleService.java:[142,44] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/ErrorPassthroughRuleService.java:[143,44] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/ErrorPassthroughRuleService.java:[201,48] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/ErrorPassthroughRuleService.java:[216,48] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/ErrorPassthroughRuleService.java:[217,48] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/SettingService.java:[146,61] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/SettingService.java:[147,61] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/SettingService.java:[153,61] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/SettingService.java:[207,57] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/SettingService.java:[208,57] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/billing/service/UsageLogService.java:[48,48] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/user/service/SubscriptionService.java:[45,21] 找不到符号
+  符号:   方法 setStartsAt(java.time.LocalDateTime)
+  位置: 类型为com.sub2api.module.user.model.entity.UserSubscription的变量 subscription
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/user/service/SubscriptionService.java:[46,35] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/user/service/SubscriptionService.java:[47,52] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/user/service/SubscriptionService.java:[48,52] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/user/service/SubscriptionService.java:[103,52] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/user/service/SubscriptionService.java:[114,35] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/user/service/SubscriptionService.java:[116,52] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/user/service/SubscriptionService.java:[129,52] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/user/service/SubscriptionService.java:[140,52] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/user/service/SubscriptionService.java:[141,52] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/user/service/SubscriptionService.java:[179,56] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[117,44] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[118,44] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[151,44] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[164,44] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[165,44] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[195,44] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[269,45] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[270,45] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[303,45] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[316,45] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[317,45] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[379,47] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[380,47] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[426,47] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[448,47] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[449,47] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[460,47] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[473,47] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[487,47] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[499,47] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[561,45] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[562,45] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[595,45] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[695,47] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/IdempotencyService.java:[175,42] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/IdempotencyService.java:[176,32] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/IdempotencyService.java:[272,76] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/ScheduledTestService.java:[43,27] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/ScheduledTestService.java:[50,44] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/ScheduledTestService.java:[51,44] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/ScheduledTestService.java:[95,31] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/ScheduledTestService.java:[96,48] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/ScheduledTestService.java:[109,44] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[INFO] 100 errors 
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  8.682 s
+[INFO] Finished at: 2026-04-17T15:03:32+08:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.13.0:compile (default-compile) on project sub2api-backend: Compilation failure: Compilation failure: 
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/account/service/GroupService.java:[84,45] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/account/service/GroupService.java:[85,45] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/account/service/GroupService.java:[104,45] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/account/service/GroupService.java:[116,51] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/account/service/GroupService.java:[117,51] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/account/service/ProxyConfigService.java:[56,45] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/account/service/ProxyConfigService.java:[57,45] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/account/service/ProxyConfigService.java:[76,45] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/account/service/ProxyConfigService.java:[88,51] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/account/service/ProxyConfigService.java:[89,51] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/account/service/scheduler/RedisSchedulerCache.java:[220,50] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AnnouncementService.java:[62,52] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AnnouncementService.java:[63,52] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AnnouncementService.java:[78,52] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AnnouncementService.java:[92,52] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AnnouncementService.java:[105,52] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/apikey/service/ApiKeyService.java:[58,46] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/apikey/service/ApiKeyService.java:[59,46] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/apikey/service/ApiKeyService.java:[96,88] 不兼容的类型: java.time.OffsetDateTime无法转换为java.time.LocalDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/apikey/service/ApiKeyService.java:[107,46] 不兼容的类型: java.time.OffsetDateTime无法转换为java.time.LocalDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/apikey/service/ApiKeyService.java:[135,49] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/apikey/service/ApiKeyService.java:[147,50] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/apikey/service/ApiKeyService.java:[148,49] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/apikey/service/ApiKeyService.java:[165,49] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/apikey/service/ApiKeyService.java:[176,49] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/apikey/service/ApiKeyService.java:[177,49] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/user/service/UserService.java:[107,44] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/user/service/UserService.java:[108,44] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/user/service/UserService.java:[127,44] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/user/service/UserService.java:[149,50] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/user/service/UserService.java:[161,50] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/user/service/UserService.java:[193,54] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/user/service/UserService.java:[194,50] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/user/service/UserService.java:[208,50] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/user/service/UserService.java:[219,50] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/user/service/UserService.java:[220,50] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/billing/service/RedeemCodeService.java:[58,74] 不兼容的类型: java.time.OffsetDateTime无法转换为java.time.LocalDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/billing/service/RedeemCodeService.java:[74,47] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/billing/service/RedeemCodeService.java:[93,50] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/billing/service/RedeemCodeService.java:[116,54] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/billing/service/PromoCodeService.java:[59,99] 不兼容的类型: java.time.OffsetDateTime无法转换为java.time.chrono.ChronoLocalDateTime<?>
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/billing/service/PromoCodeService.java:[85,45] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/billing/service/PromoCodeService.java:[102,32] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/billing/service/PromoCodeService.java:[104,49] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/billing/service/PromoCodeService.java:[105,49] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/ErrorPassthroughRuleService.java:[142,44] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/ErrorPassthroughRuleService.java:[143,44] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/ErrorPassthroughRuleService.java:[201,48] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/ErrorPassthroughRuleService.java:[216,48] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/ErrorPassthroughRuleService.java:[217,48] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/SettingService.java:[146,61] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/SettingService.java:[147,61] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/SettingService.java:[153,61] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/SettingService.java:[207,57] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/SettingService.java:[208,57] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/billing/service/UsageLogService.java:[48,48] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/user/service/SubscriptionService.java:[45,21] 找不到符号
+[ERROR]   符号:   方法 setStartsAt(java.time.LocalDateTime)
+[ERROR]   位置: 类型为com.sub2api.module.user.model.entity.UserSubscription的变量 subscription
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/user/service/SubscriptionService.java:[46,35] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/user/service/SubscriptionService.java:[47,52] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/user/service/SubscriptionService.java:[48,52] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/user/service/SubscriptionService.java:[103,52] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/user/service/SubscriptionService.java:[114,35] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/user/service/SubscriptionService.java:[116,52] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/user/service/SubscriptionService.java:[129,52] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/user/service/SubscriptionService.java:[140,52] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/user/service/SubscriptionService.java:[141,52] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/user/service/SubscriptionService.java:[179,56] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[117,44] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[118,44] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[151,44] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[164,44] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[165,44] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[195,44] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[269,45] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[270,45] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[303,45] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[316,45] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[317,45] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[379,47] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[380,47] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[426,47] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[448,47] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[449,47] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[460,47] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[473,47] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[487,47] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[499,47] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[561,45] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[562,45] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[595,45] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/AdminService.java:[695,47] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/IdempotencyService.java:[175,42] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/IdempotencyService.java:[176,32] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/IdempotencyService.java:[272,76] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/ScheduledTestService.java:[43,27] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/ScheduledTestService.java:[50,44] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/ScheduledTestService.java:[51,44] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/ScheduledTestService.java:[95,31] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/ScheduledTestService.java:[96,48] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] /D:/code/go/sub2api-main/sub2api-main/backend-java/src/main/java/com/sub2api/module/admin/service/ScheduledTestService.java:[109,44] 不兼容的类型: java.time.LocalDateTime无法转换为java.time.OffsetDateTime
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
