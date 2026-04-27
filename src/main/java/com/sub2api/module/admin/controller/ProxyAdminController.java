@@ -20,7 +20,7 @@ import java.util.List;
  */
 @Tag(name = "管理 - 代理", description = "代理配置管理接口")
 @RestController
-@RequestMapping("/admin/proxies")
+@RequestMapping("/api/v1/admin/proxies")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
 public class ProxyAdminController {

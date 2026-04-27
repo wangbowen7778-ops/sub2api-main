@@ -1,5 +1,6 @@
 package com.sub2api.module.apikey.model.vo;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -21,6 +22,7 @@ public class UpdateApiKeyRequest {
     @Schema(description = "API Key 名称")
     private String name;
 
+    @JsonProperty("group_id")
     @Schema(description = "关联的分组ID (null=不修改, 0=解绑, >0=绑定到目标分组)")
     private Long groupId;
 

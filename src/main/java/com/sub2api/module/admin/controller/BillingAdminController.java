@@ -22,7 +22,7 @@ import java.util.Map;
  */
 @Tag(name = "管理 - 计费", description = "计费管理接口")
 @RestController
-@RequestMapping("/admin/billing")
+@RequestMapping("/api/v1/admin/billing")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
 public class BillingAdminController {

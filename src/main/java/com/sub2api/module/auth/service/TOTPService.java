@@ -34,7 +34,7 @@ public class TOTPService {
     private static final int SECRET_KEY_LENGTH = 20;
     private static final String TOTP_SETUP_KEY_PREFIX = "totp:setup:";
     private static final int TOTP_SETUP_TTL_MINUTES = 5;
-    private static final String TOTP_ISSUER = "Sub2API";
+    public static final String TOTP_ISSUER = "Sub2API";
 
     private final SecureRandom secureRandom = new SecureRandom();
     private final StringRedisTemplate redisTemplate;

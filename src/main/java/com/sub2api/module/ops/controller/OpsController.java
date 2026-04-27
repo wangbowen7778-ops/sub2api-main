@@ -21,7 +21,7 @@ import java.util.List;
  */
 @Tag(name = "管理后台 - Ops监控", description = "Ops监控接口")
 @RestController
-@RequestMapping("/admin/ops")
+@RequestMapping("/api/v1/admin/ops")
 @RequiredArgsConstructor
 public class OpsController {
 

@@ -1,14 +1,12 @@
 package com.sub2api.module.user.model.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
-import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import lombok.experimental.Accessors;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
-import java.util.Map;
 
 /**
  * 用户实体
@@ -85,18 +83,6 @@ public class User implements Serializable {
     private OffsetDateTime totpEnabledAt;
 
     /**
-     * Token版本号 - 密码修改后递增使所有token失效
-     */
-    private Long tokenVersion;
-
-    /**
-     * 用户专属分组倍率配置 (map[groupId]rateMultiplier)
-     * JSONB列，使用JacksonTypeHandler
-     */
-    @TableField(typeHandler = JacksonTypeHandler.class)
-    private Map<Long, Double> groupRates;
-
-    /**
      * 创建时间
      */
     @TableField(fill = FieldFill.INSERT)
@@ -150,12 +136,6 @@ public class User implements Serializable {
     public OffsetDateTime getTotpEnabledAt() { return totpEnabledAt; }
     public User setTotpEnabledAt(OffsetDateTime totpEnabledAt) { this.totpEnabledAt = totpEnabledAt; return this; }
 
-    public Long getTokenVersion() { return tokenVersion; }
-    public User setTokenVersion(Long tokenVersion) { this.tokenVersion = tokenVersion; return this; }
-
-    public Map<Long, Double> getGroupRates() { return groupRates; }
-    public User setGroupRates(Map<Long, Double> groupRates) { this.groupRates = groupRates; return this; }
-
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public User setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; return this; }
 
@@ -174,5 +154,21 @@ public class User implements Serializable {
         }
         this.passwordHash = new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder(12)
                 .encode(plaintextPassword);
+    }
+
+    /**
+     * Check if user can bind to a group
+     * For standard groups:
+     * - Public groups (non-exclusive): all users can bind
+     * - Exclusive groups: only users with the group in allowedGroups can bind
+     */
+    public boolean canBindGroup(Long groupId, Boolean isExclusive) {
+        // Public groups (non-exclusive): all users can bind
+        if (isExclusive == null || !isExclusive) {
+            return true;
+        }
+        // Exclusive groups: need to check allowedGroups
+        // TODO: implement allowedGroups check when the field is added
+        return true;
     }
 }

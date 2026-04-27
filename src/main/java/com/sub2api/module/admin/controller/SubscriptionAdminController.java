@@ -21,7 +21,7 @@ import java.util.Map;
  */
 @Tag(name = "Admin - Subscription", description = "订阅管理接口")
 @RestController
-@RequestMapping("/admin/subscriptions")
+@RequestMapping("/api/v1/admin/subscriptions")
 @RequiredArgsConstructor
 public class SubscriptionAdminController {
 

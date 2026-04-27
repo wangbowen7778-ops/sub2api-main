@@ -1,7 +1,6 @@
 package com.sub2api.module.user.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sub2api.module.admin.mapper.AnnouncementMapper;
 import com.sub2api.module.admin.model.entity.Announcement;
 import com.sub2api.module.user.mapper.AnnouncementReadMapper;
@@ -15,20 +14,21 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Announcement Controller
- * 用户公告接口，提供公告列表和已读功能
+ * 用户公告控制器
+ * 路径: /api/v1/announcements
  *
  * @author Alibaba Java Code Guidelines
  */
 @Slf4j
 @RestController
-@RequestMapping("/announcements")
+@RequestMapping("/api/v1/announcements")
 @RequiredArgsConstructor
 public class AnnouncementController {
 
@@ -37,21 +37,31 @@ public class AnnouncementController {
     private final UserService userService;
     private final SubscriptionService subscriptionService;
 
+    private static final DateTimeFormatter ISO_FORMATTER = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+
+    /**
+     * 获取当前登录用户ID
+     */
+    private Long getCurrentUserId() {
+        return userService.getCurrentUserId();
+    }
+
     /**
      * 获取用户可见的公告列表
+     * GET /api/v1/announcements
      */
     @GetMapping
     public Result<List<Map<String, Object>>> listAnnouncements(
             @RequestParam(required = false, defaultValue = "false") boolean unreadOnly) {
 
-        Long userId = userService.getCurrentUserId();
+        Long userId = getCurrentUserId();
         if (userId == null) {
-            return Result.fail("User not logged in");
+            return Result.fail(2006, "未登录或登录已过期");
         }
 
-        var user = userService.findById(userId);
+        User user = userService.findById(userId);
         if (user == null) {
-            return Result.fail("User not found");
+            return Result.fail(3001, "用户不存在");
         }
 
         OffsetDateTime now = OffsetDateTime.now();
@@ -93,9 +103,12 @@ public class AnnouncementController {
                     map.put("id", a.getId());
                     map.put("title", a.getTitle());
                     map.put("content", a.getContent());
-                    map.put("notifyMode", a.getNotifyMode());
-                    map.put("createdAt", a.getCreatedAt());
-                    map.put("readAt", readMap.get(a.getId()));
+                    map.put("notify_mode", a.getNotifyMode());
+                    map.put("starts_at", formatDateTime(a.getStartsAt()));
+                    map.put("ends_at", formatDateTime(a.getEndsAt()));
+                    map.put("created_at", formatDateTime(a.getCreatedAt()));
+                    map.put("updated_at", formatDateTime(a.getUpdatedAt()));
+                    map.put("read_at", formatDateTime(readMap.get(a.getId())));
                     return map;
                 })
                 .collect(Collectors.toList());
@@ -104,85 +117,40 @@ public class AnnouncementController {
     }
 
     /**
-     * 获取公告详情
-     */
-    @GetMapping("/{id}")
-    public Result<Map<String, Object>> getAnnouncement(@PathVariable Long id) {
-        Long userId = userService.getCurrentUserId();
-        if (userId == null) {
-            return Result.fail("User not logged in");
-        }
-
-        Announcement announcement = announcementMapper.selectById(id);
-        if (announcement == null) {
-            return Result.fail("Announcement not found");
-        }
-
-        var user = userService.findById(userId);
-        if (user == null) {
-            return Result.fail("User not found");
-        }
-
-        OffsetDateTime now = OffsetDateTime.now();
-        if (!"active".equals(announcement.getStatus())) {
-            return Result.fail("Announcement not active");
-        }
-        if (announcement.getStartsAt() != null && announcement.getStartsAt().isAfter(now)) {
-            return Result.fail("Announcement not started");
-        }
-        if (announcement.getEndsAt() != null && announcement.getEndsAt().isBefore(now)) {
-            return Result.fail("Announcement expired");
-        }
-
-        List<Long> activeGroupIds = getActiveSubscriptionGroupIds(userId);
-        if (!isAnnouncementVisible(announcement, user, activeGroupIds)) {
-            return Result.fail("Announcement not visible");
-        }
-
-        Map<String, Object> result = new HashMap<>();
-        result.put("id", announcement.getId());
-        result.put("title", announcement.getTitle());
-        result.put("content", announcement.getContent());
-        result.put("notifyMode", announcement.getNotifyMode());
-        result.put("createdAt", announcement.getCreatedAt());
-
-        return Result.ok(result);
-    }
-
-    /**
      * 标记公告已读
+     * POST /api/v1/announcements/:id/read
      */
     @PostMapping("/{id}/read")
-    public Result<Void> markAsRead(@PathVariable Long id) {
-        Long userId = userService.getCurrentUserId();
+    public Result<Map<String, Object>> markAsRead(@PathVariable Long id) {
+        Long userId = getCurrentUserId();
         if (userId == null) {
-            return Result.fail("User not logged in");
+            return Result.fail(2006, "未登录或登录已过期");
         }
 
         Announcement announcement = announcementMapper.selectById(id);
         if (announcement == null) {
-            return Result.fail("Announcement not found");
+            return Result.fail(4041, "公告不存在");
         }
 
-        var user = userService.findById(userId);
+        User user = userService.findById(userId);
         if (user == null) {
-            return Result.fail("User not found");
+            return Result.fail(3001, "用户不存在");
         }
 
         OffsetDateTime now = OffsetDateTime.now();
         if (!"active".equals(announcement.getStatus())) {
-            return Result.fail("Announcement not active");
+            return Result.fail(4001, "公告未激活");
         }
         if (announcement.getStartsAt() != null && announcement.getStartsAt().isAfter(now)) {
-            return Result.fail("Announcement not started");
+            return Result.fail(4001, "公告未开始");
         }
         if (announcement.getEndsAt() != null && announcement.getEndsAt().isBefore(now)) {
-            return Result.fail("Announcement expired");
+            return Result.fail(4001, "公告已过期");
         }
 
         List<Long> activeGroupIds = getActiveSubscriptionGroupIds(userId);
         if (!isAnnouncementVisible(announcement, user, activeGroupIds)) {
-            return Result.fail("Announcement not visible");
+            return Result.fail(4001, "公告不可见");
         }
 
         // 检查是否已读
@@ -200,7 +168,9 @@ public class AnnouncementController {
             log.info("User {} read announcement {}", userId, id);
         }
 
-        return Result.ok();
+        Map<String, Object> result = new HashMap<>();
+        result.put("message", "ok");
+        return Result.ok(result);
     }
 
     /**
@@ -327,5 +297,10 @@ public class AnnouncementController {
             default:
                 return false;
         }
+    }
+
+    private String formatDateTime(OffsetDateTime dateTime) {
+        if (dateTime == null) return null;
+        return dateTime.format(ISO_FORMATTER);
     }
 }

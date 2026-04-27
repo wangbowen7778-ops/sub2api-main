@@ -16,7 +16,7 @@ import java.util.List;
  */
 @Tag(name = "管理后台 - 渠道", description = "渠道管理接口")
 @RestController
-@RequestMapping("/admin/channels")
+@RequestMapping("/api/v1/admin/channels")
 @RequiredArgsConstructor
 public class ChannelAdminController {
 

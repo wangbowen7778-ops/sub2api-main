@@ -1,13 +1,12 @@
 package com.sub2api.module.admin.controller;
 
+import com.sub2api.module.account.model.entity.Group;
+import com.sub2api.module.account.service.GroupService;
 import com.sub2api.module.apikey.model.entity.ApiKey;
 import com.sub2api.module.apikey.model.vo.*;
 import com.sub2api.module.apikey.service.ApiKeyService;
 import com.sub2api.module.common.model.vo.PageResult;
 import com.sub2api.module.common.model.vo.Result;
-import com.sub2api.module.group.model.entity.AppGroup;
-import com.sub2api.module.group.service.GroupService;
-import com.sub2api.module.user.model.entity.User;
 import com.sub2api.module.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -22,13 +21,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * 管理员 API Key 管理控制器
+ * Admin API Key Management Controller
  *
  * @author Alibaba Java Code Guidelines
  */
-@Tag(name = "管理 - API Key", description = "管理员 API Key 管理接口")
+@Tag(name = "Admin - API Key", description = "Admin API Key Management API")
 @RestController
-@RequestMapping("/admin/api-keys")
+@RequestMapping("/api/v1/admin/api-keys")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
 public class ApiKeyAdminController {
@@ -37,12 +36,12 @@ public class ApiKeyAdminController {
     private final UserService userService;
     private final GroupService groupService;
 
-    @Operation(summary = "查询用户的 API Keys (分页)")
+    @Operation(summary = "Query user's API Keys (paginated)")
     @GetMapping("/user/{userId}")
     public Result<PageResult<ApiKeyResponse>> listByUser(
             @PathVariable Long userId,
-            @Parameter(description = "页码") @RequestParam(defaultValue = "1") Integer page,
-            @Parameter(description = "每页大小") @RequestParam(defaultValue = "10") Integer pageSize) {
+            @Parameter(description = "Page number") @RequestParam(defaultValue = "1") Integer page,
+            @Parameter(description = "Page size") @RequestParam(defaultValue = "10") Integer pageSize) {
 
         PageResult<ApiKey> pageResult = apiKeyService.listByUserId(userId, page, pageSize, null, null, null);
 
@@ -60,7 +59,7 @@ public class ApiKeyAdminController {
         return Result.ok(result);
     }
 
-    @Operation(summary = "创建 API Key (管理员)")
+    @Operation(summary = "Create API Key (admin)")
     @PostMapping
     public Result<ApiKeyResponse> createApiKey(@RequestBody CreateApiKeyAdminRequest request) {
         Long userId = request.getUserId();
@@ -71,7 +70,7 @@ public class ApiKeyAdminController {
         return Result.ok(toApiKeyResponse(apiKey));
     }
 
-    @Operation(summary = "更新 API Key 状态")
+    @Operation(summary = "Update API Key status")
     @PatchMapping("/{id}/status")
     public Result<Void> updateStatus(
             @PathVariable Long id,
@@ -80,10 +79,10 @@ public class ApiKeyAdminController {
         return Result.ok();
     }
 
-    @Operation(summary = "删除 API Key (管理员)")
+    @Operation(summary = "Delete API Key (admin)")
     @DeleteMapping("/{id}")
     public Result<Void> deleteApiKey(@PathVariable Long id) {
-        // 管理员删除不需要验证所有权，直接删除
+        // Admin delete doesn't need ownership validation
         ApiKey apiKey = apiKeyService.getById(id);
         if (apiKey == null) {
             return Result.fail(com.sub2api.module.common.model.enums.ErrorCode.NOT_FOUND);
@@ -92,13 +91,13 @@ public class ApiKeyAdminController {
         return Result.ok();
     }
 
-    @Operation(summary = "管理员更新 API Key 分组绑定")
+    @Operation(summary = "Admin update API Key group binding")
     @PutMapping("/{id}")
     public Result<AdminUpdateGroupResponse> updateGroup(
             @PathVariable Long id,
             @Valid @RequestBody AdminUpdateGroupRequest request) {
 
-        AdminUpdateGroupResult result = apiKeyService.adminUpdateGroup(id, request.getGroupId());
+        ApiKeyService.AdminUpdateGroupResult result = apiKeyService.adminUpdateGroup(id, request.getGroupId());
 
         AdminUpdateGroupResponse response = AdminUpdateGroupResponse.builder()
                 .apiKey(toApiKeyResponse(result.getApiKey()))
@@ -111,7 +110,7 @@ public class ApiKeyAdminController {
     }
 
     /**
-     * 管理员创建 API Key 请求
+     * Admin create API Key request
      */
     @lombok.Data
     public static class CreateApiKeyAdminRequest {
@@ -121,19 +120,7 @@ public class ApiKeyAdminController {
     }
 
     /**
-     * 管理员更新分组结果
-     */
-    @lombok.Data
-    @lombok.Builder
-    public static class AdminUpdateGroupResult {
-        private ApiKey apiKey;
-        private Boolean autoGrantedGroupAccess;
-        private Long grantedGroupId;
-        private String grantedGroupName;
-    }
-
-    /**
-     * 转换为 API Key 响应
+     * Convert to API Key response
      */
     private ApiKeyResponse toApiKeyResponse(ApiKey apiKey) {
         if (apiKey == null) {

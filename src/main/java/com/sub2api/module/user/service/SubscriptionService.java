@@ -83,6 +83,17 @@ public class SubscriptionService extends ServiceImpl<UserSubscriptionMapper, Use
     }
 
     /**
+     * 获取用户所有活跃订阅 (Go: ListActiveUserSubscriptions)
+     */
+    public List<UserSubscription> listActiveByUserId(Long userId) {
+        return list(new LambdaQueryWrapper<UserSubscription>()
+                .eq(UserSubscription::getUserId, userId)
+                .eq(UserSubscription::getStatus, "active")
+                .isNull(UserSubscription::getDeletedAt)
+                .orderByDesc(UserSubscription::getCreatedAt));
+    }
+
+    /**
      * 获取订阅详情
      */
     public UserSubscription getSubscription(Long subscriptionId) {

@@ -251,6 +251,50 @@ public class AccountService extends ServiceImpl<AccountMapper, Account> {
     }
 
     /**
+     * Clear error status
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void clearError(Long accountId) {
+        Account updateAccount = new Account();
+        updateAccount.setId(accountId);
+        updateAccount.setStatus("active");
+        updateAccount.setErrorMessage(null);
+        updateAccount.setUpdatedAt(OffsetDateTime.now());
+        updateById(updateAccount);
+    }
+
+    /**
+     * Get supported models for account
+     */
+    public List<String> getSupportedModels(Account account) {
+        if (account == null || account.getPlatform() == null) {
+            return List.of();
+        }
+        String platform = account.getPlatform().toLowerCase();
+        return switch (platform) {
+            case "anthropic", "claude" -> List.of(
+                    "claude-opus-4-6-20251101",
+                    "claude-sonnet-4-6-20251101",
+                    "claude-haiku-3-20250514"
+            );
+            case "openai" -> List.of(
+                    "gpt-4o",
+                    "gpt-4o-mini",
+                    "gpt-4-turbo"
+            );
+            case "gemini" -> List.of(
+                    "gemini-1.5-pro",
+                    "gemini-1.5-flash"
+            );
+            case "antigravity" -> List.of(
+                    "claude-sonnet-4-20250514",
+                    "claude-haiku-3-20250514"
+            );
+            default -> List.of();
+        };
+    }
+
+    /**
      * Soft delete account
      */
     @Transactional(rollbackFor = Exception.class)

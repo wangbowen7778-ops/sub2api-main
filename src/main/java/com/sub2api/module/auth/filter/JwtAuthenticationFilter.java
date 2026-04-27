@@ -101,7 +101,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
-        // 公开路径不需要过滤
+        // 公开路径不需要 JWT 过滤
+        // 注意：/v1/** 是 API Gateway 端点，使用 API Key 认证，不跳过会导致 JWT 认证失败
         return path.startsWith("/auth/") ||
                 path.startsWith("/v1/") ||
                 path.startsWith("/v1beta/") ||

@@ -1,7 +1,7 @@
 server:
   port: ${APP_PORT:8098}
   servlet:
-    context-path: /api/v1
+    context-path:
   tomcat:
     threads:
       max: 200

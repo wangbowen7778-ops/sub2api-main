@@ -1,5 +1,6 @@
 package com.sub2api.module.common.model.vo;
 
+import com.sub2api.module.common.model.enums.ErrorCode;
 import lombok.experimental.Accessors;
 
 import java.io.Serial;
@@ -111,6 +112,20 @@ public class Result<T> implements Serializable {
                 .setMessage(message)
                 .setSuccess(false)
                 .setData(data);
+    }
+
+    public static <T> Result<T> fail(ErrorCode errorCode) {
+        return new Result<T>()
+                .setCode(errorCode.getCode())
+                .setMessage(errorCode.getMessage())
+                .setSuccess(false);
+    }
+
+    public static <T> Result<T> fail(ErrorCode errorCode, String message) {
+        return new Result<T>()
+                .setCode(errorCode.getCode())
+                .setMessage(message)
+                .setSuccess(false);
     }
 
     public boolean isSuccess() {

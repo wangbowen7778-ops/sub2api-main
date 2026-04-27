@@ -16,7 +16,7 @@ import java.util.List;
  */
 @Slf4j
 @RestController
-@RequestMapping("/admin/error-passthrough-rules")
+@RequestMapping("/api/v1/admin/error-passthrough-rules")
 @RequiredArgsConstructor
 public class ErrorPassthroughRuleController {
 

@@ -18,7 +18,7 @@ import java.util.Map;
  */
 @Tag(name = "Admin - Settings", description = "系统设置管理接口")
 @RestController
-@RequestMapping("/admin/settings")
+@RequestMapping("/api/v1/admin/settings")
 @RequiredArgsConstructor
 public class SettingAdminController {
 

@@ -28,7 +28,7 @@ import java.util.Map;
  */
 @Tag(name = "Admin - Statistics", description = "Usage statistics API")
 @RestController
-@RequestMapping("/admin/statistics")
+@RequestMapping("/api/v1/admin/statistics")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
 public class StatisticsController {

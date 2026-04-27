@@ -18,13 +18,13 @@ import org.springframework.web.bind.annotation.*;
 
 /**
  * TOTP 双因素认证控制器
- * 路径: /user/totp
+ * 路径: /api/v1/user/totp
  *
  * @author Alibaba Java Code Guidelines
  */
 @Slf4j
 @RestController
-@RequestMapping("/user/totp")
+@RequestMapping("/api/v1/user/totp")
 @RequiredArgsConstructor
 @Tag(name = "用户 - TOTP", description = "TOTP 双因素认证接口")
 public class TotpController {
@@ -112,7 +112,7 @@ public class TotpController {
         }
 
         String siteName = settingService.getValue("site_name", "Sub2API");
-        emailQueueService.EnqueueVerifyCode(user.getEmail(), siteName);
+        emailQueueService.enqueueVerifyCode(user.getEmail(), siteName);
 
         return Result.ok();
     }

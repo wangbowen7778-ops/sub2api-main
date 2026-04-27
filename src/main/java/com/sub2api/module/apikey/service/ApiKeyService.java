@@ -1,25 +1,25 @@
 package com.sub2api.module.apikey.service;
 
 import cn.hutool.core.util.IdUtil;
-import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.sub2api.module.account.model.entity.Group;
+import com.sub2api.module.account.service.GroupService;
 import com.sub2api.module.apikey.mapper.ApiKeyMapper;
 import com.sub2api.module.apikey.model.entity.ApiKey;
 import com.sub2api.module.apikey.model.vo.ApiKeyInfo;
 import com.sub2api.module.apikey.model.vo.CreateApiKeyRequest;
 import com.sub2api.module.apikey.model.vo.UpdateApiKeyRequest;
-import com.sub2api.module.common.config.ConfigProperties;
 import com.sub2api.module.common.exception.BusinessException;
 import com.sub2api.module.common.model.enums.ErrorCode;
 import com.sub2api.module.common.model.vo.PageResult;
 import com.sub2api.module.common.util.DateTimeUtil;
 import com.sub2api.module.user.model.entity.User;
+import com.sub2api.module.user.model.entity.UserSubscription;
+import com.sub2api.module.user.service.SubscriptionService;
 import com.sub2api.module.user.service.UserService;
-import com.sub2api.module.group.service.GroupService;
-import com.sub2api.module.group.model.entity.AppGroup;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,7 +29,6 @@ import org.springframework.util.StringUtils;
 import java.math.BigDecimal;
 import java.security.SecureRandom;
 import java.time.OffsetDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 /**
@@ -42,13 +41,11 @@ import java.util.*;
 @RequiredArgsConstructor
 public class ApiKeyService extends ServiceImpl<ApiKeyMapper, ApiKey> {
 
-    private static final Logger logger = LoggerFactory.getLogger(ApiKeyService.class);
-
     private final ApiKeyMapper apiKeyMapper;
     private final ApiKeyCacheService apiKeyCacheService;
     private final UserService userService;
     private final GroupService groupService;
-    private final ConfigProperties configProperties;
+    private final SubscriptionService subscriptionService;
 
     // API Key status constants
     public static final String STATUS_ACTIVE = "active";
@@ -64,34 +61,34 @@ public class ApiKeyService extends ServiceImpl<ApiKeyMapper, ApiKey> {
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     /**
-     * 创建 API Key (用户侧)
+     * Create API Key (user-side)
      */
     @Transactional(rollbackFor = Exception.class)
     public ApiKey createApiKey(Long userId, CreateApiKeyRequest request) {
-        // 验证用户存在
+        // Validate user exists
         User user = userService.getById(userId);
         if (user == null) {
             throw new BusinessException(ErrorCode.USER_NOT_FOUND);
         }
 
         String key;
-        // 判断是否使用自定义Key
+        // Check if using custom key
         if (StringUtils.hasText(request.getCustomKey())) {
-            // 验证自定义Key格式
+            // Validate custom key format
             validateCustomKey(request.getCustomKey());
-            // 检查Key是否已存在
+            // Check if key already exists
             if (existsByKey(request.getCustomKey())) {
                 throw new BusinessException(ErrorCode.DATA_EXISTS, "API Key already exists");
             }
             key = request.getCustomKey();
         } else {
-            // 生成随机API Key
+            // Generate random API key
             key = generateKey();
         }
 
-        // 验证分组权限（如果指定了分组）
+        // Validate group permission (if group is specified)
         if (request.getGroupId() != null && request.getGroupId() > 0) {
-            AppGroup group = groupService.getById(request.getGroupId());
+            Group group = groupService.findById(request.getGroupId());
             if (group == null) {
                 throw new BusinessException(ErrorCode.NOT_FOUND, "Group not found");
             }
@@ -129,14 +126,14 @@ public class ApiKeyService extends ServiceImpl<ApiKeyMapper, ApiKey> {
         }
 
         // Invalidate auth cache
-        apiKeyCacheService.deleteAuthCache(key);
+        apiKeyCacheService.deleteCache(key);
 
-        logger.info("Created API Key: userId={}, keyId={}, name={}", userId, apiKey.getId(), request.getName());
+        log.info("Created API Key: userId={}, keyId={}, name={}", userId, apiKey.getId(), request.getName());
         return apiKey;
     }
 
     /**
-     * 管理员创建 API Key
+     * Admin create API Key
      */
     @Transactional(rollbackFor = Exception.class)
     public ApiKey adminCreateApiKey(Long userId, String name, Long groupId) {
@@ -147,13 +144,10 @@ public class ApiKeyService extends ServiceImpl<ApiKeyMapper, ApiKey> {
     }
 
     /**
-     * 生成随机 API Key
+     * Generate random API Key
      */
     private String generateKey() {
-        String prefix = configProperties.getApiKeyPrefix();
-        if (prefix == null || prefix.isEmpty()) {
-            prefix = "sk-";
-        }
+        String prefix = "sk-";
         byte[] bytes = new byte[32];
         SECURE_RANDOM.nextBytes(bytes);
         return prefix + bytesToHex(bytes);
@@ -168,13 +162,13 @@ public class ApiKeyService extends ServiceImpl<ApiKeyMapper, ApiKey> {
     }
 
     /**
-     * 验证自定义 API Key 格式
+     * Validate custom API Key format
      */
     private void validateCustomKey(String key) {
         if (key.length() < 16) {
             throw new BusinessException(ErrorCode.PARAM_INVALID, "API Key must be at least 16 characters");
         }
-        // 只允许字母、数字、下划线、连字符
+        // Only allow letters, numbers, underscores, and hyphens
         for (char c : key.toCharArray()) {
             if (!Character.isLetterOrDigit(c) && c != '_' && c != '-') {
                 throw new BusinessException(ErrorCode.PARAM_INVALID, "API Key can only contain letters, numbers, underscores, and hyphens");
@@ -183,20 +177,19 @@ public class ApiKeyService extends ServiceImpl<ApiKeyMapper, ApiKey> {
     }
 
     /**
-     * 检查用户是否可以绑定指定分组
+     * Check if user can bind to specified group
      */
-    private boolean canUserBindGroup(User user, AppGroup group) {
-        // 订阅类型分组：需要有效订阅
-        if (group.isSubscriptionType()) {
-            // TODO: 检查用户是否有有效订阅
-            return false;
+    private boolean canUserBindGroup(User user, Group group) {
+        // Subscription type group: requires valid subscription
+        if (group.getSubscriptionType() != null && "subscription".equals(group.getSubscriptionType())) {
+            return subscriptionService.isSubscriptionValid(user.getId(), group.getId());
         }
-        // 标准类型分组：使用原有的 AllowedGroups 和 IsExclusive 逻辑
+        // Standard type group: use original AllowedGroups and IsExclusive logic
         return user.canBindGroup(group.getId(), group.getIsExclusive());
     }
 
     /**
-     * 检查 Key 是否已存在
+     * Check if key already exists
      */
     public boolean existsByKey(String key) {
         return count(new LambdaQueryWrapper<ApiKey>()
@@ -205,7 +198,7 @@ public class ApiKeyService extends ServiceImpl<ApiKeyMapper, ApiKey> {
     }
 
     /**
-     * 验证 API Key (用于认证)
+     * Validate API Key (for authentication)
      */
     public ApiKeyInfo validateApiKey(String rawKey) {
         // First get from cache
@@ -251,7 +244,7 @@ public class ApiKeyService extends ServiceImpl<ApiKeyMapper, ApiKey> {
     }
 
     /**
-     * 根据 Key 获取 API Key (用于认证)
+     * Get API Key by key string (for authentication)
      */
     public ApiKey getByKey(String key) {
         return getOne(new LambdaQueryWrapper<ApiKey>()
@@ -260,7 +253,7 @@ public class ApiKeyService extends ServiceImpl<ApiKeyMapper, ApiKey> {
     }
 
     /**
-     * 根据用户ID查询 API Keys (分页)
+     * Query API Keys by user ID (paginated)
      */
     public PageResult<ApiKey> listByUserId(Long userId, Integer page, Integer pageSize, String search, String status, Long groupId) {
         LambdaQueryWrapper<ApiKey> wrapper = new LambdaQueryWrapper<>();
@@ -288,7 +281,7 @@ public class ApiKeyService extends ServiceImpl<ApiKeyMapper, ApiKey> {
     }
 
     /**
-     * 根据用户ID查询所有 API Keys (不分页)
+     * Query all API Keys by user ID (no pagination)
      */
     public List<ApiKey> listByUserId(Long userId) {
         return list(new LambdaQueryWrapper<ApiKey>()
@@ -298,14 +291,7 @@ public class ApiKeyService extends ServiceImpl<ApiKeyMapper, ApiKey> {
     }
 
     /**
-     * 根据ID获取 API Key
-     */
-    public ApiKey getById(Long keyId) {
-        return getById(keyId);
-    }
-
-    /**
-     * 更新 API Key
+     * Update API Key
      */
     @Transactional(rollbackFor = Exception.class)
     public ApiKey updateApiKey(Long keyId, Long userId, UpdateApiKeyRequest request) {
@@ -314,20 +300,20 @@ public class ApiKeyService extends ServiceImpl<ApiKeyMapper, ApiKey> {
             throw new BusinessException(ErrorCode.NOT_FOUND, "API Key not found");
         }
 
-        // 验证所有权
+        // Validate ownership
         if (!apiKey.getUserId().equals(userId)) {
             throw new BusinessException(ErrorCode.AUTH_FORBIDDEN, "Not authorized to update this API Key");
         }
 
-        // 更新字段
+        // Update fields
         if (StringUtils.hasText(request.getName())) {
             apiKey.setName(request.getName());
         }
 
         if (request.getGroupId() != null) {
-            // 验证分组权限
+            // Validate group permission
             User user = userService.getById(userId);
-            AppGroup group = groupService.getById(request.getGroupId());
+            Group group = groupService.findById(request.getGroupId());
             if (group != null && !canUserBindGroup(user, group)) {
                 throw new BusinessException(ErrorCode.AUTH_FORBIDDEN, "User is not allowed to bind this group");
             }
@@ -338,7 +324,7 @@ public class ApiKeyService extends ServiceImpl<ApiKeyMapper, ApiKey> {
             apiKey.setStatus(request.getStatus());
         }
 
-        // 更新 IP 限制
+        // Update IP restrictions
         if (request.getIpWhitelist() != null) {
             apiKey.setIpWhitelist(request.getIpWhitelist());
         }
@@ -346,10 +332,10 @@ public class ApiKeyService extends ServiceImpl<ApiKeyMapper, ApiKey> {
             apiKey.setIpBlacklist(request.getIpBlacklist());
         }
 
-        // 更新配额
+        // Update quota
         if (request.getQuota() != null) {
             apiKey.setQuota(request.getQuota());
-            // 如果配额增加且状态是 quota_exhausted，则重新激活
+            // If quota increased and status was quota_exhausted, reactivate
             if (STATUS_QUOTA_EXHAUSTED.equals(apiKey.getStatus())
                     && apiKey.getQuotaUsed() != null
                     && request.getQuota().compareTo(apiKey.getQuotaUsed()) > 0) {
@@ -363,7 +349,7 @@ public class ApiKeyService extends ServiceImpl<ApiKeyMapper, ApiKey> {
             }
         }
 
-        // 更新过期时间
+        // Update expiration
         if (Boolean.TRUE.equals(request.getClearExpiration())) {
             apiKey.setExpiresAt(null);
             if (STATUS_EXPIRED.equals(apiKey.getStatus())) {
@@ -377,7 +363,7 @@ public class ApiKeyService extends ServiceImpl<ApiKeyMapper, ApiKey> {
             }
         }
 
-        // 更新费率限制
+        // Update rate limits
         if (request.getRateLimit5h() != null) {
             apiKey.setRateLimit5h(request.getRateLimit5h());
         }
@@ -388,7 +374,7 @@ public class ApiKeyService extends ServiceImpl<ApiKeyMapper, ApiKey> {
             apiKey.setRateLimit7d(request.getRateLimit7d());
         }
 
-        // 重置费率限制使用量
+        // Reset rate limit usage
         if (Boolean.TRUE.equals(request.getResetRateLimitUsage())) {
             apiKey.setUsage5h(BigDecimal.ZERO);
             apiKey.setUsage1d(BigDecimal.ZERO);
@@ -405,14 +391,14 @@ public class ApiKeyService extends ServiceImpl<ApiKeyMapper, ApiKey> {
         }
 
         // Invalidate auth cache
-        apiKeyCacheService.deleteAuthCache(apiKey.getKey());
+        apiKeyCacheService.deleteCache(apiKey.getKey());
 
-        logger.info("Updated API Key: keyId={}, userId={}", keyId, userId);
+        log.info("Updated API Key: keyId={}, userId={}", keyId, userId);
         return apiKey;
     }
 
     /**
-     * 删除 API Key (用户侧 - 软删除)
+     * Delete API Key (user-side - soft delete)
      */
     @Transactional(rollbackFor = Exception.class)
     public void deleteApiKey(Long keyId, Long userId) {
@@ -421,12 +407,12 @@ public class ApiKeyService extends ServiceImpl<ApiKeyMapper, ApiKey> {
             throw new BusinessException(ErrorCode.NOT_FOUND, "API Key not found");
         }
 
-        // 验证所有权
+        // Validate ownership
         if (!apiKey.getUserId().equals(userId)) {
             throw new BusinessException(ErrorCode.AUTH_FORBIDDEN, "Not authorized to delete this API Key");
         }
 
-        // 软删除
+        // Soft delete
         LambdaUpdateWrapper<ApiKey> wrapper = new LambdaUpdateWrapper<>();
         wrapper.eq(ApiKey::getId, keyId)
                 .set(ApiKey::getDeletedAt, OffsetDateTime.now())
@@ -434,13 +420,13 @@ public class ApiKeyService extends ServiceImpl<ApiKeyMapper, ApiKey> {
         update(wrapper);
 
         // Invalidate auth cache
-        apiKeyCacheService.deleteAuthCache(apiKey.getKey());
+        apiKeyCacheService.deleteCache(apiKey.getKey());
 
-        logger.info("Deleted API Key: keyId={}, userId={}", keyId, userId);
+        log.info("Deleted API Key: keyId={}, userId={}", keyId, userId);
     }
 
     /**
-     * 删除 API Key (管理员 - 软删除)
+     * Delete API Key (admin - soft delete)
      */
     @Transactional(rollbackFor = Exception.class)
     public void adminDeleteApiKey(Long keyId) {
@@ -449,7 +435,7 @@ public class ApiKeyService extends ServiceImpl<ApiKeyMapper, ApiKey> {
             throw new BusinessException(ErrorCode.NOT_FOUND, "API Key not found");
         }
 
-        // 软删除
+        // Soft delete
         LambdaUpdateWrapper<ApiKey> wrapper = new LambdaUpdateWrapper<>();
         wrapper.eq(ApiKey::getId, keyId)
                 .set(ApiKey::getDeletedAt, OffsetDateTime.now())
@@ -457,13 +443,13 @@ public class ApiKeyService extends ServiceImpl<ApiKeyMapper, ApiKey> {
         update(wrapper);
 
         // Invalidate auth cache
-        apiKeyCacheService.deleteAuthCache(apiKey.getKey());
+        apiKeyCacheService.deleteCache(apiKey.getKey());
 
-        logger.info("Admin deleted API Key: keyId={}", keyId);
+        log.info("Admin deleted API Key: keyId={}", keyId);
     }
 
     /**
-     * 更新 API Key 状态 (管理员)
+     * Update API Key status (admin)
      */
     @Transactional(rollbackFor = Exception.class)
     public void updateStatus(Long keyId, String status) {
@@ -479,14 +465,14 @@ public class ApiKeyService extends ServiceImpl<ApiKeyMapper, ApiKey> {
         update(wrapper);
 
         // Invalidate auth cache
-        apiKeyCacheService.deleteAuthCache(apiKey.getKey());
+        apiKeyCacheService.deleteCache(apiKey.getKey());
 
-        logger.info("Updated API Key status: keyId={}, status={}", keyId, status);
+        log.info("Updated API Key status: keyId={}, status={}", keyId, status);
     }
 
     /**
-     * 管理员更新 API Key 分组绑定
-     * groupId: null=不修改, 0=解绑, >0=绑定到目标分组
+     * Admin update API Key group binding
+     * groupId: null=no change, 0=unbind, >0=bind to target group
      */
     @Transactional(rollbackFor = Exception.class)
     public AdminUpdateGroupResult adminUpdateGroup(Long keyId, Long groupId) {
@@ -499,7 +485,7 @@ public class ApiKeyService extends ServiceImpl<ApiKeyMapper, ApiKey> {
         result.setApiKey(apiKey);
 
         if (groupId == null) {
-            // null 表示不修改
+            // null means no change
             return result;
         }
 
@@ -508,11 +494,11 @@ public class ApiKeyService extends ServiceImpl<ApiKeyMapper, ApiKey> {
         }
 
         if (groupId == 0) {
-            // 0 表示解绑分组
+            // 0 means unbind
             apiKey.setGroupId(null);
         } else {
-            // 验证目标分组存在且状态为 active
-            AppGroup group = groupService.getById(groupId);
+            // Validate target group exists and status is active
+            Group group = groupService.findById(groupId);
             if (group == null) {
                 throw new BusinessException(ErrorCode.NOT_FOUND, "Group not found");
             }
@@ -520,18 +506,17 @@ public class ApiKeyService extends ServiceImpl<ApiKeyMapper, ApiKey> {
                 throw new BusinessException(ErrorCode.PARAM_INVALID, "Target group is not active");
             }
 
-            // 订阅类型分组：用户须持有该分组的有效订阅才可绑定
-            if (group.isSubscriptionType()) {
-                // TODO: 检查用户是否有有效订阅
+            // Subscription type group: user must have valid subscription
+            if (group.getSubscriptionType() != null && "subscription".equals(group.getSubscriptionType())) {
+                // TODO: check if user has valid subscription
                 throw new BusinessException(ErrorCode.PARAM_INVALID, "Subscription required for this group type");
             }
 
             apiKey.setGroupId(groupId);
 
-            // 专属标准分组：需要给用户添加分组权限
-            // TODO: 实现用户allowed_groups的更新逻辑
-            if (Boolean.TRUE.equals(group.getIsExclusive()) && !group.isSubscriptionType()) {
-                // userService.addAllowedGroup(apiKey.getUserId(), groupId);
+            // Exclusive standard group: need to add group permission to user
+            // TODO: implement allowed_groups update logic
+            if (Boolean.TRUE.equals(group.getIsExclusive()) && !("subscription".equals(group.getSubscriptionType()))) {
                 result.setAutoGrantedGroupAccess(true);
                 result.setGrantedGroupId(groupId);
                 result.setGrantedGroupName(group.getName());
@@ -542,15 +527,15 @@ public class ApiKeyService extends ServiceImpl<ApiKeyMapper, ApiKey> {
         updateById(apiKey);
 
         // Invalidate auth cache
-        apiKeyCacheService.deleteAuthCache(apiKey.getKey());
+        apiKeyCacheService.deleteCache(apiKey.getKey());
 
         result.setApiKey(apiKey);
-        logger.info("Admin updated API Key group: keyId={}, groupId={}", keyId, groupId);
+        log.info("Admin updated API Key group: keyId={}, groupId={}", keyId, groupId);
         return result;
     }
 
     /**
-     * 管理员更新分组结果
+     * Admin update group result
      */
     @lombok.Data
     public static class AdminUpdateGroupResult {
@@ -561,7 +546,7 @@ public class ApiKeyService extends ServiceImpl<ApiKeyMapper, ApiKey> {
     }
 
     /**
-     * 更新最后使用时间 (防抖)
+     * Update last used time (debounced)
      */
     @Transactional(rollbackFor = Exception.class)
     public void touchLastUsed(Long keyId) {
@@ -582,10 +567,10 @@ public class ApiKeyService extends ServiceImpl<ApiKeyMapper, ApiKey> {
     }
 
     /**
-     * 增加配额使用量
+     * Add quota used
      */
     @Transactional(rollbackFor = Exception.class)
-    public void incrementQuotaUsed(Long keyId, BigDecimal amount) {
+    public void addQuotaUsed(Long keyId, BigDecimal amount) {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             return;
         }
@@ -601,7 +586,7 @@ public class ApiKeyService extends ServiceImpl<ApiKeyMapper, ApiKey> {
                 .set(ApiKey::getQuotaUsed, newQuotaUsed)
                 .set(ApiKey::getUpdatedAt, OffsetDateTime.now());
 
-        // 如果配额用完，更新状态
+        // If quota exhausted, update status
         if (apiKey.getQuota() != null && apiKey.getQuota().compareTo(BigDecimal.ZERO) > 0
                 && newQuotaUsed.compareTo(apiKey.getQuota()) >= 0) {
             wrapper.set(ApiKey::getStatus, STATUS_QUOTA_EXHAUSTED);
@@ -611,7 +596,7 @@ public class ApiKeyService extends ServiceImpl<ApiKeyMapper, ApiKey> {
     }
 
     /**
-     * 检查 API Key 是否过期
+     * Check if API Key is expired
      */
     public boolean isExpired(ApiKey apiKey) {
         if (apiKey.getExpiresAt() == null) {
@@ -621,7 +606,7 @@ public class ApiKeyService extends ServiceImpl<ApiKeyMapper, ApiKey> {
     }
 
     /**
-     * 检查 API Key 配额是否用完
+     * Check if API Key quota is exhausted
      */
     public boolean isQuotaExhausted(ApiKey apiKey) {
         if (apiKey.getQuota() == null || apiKey.getQuota().compareTo(BigDecimal.ZERO) <= 0) {
@@ -631,18 +616,18 @@ public class ApiKeyService extends ServiceImpl<ApiKeyMapper, ApiKey> {
     }
 
     /**
-     * 获取用户可用的分组列表
+     * Get available groups for user
      */
-    public List<AppGroup> getAvailableGroups(Long userId) {
+    public List<Group> getAvailableGroups(Long userId) {
         User user = userService.getById(userId);
         if (user == null) {
             throw new BusinessException(ErrorCode.USER_NOT_FOUND);
         }
 
-        List<AppGroup> allActiveGroups = groupService.listActive();
-        List<AppGroup> availableGroups = new ArrayList<>();
+        List<Group> allActiveGroups = groupService.listActive();
+        List<Group> availableGroups = new ArrayList<>();
 
-        for (AppGroup group : allActiveGroups) {
+        for (Group group : allActiveGroups) {
             if (canUserBindGroup(user, group)) {
                 availableGroups.add(group);
             }
@@ -652,11 +637,10 @@ public class ApiKeyService extends ServiceImpl<ApiKeyMapper, ApiKey> {
     }
 
     /**
-     * 获取用户专属分组倍率配置
-     * 返回 Map<groupId, rateMultiplier>
+     * Get user group rates config
+     * Returns Map<groupId, rateMultiplier>
      */
     public Map<Long, Double> getUserGroupRates(Long userId) {
-        // TODO: 实现用户专属分组倍率配置查询
-        return Collections.emptyMap();
+        return userService.getGroupRates(userId);
     }
 }

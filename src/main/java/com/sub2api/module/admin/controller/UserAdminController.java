@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
  */
 @Tag(name = "Admin - User", description = "User management API")
 @RestController
-@RequestMapping("/admin/users")
+@RequestMapping("/api/v1/admin/users")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
 public class UserAdminController {
@@ -211,8 +211,31 @@ public class UserAdminController {
     @Operation(summary = "Get user's API keys")
     @GetMapping("/{id}/api-keys")
     public Result<List<Map<String, Object>>> getUserApiKeys(@PathVariable Long id) {
-        // 返回用户的API密钥列表
-        return Result.ok(List.of());
+        // Check user exists
+        User user = userService.findById(id);
+        if (user == null) {
+            return Result.fail(3001, "User not found");
+        }
+
+        // Get user's API keys (paginated, but return all)
+        com.sub2api.module.common.model.vo.PageResult<com.sub2api.module.apikey.model.entity.ApiKey> pageResult =
+                apiKeyService.listByUserId(id, 1, 1000, null, null, null);
+
+        List<Map<String, Object>> result = pageResult.getRecords().stream()
+                .map(key -> {
+                    java.util.Map<String, Object> map = new java.util.HashMap<>();
+                    map.put("id", key.getId());
+                    map.put("key", key.getKey());
+                    map.put("name", key.getName());
+                    map.put("status", key.getStatus());
+                    map.put("group_id", key.getGroupId());
+                    map.put("created_at", key.getCreatedAt());
+                    map.put("last_used_at", key.getLastUsedAt());
+                    return map;
+                })
+                .collect(java.util.stream.Collectors.toList());
+
+        return Result.ok(result);
     }
 
     @Operation(summary = "Get user's usage statistics")

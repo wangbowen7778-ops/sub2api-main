@@ -20,7 +20,7 @@ import java.util.List;
  */
 @Tag(name = "管理 - 公告", description = "公告管理接口")
 @RestController
-@RequestMapping("/admin/announcements")
+@RequestMapping("/api/v1/admin/announcements")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
 public class AnnouncementAdminController {

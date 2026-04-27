@@ -68,6 +68,16 @@ public class GroupService extends ServiceImpl<GroupMapper, Group> {
     }
 
     /**
+     * 查询所有活跃分组（不分平台）
+     */
+    public List<Group> listAllActive() {
+        return list(new LambdaQueryWrapper<Group>()
+                .eq(Group::getStatus, "active")
+                .isNull(Group::getDeletedAt)
+                .orderByAsc(Group::getSortOrder));
+    }
+
+    /**
      * 创建分组
      */
     @Transactional(rollbackFor = Exception.class)

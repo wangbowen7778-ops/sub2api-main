@@ -17,7 +17,7 @@ import java.util.List;
  */
 @Tag(name = "管理后台 - Dashboard", description = "Dashboard统计接口")
 @RestController
-@RequestMapping("/admin/dashboard")
+@RequestMapping("/api/v1/admin/dashboard")
 @RequiredArgsConstructor
 public class DashboardController {
 

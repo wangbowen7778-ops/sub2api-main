@@ -342,8 +342,6 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         String newHash = com.sub2api.module.common.util.EncryptionUtil.hashPassword(newPassword, "");
         user.setPasswordHash(newHash);
 
-        // Increment TokenVersion to invalidate all existing tokens
-        user.setTokenVersion(user.getTokenVersion() == null ? 1L : user.getTokenVersion() + 1);
         user.setUpdatedAt(OffsetDateTime.now());
         updateById(user);
 
@@ -447,7 +445,6 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         user.setBalance(balance != null ? balance : BigDecimal.ZERO);
         user.setConcurrency(concurrency != null ? concurrency : 5);
         user.setStatus("active");
-        user.setTokenVersion(0L);
         user.setCreatedAt(OffsetDateTime.now());
         user.setUpdatedAt(OffsetDateTime.now());
 
