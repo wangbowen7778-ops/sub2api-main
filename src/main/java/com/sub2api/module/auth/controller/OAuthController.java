@@ -17,7 +17,7 @@ import java.util.Map;
  */
 @Tag(name = "OAuth", description = "第三方 OAuth 认证接口")
 @RestController
-@RequestMapping("/auth/oauth")
+@RequestMapping("/api/v1/auth/oauth")
 @RequiredArgsConstructor
 public class OAuthController {
 

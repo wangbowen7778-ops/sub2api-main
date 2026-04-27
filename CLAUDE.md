@@ -278,7 +278,7 @@ sub2api:pricing:models                # Model pricing cache
 
 ### After modifying code:
 
-1. Compile check: `mvn compile`
+1. **启动项目验证**: 执行 `mvn spring-boot:run` 或 `java -jar target/sub2api-backend.jar` 启动项目，检查日志确保无错误
 2. Run related tests (when available)
 3. Update PROGRESS.md if completing a pending item
 4. Commit with proper format (see Git Conventions above)
@@ -288,10 +288,11 @@ sub2api:pricing:models                # Model pricing cache
 **每次重构必须遵循以下规则：**
 
 1. **每次仅修改一个功能点** - 不要一次性修改多个功能，确保每个改动都可以独立验证
-2. **修改完编译整个项目确保项目能正常启动** - 每次修改后执行 `mvn compile` 验证编译通过
+2. **修改完必须启动项目验证** - 每次修改后执行 `mvn spring-boot:run` 启动项目，检查日志确保启动成功且无错误
 3. **修改完提交git** - 每次完成一个功能点的重构后立即提交，遵循 commit 规范
 4. **参考原backend项目以及前端项目进行重构** - 对照 Go 源码和 Vue 前端确保 API 兼容性
 5. **每次重构都需要参考文档阅读文档按照文档要求** - 严格按照 CLAUDE.md 中的开发工作流和代码规范执行
+6. **每次重构完成都需要更新 PROGRESS.md** - 完成某个功能或服务后，立即更新 PROGRESS.md 文档中的状态和进度
 
 ### Adding a new service:
 

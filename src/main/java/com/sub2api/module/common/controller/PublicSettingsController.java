@@ -21,7 +21,7 @@ import java.util.List;
  */
 @Slf4j
 @RestController
-@RequestMapping("/settings")
+@RequestMapping("/api/v1/settings")
 @RequiredArgsConstructor
 @Tag(name = "公开设置", description = "无需认证的公开设置接口")
 public class PublicSettingsController {

@@ -24,7 +24,7 @@ import java.util.List;
  */
 @Tag(name = "Admin - Account", description = "AI platform account management API")
 @RestController
-@RequestMapping("/admin/accounts")
+@RequestMapping("/api/v1/admin/accounts")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
 public class AccountAdminController {
@@ -127,5 +127,59 @@ public class AccountAdminController {
     public Result<List<Account>> listByPlatform(@PathVariable String platform) {
         List<Account> accounts = accountService.listByPlatform(platform);
         return Result.ok(accounts);
+    }
+
+    @Operation(summary = "Clear account error")
+    @PostMapping("/{id}/clear-error")
+    public Result<Void> clearError(@PathVariable Long id) {
+        accountService.clearError(id);
+        return Result.ok();
+    }
+
+    @Operation(summary = "Clear account rate limit")
+    @PostMapping("/{id}/clear-rate-limit")
+    public Result<Void> clearRateLimit(@PathVariable Long id) {
+        accountService.clearRateLimited(id);
+        return Result.ok();
+    }
+
+    @Operation(summary = "Get temp unschedulable status")
+    @GetMapping("/{id}/temp-unschedulable")
+    public Result<Object> getTempUnschedulable(@PathVariable Long id) {
+        Account account = accountService.findById(id);
+        if (account == null) {
+            return Result.fail(4001, "Account not found");
+        }
+        return Result.ok(java.util.Map.of(
+                "until", account.getTempUnschedulableUntil() != null ? account.getTempUnschedulableUntil().toString() : null,
+                "reason", account.getTempUnschedulableReason() != null ? account.getTempUnschedulableReason() : ""
+        ));
+    }
+
+    @Operation(summary = "Clear temp unschedulable status")
+    @DeleteMapping("/{id}/temp-unschedulable")
+    public Result<Void> clearTempUnschedulable(@PathVariable Long id) {
+        accountService.clearTempUnschedulable(id);
+        return Result.ok();
+    }
+
+    @Operation(summary = "Get available models for account")
+    @GetMapping("/{id}/models")
+    public Result<List<String>> getAvailableModels(@PathVariable Long id) {
+        Account account = accountService.findById(id);
+        if (account == null) {
+            return Result.fail(4001, "Account not found");
+        }
+        List<String> models = accountService.getSupportedModels(account);
+        return Result.ok(models);
+    }
+
+    @Operation(summary = "Reset account quota")
+    @PostMapping("/{id}/reset-quota")
+    public Result<Void> resetQuota(@PathVariable Long id) {
+        // Reset quota means clear rate limit and reset usage
+        accountService.clearRateLimited(id);
+        accountService.resetAccount(id);
+        return Result.ok();
     }
 }

@@ -13,7 +13,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  */
 @SpringBootApplication(exclude = {OAuth2ClientAutoConfiguration.class})
 @EnableScheduling
-@MapperScan("com.sub2api.module.*.mapper")
+@MapperScan("com.sub2api.module.**.mapper")
 public class Sub2ApiApplication {
 
     public static void main(String[] args) {

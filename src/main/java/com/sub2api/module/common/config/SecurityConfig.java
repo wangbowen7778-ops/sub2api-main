@@ -65,13 +65,12 @@ public class SecurityConfig {
                 // 配置请求授权
                 .authorizeHttpRequests(auth -> auth
                         // 公开接口
-                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/health").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/setup/**").permitAll()
-                        .requestMatchers("/settings/public").permitAll()
-                        .requestMatchers("/auth/**").permitAll()
-                        // API Key 可访问的接口
+                        .requestMatchers("/api/v1/settings/public").permitAll()
+                        // API Gateway 端点 (API Key 认证)
                         .requestMatchers("/v1/**").permitAll()
                         .requestMatchers("/v1beta/**").permitAll()
                         .requestMatchers("/antigravity/**").permitAll()
@@ -79,6 +78,8 @@ public class SecurityConfig {
                         .requestMatchers("/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         // 静态资源
                         .requestMatchers(HttpMethod.GET, "/*.html", "/html/**", "/css/**", "/js/**").permitAll()
+                        // 用户管理接口需要认证 (JWT)
+                        .requestMatchers("/api/v1/**").authenticated()
                         // 管理接口需要 ADMIN 角色
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         // 其他请求需要认证
